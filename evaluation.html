@@ -1,0 +1,986 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Évaluation de Lecture</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --primary-clr: #9640e3;
+      --secondary-clr: #f8e8fd;
+      --medium-clr: #d399fb;
+      --dark-clr: #0a0a0a;
+      --light-clr: #ffffff;
+      --success-clr: #10b981;
+      --warning-clr: #f59e0b;
+      --info-clr: #3b82f6;
+      --gold: #fbbf24;
+      --silver: #9ca3af;
+      --bronze: #d97706;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Fira Sans', sans-serif;
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      color: var(--dark-clr);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Navigation Header */
+    .navbar {
+      background: var(--light-clr);
+      box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      animation: slideDown 0.5s ease;
+    }
+
+    @keyframes slideDown {
+      from {
+        transform: translateY(-100%);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    .navbar-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 1rem 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: relative;
+    }
+
+    .logo {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--primary-clr);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: transform 0.3s;
+      z-index: 1001;
+    }
+
+    .logo:hover {
+      transform: scale(1.05);
+    }
+
+    .menu-toggle {
+      display: none;
+      background: var(--primary-clr);
+      border: none;
+      color: white;
+      font-size: 1.5rem;
+      width: 45px;
+      height: 45px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s;
+      z-index: 1001;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 2rem;
+      list-style: none;
+      align-items: center;
+    }
+
+    .nav-links a {
+      color: var(--dark-clr);
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.3s;
+      position: relative;
+    }
+
+    .nav-links a::after {
+      content: '';
+      position: absolute;
+      bottom: -5px;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: var(--primary-clr);
+      transition: width 0.3s;
+    }
+
+    .nav-links a:hover::after {
+      width: 100%;
+    }
+
+    /* Container */
+    .container {
+      max-width: 900px;
+      margin: 3rem auto;
+      padding: 0 15px 2rem;
+    }
+
+    .page-header {
+      text-align: center;
+      margin-bottom: 3rem;
+      animation: fadeInUp 0.8s ease;
+    }
+
+    @keyframes fadeInUp {
+      from {
+        transform: translateY(30px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    .page-header h1 {
+      font-size: clamp(2rem, 5vw, 3rem);
+      color: var(--primary-clr);
+      margin-bottom: 0.5rem;
+    }
+
+    .page-header p {
+      color: #666;
+      font-size: 1.1rem;
+    }
+
+    /* Form Card */
+    .form-card {
+      background: white;
+      border-radius: 20px;
+      padding: 2.5rem;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+      animation: scaleIn 0.6s ease;
+      margin-bottom: 2rem;
+    }
+
+    @keyframes scaleIn {
+      from {
+        transform: scale(0.95);
+        opacity: 0;
+      }
+      to {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
+    .form-section {
+      margin-bottom: 2rem;
+    }
+
+    .section-title {
+      font-size: 1.3rem;
+      color: var(--primary-clr);
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid var(--secondary-clr);
+    }
+
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+      color: var(--dark-clr);
+      font-size: 1rem;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 15px 20px;
+      border: 2px solid #e0e0e0;
+      border-radius: 10px;
+      font-family: inherit;
+      font-size: 1.1rem;
+      transition: all 0.3s;
+      background: white;
+    }
+
+    .form-group input:focus {
+      outline: none;
+      border-color: var(--primary-clr);
+      box-shadow: 0 0 0 3px rgba(150, 64, 227, 0.1);
+    }
+
+    .btn-evaluate {
+      width: 100%;
+      padding: 15px;
+      background: linear-gradient(135deg, var(--primary-clr), var(--medium-clr));
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+
+    .btn-evaluate:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(150, 64, 227, 0.3);
+    }
+
+    /* Results Card */
+    .results-card {
+      background: white;
+      border-radius: 20px;
+      padding: 2.5rem;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+      display: none;
+      animation: scaleIn 0.6s ease;
+    }
+
+    .results-card.show {
+      display: block;
+    }
+
+    /* Level Badge */
+    .level-badge {
+      text-align: center;
+      padding: 2rem;
+      background: linear-gradient(135deg, var(--secondary-clr), #f0e6ff);
+      border-radius: 15px;
+      margin-bottom: 2rem;
+    }
+
+    .level-icon {
+      width: 120px;
+      height: 120px;
+      margin: 0 auto 1rem;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3rem;
+      animation: bounce 1s ease;
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-20px); }
+    }
+
+    .level-icon.class1 {
+      background: linear-gradient(135deg, #60a5fa, #3b82f6);
+      color: white;
+    }
+
+    .level-icon.class2 {
+      background: linear-gradient(135deg, #34d399, #10b981);
+      color: white;
+    }
+
+    .level-icon.class3 {
+      background: linear-gradient(135deg, var(--primary-clr), var(--medium-clr));
+      color: white;
+    }
+
+    .level-icon.junior {
+      background: linear-gradient(135deg, #d97706, #f59e0b);
+      color: white;
+    }
+
+    .level-icon.senior {
+      background: linear-gradient(135deg, #9ca3af, #d1d5db);
+      color: white;
+    }
+
+    .level-icon.champion {
+      background: linear-gradient(135deg, #fbbf24, #f59e0b);
+      color: white;
+      box-shadow: 0 0 30px rgba(251, 191, 36, 0.5);
+    }
+
+    .level-title {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--primary-clr);
+      margin-bottom: 0.5rem;
+    }
+
+    .level-subtitle {
+      font-size: 1.1rem;
+      color: #666;
+    }
+
+    /* Stats Grid */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .stat-item {
+      background: var(--secondary-clr);
+      padding: 1.5rem;
+      border-radius: 15px;
+      text-align: center;
+      border: 2px solid var(--medium-clr);
+    }
+
+    .stat-item i {
+      font-size: 2rem;
+      color: var(--primary-clr);
+      margin-bottom: 0.5rem;
+    }
+
+    .stat-label {
+      font-size: 0.9rem;
+      color: #666;
+      margin-bottom: 0.5rem;
+    }
+
+    .stat-value {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--primary-clr);
+    }
+
+    /* Progress Bars */
+    .progress-section {
+      margin-bottom: 2rem;
+    }
+
+    .progress-item {
+      margin-bottom: 1.5rem;
+    }
+
+    .progress-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 0.5rem;
+    }
+
+    .progress-label {
+      font-weight: 600;
+      color: var(--dark-clr);
+    }
+
+    .progress-value {
+      font-weight: 700;
+      color: var(--primary-clr);
+    }
+
+    .progress-bar-container {
+      width: 100%;
+      height: 25px;
+      background: #e5e7eb;
+      border-radius: 50px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, var(--primary-clr), var(--medium-clr));
+      border-radius: 50px;
+      transition: width 1s ease;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding-right: 10px;
+      color: white;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    /* Achievements */
+    .achievements {
+      background: linear-gradient(135deg, #fef3c7, #fde68a);
+      padding: 1.5rem;
+      border-radius: 15px;
+      border: 2px solid #fbbf24;
+    }
+
+    .achievements h3 {
+      color: #92400e;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .achievement-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.8rem;
+    }
+
+    .achievement-item {
+      background: white;
+      padding: 1rem;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .achievement-icon {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+    }
+
+    .achievement-icon.unlocked {
+      background: linear-gradient(135deg, var(--success-clr), #34d399);
+      color: white;
+    }
+
+    .achievement-icon.locked {
+      background: #e5e7eb;
+      color: #9ca3af;
+    }
+
+    .achievement-info {
+      flex: 1;
+    }
+
+    .achievement-title {
+      font-weight: 600;
+      color: var(--dark-clr);
+    }
+
+    .achievement-desc {
+      font-size: 0.85rem;
+      color: #666;
+    }
+
+    /* Motivational Message */
+    .motivation-box {
+      background: linear-gradient(135deg, var(--info-clr), #60a5fa);
+      color: white;
+      padding: 1.5rem;
+      border-radius: 15px;
+      text-align: center;
+      margin-top: 2rem;
+    }
+
+    .motivation-box i {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .motivation-box p {
+      font-size: 1.1rem;
+      line-height: 1.6;
+    }
+
+    /* Reset Button */
+    .btn-reset {
+      width: 100%;
+      padding: 12px;
+      background: #6b7280;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      margin-top: 1.5rem;
+    }
+
+    .btn-reset:hover {
+      background: #4b5563;
+    }
+
+    /* Footer */
+    footer {
+      background: var(--dark-clr);
+      color: white;
+      padding: 3rem 15px 1rem;
+      margin-top: 5rem;
+    }
+
+    .footer-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 2rem;
+      margin-bottom: 2rem;
+    }
+
+    .footer-section h3 {
+      color: var(--primary-clr);
+      margin-bottom: 1rem;
+    }
+
+    .footer-section p,
+    .footer-section a {
+      color: #ccc;
+      line-height: 1.8;
+      text-decoration: none;
+      display: block;
+      transition: color 0.3s;
+    }
+
+    .footer-section a:hover {
+      color: var(--primary-clr);
+    }
+
+    .footer-section .social-links {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .footer-section .social-links a {
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .footer-bottom {
+      text-align: center;
+      padding-top: 2rem;
+      border-top: 1px solid #333;
+      color: #888;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .menu-toggle {
+        display: block;
+      }
+
+      .nav-links {
+        position: fixed;
+        top: 0;
+        right: -100%;
+        width: 70%;
+        max-width: 300px;
+        height: 100vh;
+        background: white;
+        flex-direction: column;
+        justify-content: flex-start;
+        padding: 80px 2rem 2rem;
+        box-shadow: -5px 0 20px rgba(0, 0, 0, 0.2);
+        transition: right 0.4s ease;
+        z-index: 1000;
+      }
+
+      .nav-links.active {
+        right: 0;
+      }
+
+      .nav-links li {
+        width: 100%;
+        text-align: center;
+        padding: 1rem 0;
+        border-bottom: 1px solid #eee;
+      }
+
+      .form-card,
+      .results-card {
+        padding: 1.5rem;
+      }
+
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="navbar-content">
+      <a href="#" class="logo">
+        <i class="fas fa-graduation-cap"></i>
+        Évaluation Lecture
+      </a>
+      <button class="menu-toggle" id="menuToggle">
+        <i class="fas fa-bars"></i>
+      </button>
+      <ul class="nav-links" id="navLinks">
+        <li><a href="#home">Accueil</a></li>
+        <li><a href="#evaluation">Évaluation</a></li>
+        <li><a href="#library">Bibliothèque</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="container">
+    <div class="page-header">
+      <h1><i class="fas fa-book-reader"></i> Évaluez Votre Niveau de Lecture</h1>
+      <p>Découvrez votre classement de lecteur et vos statistiques de lecture</p>
+    </div>
+
+    <!-- Form Card -->
+    <div class="form-card" id="formCard">
+      <div class="form-section">
+        <h2 class="section-title">
+          <i class="fas fa-question-circle"></i>
+          Questionnaire
+        </h2>
+        <div class="form-group">
+          <label for="booksRead">
+            <i class="fas fa-books"></i> Combien de livres avez-vous lu ?
+          </label>
+          <input type="number" id="booksRead" min="0" placeholder="Entrez le nombre de livres..." required>
+        </div>
+        <div class="form-group">
+          <label for="readingTime">
+            <i class="fas fa-clock"></i> Combien d'heures avez-vous passé à lire ? (optionnel)
+          </label>
+          <input type="number" id="readingTime" min="0" placeholder="Entrez le nombre d'heures...">
+        </div>
+        <button class="btn-evaluate" id="evaluateBtn">
+          <i class="fas fa-calculator"></i>
+          Évaluer Mon Niveau
+        </button>
+      </div>
+    </div>
+
+    <!-- Results Card -->
+    <div class="results-card" id="resultsCard">
+      <!-- Level Badge -->
+      <div class="level-badge">
+        <div class="level-icon" id="levelIcon">
+          <i class="fas fa-star"></i>
+        </div>
+        <h2 class="level-title" id="levelTitle">Lecteur Classe 1</h2>
+        <p class="level-subtitle" id="levelSubtitle">Niveau Débutant</p>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-grid">
+        <div class="stat-item">
+          <i class="fas fa-book"></i>
+          <div class="stat-label">Livres Lus</div>
+          <div class="stat-value" id="statBooks">0</div>
+        </div>
+        <div class="stat-item">
+          <i class="fas fa-clock"></i>
+          <div class="stat-label">Temps de Lecture</div>
+          <div class="stat-value" id="statTime">0h</div>
+        </div>
+        <div class="stat-item">
+          <i class="fas fa-chart-line"></i>
+          <div class="stat-label">Gain en Connaissance</div>
+          <div class="stat-value" id="statKnowledge">0%</div>
+        </div>
+      </div>
+
+      <!-- Progress Bars -->
+      <div class="progress-section">
+        <h3 style="color: var(--primary-clr); margin-bottom: 1.5rem;">
+          <i class="fas fa-chart-bar"></i> Votre Progression
+        </h3>
+        
+        <div class="progress-item">
+          <div class="progress-header">
+            <span class="progress-label">Niveau de Lecture</span>
+            <span class="progress-value" id="readingLevel">0%</span>
+          </div>
+          <div class="progress-bar-container">
+            <div class="progress-bar" id="readingBar" style="width: 0%"></div>
+          </div>
+        </div>
+
+        <div class="progress-item">
+          <div class="progress-header">
+            <span class="progress-label">Expérience Accumulée</span>
+            <span class="progress-value" id="experienceLevel">0%</span>
+          </div>
+          <div class="progress-bar-container">
+            <div class="progress-bar" id="experienceBar" style="width: 0%"></div>
+          </div>
+        </div>
+
+        <div class="progress-item">
+          <div class="progress-header">
+            <span class="progress-label">Progression vers Niveau Supérieur</span>
+            <span class="progress-value" id="nextLevel">0%</span>
+          </div>
+          <div class="progress-bar-container">
+            <div class="progress-bar" id="nextLevelBar" style="width: 0%"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Achievements -->
+      <div class="achievements">
+        <h3><i class="fas fa-trophy"></i> Succès Débloqués</h3>
+        <div class="achievement-list" id="achievementList">
+          <!-- Achievements will be inserted here -->
+        </div>
+      </div>
+
+      <!-- Motivational Message -->
+      <div class="motivation-box" id="motivationBox">
+        <i class="fas fa-lightbulb"></i>
+        <p id="motivationText">Continuez votre excellente progression !</p>
+      </div>
+
+      <button class="btn-reset" id="resetBtn">
+        <i class="fas fa-redo"></i> Nouvelle Évaluation
+      </button>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer id="contact">
+    <div class="footer-content">
+      <div class="footer-section">
+        <h3>À propos</h3>
+        <p>Évaluez et suivez votre progression en lecture avec notre système de classification.</p>
+      </div>
+      <div class="footer-section">
+        <h3>Liens rapides</h3>
+        <a href="#home">Accueil</a>
+        <a href="#evaluation">Évaluation</a>
+        <a href="#library">Bibliothèque</a>
+      </div>
+      <div class="footer-section">
+        <h3>Contact</h3>
+        <p>Email: contact@evaluation-lecture.com</p>
+        <p>Tél: +33 1 23 45 67 89</p>
+      </div>
+      <div class="footer-section">
+        <h3>Suivez-nous</h3>
+        <div class="social-links">
+          <a href="#"><i class="fab fa-facebook"></i></a>
+          <a href="#"><i class="fab fa-twitter"></i></a>
+          <a href="#"><i class="fab fa-instagram"></i></a>
+          <a href="#"><i class="fab fa-youtube"></i></a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2025 Évaluation Lecture. Tous droits réservés.</p>
+    </div>
+  </footer>
+
+  <script>
+    // Mobile menu
+    const menuToggle = document.getElementById('menuToggle');
+    const navLinks = document.getElementById('navLinks');
+
+    menuToggle.addEventListener('click', () => {
+      navLinks.classList.toggle('active');
+      const icon = menuToggle.querySelector('i');
+      if (navLinks.classList.contains('active')) {
+        icon.classList.remove('fa-bars');
+        icon.classList.add('fa-times');
+      } else {
+        icon.classList.remove('fa-times');
+        icon.classList.add('fa-bars');
+      }
+    });
+
+    // Evaluation logic
+    const evaluateBtn = document.getElementById('evaluateBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const formCard = document.getElementById('formCard');
+    const resultsCard = document.getElementById('resultsCard');
+
+    evaluateBtn.addEventListener('click', function() {
+      const booksRead = parseInt(document.getElementById('booksRead').value) || 0;
+      const readingTime = parseInt(document.getElementById('readingTime').value) || (booksRead * 8); // 8h par livre par défaut
+
+      if (booksRead === 0) {
+        alert('Veuillez entrer le nombre de livres lus');
+        return;
+      }
+
+      // Calculate level
+      let level, levelClass, icon, subtitle, motivationText;
+      
+      if (booksRead >= 0 && booksRead < 20) {
+        level = 'Lecteur Classe 1';
+        levelClass = 'class1';
+        icon = 'fa-book';
+        subtitle = 'Niveau Débutant';
+        motivationText = 'Excellent début ! Continuez à lire pour progresser vers la Classe 2.';
+      } else if (booksRead >= 20 && booksRead < 40) {
+        level = 'Lecteur Classe 2';
+        levelClass = 'class2';
+        icon = 'fa-book-open';
+        subtitle = 'Niveau Intermédiaire';
+        motivationText = 'Bravo ! Vous progressez bien. Encore un effort pour atteindre la Classe 3 !';
+      } else if (booksRead >= 40 && booksRead < 60) {
+        level = 'Lecteur Classe 3';
+        levelClass = 'class3';
+        icon = 'fa-books';
+        subtitle = 'Niveau Avancé';
+        motivationText = 'Impressionnant ! Vous êtes un lecteur confirmé. Continuez vers les médailles !';
+      } else if (booksRead >= 60 && booksRead < 100) {
+        level = 'Lecteur Junior 🥉';
+        levelClass = 'junior';
+        icon = 'fa-medal';
+        subtitle = 'Médaille de Bronze';
+        motivationText = 'Félicitations ! Vous avez débloqué la médaille Junior. Visez la médaille Senior !';
+      } else if (booksRead >= 100 && booksRead < 150) {
+        level = 'Lecteur Senior 🥈';
+        levelClass = 'senior';
+        icon = 'fa-trophy';
+        subtitle = 'Médaille d\'Argent';
+        motivationText = 'Extraordinaire ! Vous êtes un lecteur senior. Plus que quelques livres pour devenir Champion !';
+      } else {
+        level = 'Lecteur Champion 🥇';
+        levelClass = 'champion';
+        icon = 'fa-crown';
+        subtitle = 'Médaille d\'Or';
+        motivationText = 'INCROYABLE ! Vous êtes un Champion de la lecture ! Vous inspirez les autres lecteurs !';
+      }
+
+      // Calculate knowledge gain (max 100%)
+      const knowledgeGain = Math.min(100, Math.round((booksRead / 150) * 100));
+
+      // Calculate progress percentages
+      const readingLevelPercent = Math.min(100, Math.round((booksRead / 150) * 100));
+      const experiencePercent = Math.min(100, Math.round((readingTime / 1200) * 100)); // Max 1200h
+      
+      let nextLevelPercent = 0;
+      if (booksRead < 20) {
+        nextLevelPercent = Math.round((booksRead / 20) * 100);
+      } else if (booksRead < 40) {
+        nextLevelPercent = Math.round(((booksRead - 20) / 20) * 100);
+      } else if (booksRead < 60) {
+        nextLevelPercent = Math.round(((booksRead - 40) / 20) * 100);
+      } else if (booksRead < 100) {
+        nextLevelPercent = Math.round(((booksRead - 60) / 40) * 100);
+      } else if (booksRead < 150) {
+        nextLevelPercent = Math.round(((booksRead - 100) / 50) * 100);
+      } else {
+        nextLevelPercent = 100;
+      }
+
+      // Update UI
+      document.getElementById('levelIcon').className = 'level-icon ' + levelClass;
+      document.getElementById('levelIcon').innerHTML = '<i class="fas ' + icon + '"></i>';
+      document.getElementById('levelTitle').textContent = level;
+      document.getElementById('levelSubtitle').textContent = subtitle;
+
+      document.getElementById('statBooks').textContent = booksRead;
+      document.getElementById('statTime').textContent = readingTime + 'h';
+      document.getElementById('statKnowledge').textContent = knowledgeGain + '%';
+
+      document.getElementById('readingLevel').textContent = readingLevelPercent + '%';
+      document.getElementById('experienceLevel').textContent = experiencePercent + '%';
+      document.getElementById('nextLevel').textContent = nextLevelPercent + '%';
+
+      // Animate progress bars
+      setTimeout(() => {
+        document.getElementById('readingBar').style.width = readingLevelPercent + '%';
+        document.getElementById('experienceBar').style.width = experiencePercent + '%';
+        document.getElementById('nextLevelBar').style.width = nextLevelPercent + '%';
+      }, 300);
+
+      document.getElementById('motivationText').textContent = motivationText;
+
+      // Generate achievements
+      const achievements = [
+        { title: 'Premier Pas', desc: 'Lire votre premier livre', threshold: 1, icon: 'fa-book' },
+        { title: 'Lecteur Assidu', desc: 'Lire 10 livres', threshold: 10, icon: 'fa-book-open' },
+        { title: 'Bibliophile', desc: 'Lire 25 livres', threshold: 25, icon: 'fa-books' },
+        { title: 'Rat de Bibliothèque', desc: 'Lire 50 livres', threshold: 50, icon: 'fa-glasses' },
+        { title: 'Expert Littéraire', desc: 'Lire 100 livres', threshold: 100, icon: 'fa-user-graduate' },
+        { title: 'Maître Lecteur', desc: 'Lire 150 livres', threshold: 150, icon: 'fa-crown' }
+      ];
+
+      const achievementList = document.getElementById('achievementList');
+      achievementList.innerHTML = '';
+
+      achievements.forEach(achievement => {
+        const unlocked = booksRead >= achievement.threshold;
+        const item = document.createElement('div');
+        item.className = 'achievement-item';
+        item.innerHTML = `
+          <div class="achievement-icon ${unlocked ? 'unlocked' : 'locked'}">
+            <i class="fas ${achievement.icon}"></i>
+          </div>
+          <div class="achievement-info">
+            <div class="achievement-title">${achievement.title}</div>
+            <div class="achievement-desc">${achievement.desc}</div>
+          </div>
+          ${unlocked ? '<i class="fas fa-check-circle" style="color: var(--success-clr); font-size: 1.5rem;"></i>' : '<i class="fas fa-lock" style="color: #9ca3af; font-size: 1.5rem;"></i>'}
+        `;
+        achievementList.appendChild(item);
+      });
+
+      // Show results
+      formCard.style.display = 'none';
+      resultsCard.classList.add('show');
+
+      // Scroll to results
+      resultsCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+
+    // Reset button
+    resetBtn.addEventListener('click', function() {
+      formCard.style.display = 'block';
+      resultsCard.classList.remove('show');
+      document.getElementById('booksRead').value = '';
+      document.getElementById('readingTime').value = '';
+      
+      // Reset progress bars
+      document.getElementById('readingBar').style.width = '0%';
+      document.getElementById('experienceBar').style.width = '0%';
+      document.getElementById('nextLevelBar').style.width = '0%';
+
+      // Scroll to form
+      formCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+
+    // Smooth scroll
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+          target.scrollIntoView({ behavior: 'smooth' });
+        }
+      });
+    });
+
+    navLinks.querySelectorAll('a').forEach(link => {
+      link.addEventListener('click', () => {
+        navLinks.classList.remove('active');
+        const icon = menuToggle.querySelector('i');
+        icon.classList.remove('fa-times');
+        icon.classList.add('fa-bars');
+      });
+    });
+  </script>
+</body>
+</html>

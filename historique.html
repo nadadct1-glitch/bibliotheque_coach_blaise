@@ -1,0 +1,1194 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Historique & Rapports - Céréales</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+  <style>
+    :root {
+      --primary-clr: #16a34a;
+      --secondary-clr: #dcfce7;
+      --medium-clr: #86efac;
+      --dark-clr: #0a0a0a;
+      --light-clr: #ffffff;
+      --success-clr: #10b981;
+      --warning-clr: #f59e0b;
+      --info-clr: #3b82f6;
+      --danger-clr: #ef4444;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Fira Sans', sans-serif;
+      background: #f0fdf4;
+      color: var(--dark-clr);
+      min-height: 100vh;
+    }
+
+    .navbar {
+      background: var(--light-clr);
+      box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+
+    .navbar-content {
+      max-width: 1600px;
+      margin: 0 auto;
+      padding: 1rem 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--primary-clr);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 2rem;
+      list-style: none;
+      align-items: center;
+    }
+
+    .nav-links a {
+      color: var(--dark-clr);
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.3s;
+    }
+
+    .nav-links a:hover {
+      color: var(--primary-clr);
+    }
+
+    .container {
+      max-width: 1600px;
+      margin: 0 auto;
+      padding: 2rem 15px;
+    }
+
+    .page-header {
+      margin-bottom: 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .page-title h1 {
+      font-size: 2.5rem;
+      color: var(--primary-clr);
+    }
+
+    .page-title p {
+      color: #666;
+      margin-top: 0.5rem;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 1rem;
+    }
+
+    .btn {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .btn-primary {
+      background: var(--primary-clr);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #15803d;
+      transform: translateY(-2px);
+    }
+
+    .btn-secondary {
+      background: #6b7280;
+      color: white;
+    }
+
+    .btn-secondary:hover {
+      background: #4b5563;
+    }
+
+    .btn-danger {
+      background: var(--danger-clr);
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background: #dc2626;
+    }
+
+    /* Stats Cards */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .stat-card {
+      background: white;
+      padding: 1.5rem;
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+    }
+
+    .stat-card h3 {
+      font-size: 0.85rem;
+      color: #666;
+      margin-bottom: 0.5rem;
+      text-transform: uppercase;
+    }
+
+    .stat-card .value {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--primary-clr);
+    }
+
+    .stat-card.danger .value {
+      color: var(--danger-clr);
+    }
+
+    .stat-card.warning .value {
+      color: var(--warning-clr);
+    }
+
+    /* Filters */
+    .filters {
+      background: white;
+      padding: 1.5rem;
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+      margin-bottom: 2rem;
+    }
+
+    .filter-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .filter-group {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .filter-group label {
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      font-size: 0.9rem;
+    }
+
+    .filter-group input,
+    .filter-group select {
+      padding: 10px;
+      border: 2px solid #e5e7eb;
+      border-radius: 8px;
+      font-size: 0.95rem;
+    }
+
+    .filter-group input:focus,
+    .filter-group select:focus {
+      outline: none;
+      border-color: var(--primary-clr);
+    }
+
+    .filter-actions {
+      display: flex;
+      gap: 1rem;
+      justify-content: flex-end;
+    }
+
+    /* Tabs */
+    .tabs {
+      background: white;
+      padding: 1rem;
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+      margin-bottom: 2rem;
+      display: flex;
+      gap: 1rem;
+      overflow-x: auto;
+    }
+
+    .tab-btn {
+      padding: 12px 24px;
+      border: none;
+      background: transparent;
+      color: #666;
+      font-weight: 600;
+      cursor: pointer;
+      border-radius: 8px;
+      transition: all 0.3s;
+      white-space: nowrap;
+    }
+
+    .tab-btn.active {
+      background: var(--primary-clr);
+      color: white;
+    }
+
+    .tab-btn:hover:not(.active) {
+      background: var(--secondary-clr);
+    }
+
+    /* Table */
+    .table-container {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+      overflow: hidden;
+    }
+
+    .table-header {
+      padding: 1.5rem;
+      border-bottom: 2px solid #e5e7eb;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .table-header h2 {
+      color: var(--primary-clr);
+    }
+
+    .table-wrapper {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    thead {
+      background: var(--secondary-clr);
+    }
+
+    th {
+      padding: 1rem;
+      text-align: left;
+      font-weight: 600;
+      color: var(--primary-clr);
+      font-size: 0.9rem;
+    }
+
+    td {
+      padding: 1rem;
+      border-bottom: 1px solid #e5e7eb;
+      font-size: 0.95rem;
+    }
+
+    tbody tr:hover {
+      background: #f9fafb;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    .badge.success {
+      background: #d1fae5;
+      color: var(--success-clr);
+    }
+
+    .badge.warning {
+      background: #fed7aa;
+      color: var(--warning-clr);
+    }
+
+    .badge.danger {
+      background: #fee2e2;
+      color: var(--danger-clr);
+    }
+
+    .badge.info {
+      background: #dbeafe;
+      color: var(--info-clr);
+    }
+
+    /* Loading */
+    .loading {
+      text-align: center;
+      padding: 3rem;
+      color: #666;
+    }
+
+    .spinner {
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid var(--primary-clr);
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 1rem;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* Empty State */
+    .empty-state {
+      text-align: center;
+      padding: 3rem;
+      color: #666;
+    }
+
+    .empty-state i {
+      font-size: 4rem;
+      color: #d1d5db;
+      margin-bottom: 1rem;
+    }
+
+    .text-danger {
+      color: var(--danger-clr);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .filter-row {
+        grid-template-columns: 1fr;
+      }
+
+      .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .tabs {
+        flex-direction: column;
+      }
+
+      table {
+        font-size: 0.85rem;
+      }
+
+      th, td {
+        padding: 0.75rem 0.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="navbar-content">
+      <a href="#" class="logo">
+        <i class="fas fa-history"></i>
+        Historique & Rapports
+      </a>
+      <ul class="nav-links">
+        <li><a href="dashboard.html">Dashboard</a></li>
+        <li><a href="vente.html">Ventes</a></li>
+        <li><a href="depense.html">Dépenses</a></li>
+        <li><a href="inventaire.html">Inventaire</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="container">
+    <!-- Page Header -->
+    <div class="page-header">
+      <div class="page-title">
+        <h1>Historique Complet</h1>
+        <p>Vue détaillée de toutes les transactions</p>
+      </div>
+      <div class="header-actions">
+        <button class="btn btn-primary" id="exportPdfBtn">
+          <i class="fas fa-file-pdf"></i>
+          Exporter PDF
+        </button>
+        <button class="btn btn-danger" id="refreshBtn">
+          <i class="fas fa-sync"></i>
+          Actualiser
+        </button>
+      </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <h3>Caisse Actuelle</h3>
+        <div class="value" id="caisseActuelle">0 FCFA</div>
+      </div>
+      <div class="stat-card">
+        <h3>Total Ventes</h3>
+        <div class="value" id="totalVentes">0 FCFA</div>
+      </div>
+      <div class="stat-card danger">
+        <h3>Total Dépenses</h3>
+        <div class="value" id="totalDepenses">0 FCFA</div>
+      </div>
+      <div class="stat-card warning">
+        <h3>Avances Données</h3>
+        <div class="value" id="totalAvances">0 FCFA</div>
+      </div>
+      <div class="stat-card warning">
+        <h3>Reste à Payer</h3>
+        <div class="value" id="resteAPayer">0 FCFA</div>
+      </div>
+      <div class="stat-card">
+        <h3>Crédits En Cours</h3>
+        <div class="value" id="totalCredits">0 FCFA</div>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters">
+      <div class="filter-row">
+        <div class="filter-group">
+          <label>Date Début</label>
+          <input type="date" id="dateDebut" />
+        </div>
+        <div class="filter-group">
+          <label>Date Fin</label>
+          <input type="date" id="dateFin" />
+        </div>
+        <div class="filter-group">
+          <label>Type</label>
+          <select id="typeFilter">
+            <option value="all">Tous</option>
+            <option value="vente">Ventes</option>
+            <option value="depense">Dépenses</option>
+            <option value="inventaire">Inventaire</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label>Recherche</label>
+          <input type="text" id="searchInput" placeholder="Chercher..." />
+        </div>
+      </div>
+      <div class="filter-actions">
+        <button class="btn btn-primary" id="applyFiltersBtn">
+          <i class="fas fa-filter"></i>
+          Appliquer
+        </button>
+        <button class="btn btn-secondary" id="resetFiltersBtn">
+          <i class="fas fa-times"></i>
+          Réinitialiser
+        </button>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="ventes">
+        <i class="fas fa-shopping-cart"></i> Ventes
+      </button>
+      <button class="tab-btn" data-tab="depenses">
+        <i class="fas fa-wallet"></i> Dépenses
+      </button>
+      <button class="tab-btn" data-tab="inventaire">
+        <i class="fas fa-boxes"></i> Inventaire
+      </button>
+      <button class="tab-btn" data-tab="avances">
+        <i class="fas fa-hand-holding-usd"></i> Avances
+      </button>
+      <button class="tab-btn" data-tab="credits">
+        <i class="fas fa-clock"></i> Crédits
+      </button>
+      <button class="tab-btn" data-tab="classement">
+        <i class="fas fa-trophy"></i> Classement Produits
+      </button>
+    </div>
+
+    <!-- Table Content -->
+    <div id="tabContent">
+      <!-- Ventes Table -->
+      <div class="table-container" id="ventesTable">
+        <div class="table-header">
+          <h2>Historique des Ventes</h2>
+          <span id="ventesCount">0 transactions</span>
+        </div>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Reçu N°</th>
+                <th>Date</th>
+                <th>Client</th>
+                <th>Produit</th>
+                <th>Quantité</th>
+                <th>Montant</th>
+                <th>Paiement</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="ventesBody">
+              <tr>
+                <td colspan="8" class="loading">
+                  <div class="spinner"></div>
+                  Chargement...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Dépenses Table -->
+      <div class="table-container" id="depensesTable" style="display:none;">
+        <div class="table-header">
+          <h2>Historique des Dépenses</h2>
+          <span id="depensesCount">0 transactions</span>
+        </div>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>N° Dépense</th>
+                <th>Date</th>
+                <th>Catégorie</th>
+                <th>Bénéficiaire</th>
+                <th>Montant</th>
+                <th>Caisse Avant</th>
+                <th>Caisse Après</th>
+                <th>Autorisé par</th>
+              </tr>
+            </thead>
+            <tbody id="depensesBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Inventaire Table -->
+      <div class="table-container" id="inventaireTable" style="display:none;">
+        <div class="table-header">
+          <h2>Historique Inventaire</h2>
+          <span id="inventaireCount">0 entrées</span>
+        </div>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Date Arrivée</th>
+                <th>Céréale</th>
+                <th>Quantité</th>
+                <th>Prix/Bol</th>
+                <th>Coût Total</th>
+                <th>Transport</th>
+                <th>Stock Actuel</th>
+              </tr>
+            </thead>
+            <tbody id="inventaireBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Avances Table -->
+      <div class="table-container" id="avancesTable" style="display:none;">
+        <div class="table-header">
+          <h2>Paiements avec Avance</h2>
+          <span id="avancesCount">0 transactions</span>
+        </div>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Reçu N°</th>
+                <th>Date</th>
+                <th>Client</th>
+                <th>Montant Total</th>
+                <th>Avance Payée</th>
+                <th>Reste à Payer</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="avancesBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Crédits Table -->
+      <div class="table-container" id="creditsTable" style="display:none;">
+        <div class="table-header">
+          <h2>Ventes à Crédit</h2>
+          <span id="creditsCount">0 transactions</span>
+        </div>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Reçu N°</th>
+                <th>Date</th>
+                <th>Client</th>
+                <th>Téléphone</th>
+                <th>Produit</th>
+                <th>Montant</th>
+                <th>Jours Écoulés</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="creditsBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Classement Table -->
+      <div class="table-container" id="classementTable" style="display:none;">
+        <div class="table-header">
+          <h2>Classement des Produits</h2>
+          <span id="classementCount">Par ventes</span>
+        </div>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Rang</th>
+                <th>Produit</th>
+                <th>Quantité Vendue</th>
+                <th>Nombre de Ventes</th>
+                <th>Chiffre d'Affaires</th>
+                <th>Performance</th>
+              </tr>
+            </thead>
+            <tbody id="classementBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Configuration API
+    const API_BASE_URL = 'http://localhost:8050';
+    
+    let currentTab = 'ventes';
+
+    // ============================================================================
+    // CHARGEMENT INITIAL
+    // ============================================================================
+    document.addEventListener('DOMContentLoaded', () => {
+      // Set default dates
+      const today = new Date();
+      const thirtyDaysAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
+      
+      document.getElementById('dateDebut').value = thirtyDaysAgo.toISOString().split('T')[0];
+      document.getElementById('dateFin').value = today.toISOString().split('T')[0];
+
+      // Load all data
+      loadAllData();
+
+      // Tab switching
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          
+          currentTab = btn.dataset.tab;
+          switchTab(currentTab);
+        });
+      });
+
+      // Filter buttons
+      document.getElementById('applyFiltersBtn').addEventListener('click', loadAllData);
+      document.getElementById('resetFiltersBtn').addEventListener('click', resetFilters);
+      document.getElementById('refreshBtn').addEventListener('click', loadAllData);
+      document.getElementById('exportPdfBtn').addEventListener('click', exportPDF);
+    });
+
+    // ============================================================================
+    // SWITCH TAB
+    // ============================================================================
+    function switchTab(tab) {
+      // Hide all tables
+      document.getElementById('ventesTable').style.display = 'none';
+      document.getElementById('depensesTable').style.display = 'none';
+      document.getElementById('inventaireTable').style.display = 'none';
+      document.getElementById('avancesTable').style.display = 'none';
+      document.getElementById('creditsTable').style.display = 'none';
+      document.getElementById('classementTable').style.display = 'none';
+
+      // Show selected table
+      switch(tab) {
+        case 'ventes':
+          document.getElementById('ventesTable').style.display = 'block';
+          break;
+        case 'depenses':
+          document.getElementById('depensesTable').style.display = 'block';
+          break;
+        case 'inventaire':
+          document.getElementById('inventaireTable').style.display = 'block';
+          break;
+        case 'avances':
+          document.getElementById('avancesTable').style.display = 'block';
+          break;
+        case 'credits':
+          document.getElementById('creditsTable').style.display = 'block';
+          break;
+        case 'classement':
+          document.getElementById('classementTable').style.display = 'block';
+          break;
+      }
+    }
+
+    // ============================================================================
+    // CHARGER TOUTES LES DONNÉES
+    // ============================================================================
+    async function loadAllData() {
+      await Promise.all([
+        loadStats(),
+        loadVentes(),
+        loadDepenses(),
+        loadInventaire(),
+        loadAvances(),
+        loadCredits(),
+        loadClassement()
+      ]);
+    }
+
+    // ============================================================================
+    // CHARGER LES STATISTIQUES
+    // ============================================================================
+    async function loadStats() {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/historique/stats`);
+        const stats = await response.json();
+
+        document.getElementById('caisseActuelle').textContent = 
+          stats.caisse_actuelle.toLocaleString() + ' FCFA';
+        document.getElementById('totalVentes').textContent = 
+          stats.total_ventes.toLocaleString() + ' FCFA';
+        document.getElementById('totalDepenses').textContent = 
+          stats.total_depenses.toLocaleString() + ' FCFA';
+        document.getElementById('totalAvances').textContent = 
+          stats.total_avances.toLocaleString() + ' FCFA';
+        document.getElementById('resteAPayer').textContent = 
+          stats.reste_a_payer.toLocaleString() + ' FCFA';
+        document.getElementById('totalCredits').textContent = 
+          stats.total_credits.toLocaleString() + ' FCFA';
+      } catch (error) {
+        console.error('Erreur stats:', error);
+      }
+    }
+
+    // ============================================================================
+    // CHARGER LES VENTES
+    // ============================================================================
+    async function loadVentes() {
+      try {
+        const dateDebut = document.getElementById('dateDebut').value;
+        const dateFin = document.getElementById('dateFin').value;
+        
+        const response = await fetch(
+          `${API_BASE_URL}/api/ventes?start_date=${dateDebut}&end_date=${dateFin}&limit=1000`
+        );
+        const ventes = await response.json();
+
+        const tbody = document.getElementById('ventesBody');
+        tbody.innerHTML = '';
+
+        if (ventes.length === 0) {
+          tbody.innerHTML = `
+            <tr><td colspan="8" class="empty-state">
+              <i class="fas fa-inbox"></i>
+              <p>Aucune vente trouvée</p>
+            </td></tr>
+          `;
+          return;
+        }
+
+        document.getElementById('ventesCount').textContent = `${ventes.length} transactions`;
+
+        ventes.forEach(vente => {
+          const row = document.createElement('tr');
+          const saleDate = new Date(vente.sale_date);
+          
+          let paymentBadge = '';
+          if (vente.payment_method === 'advance') {
+            paymentBadge = '<span class="badge warning">Avance</span>';
+          } else if (vente.payment_method === 'credit') {
+            paymentBadge = '<span class="badge danger">Crédit</span>';
+          } else {
+            paymentBadge = `<span class="badge success">${vente.payment_method}</span>`;
+          }
+
+          row.innerHTML = `
+            <td><strong>${vente.receipt_number}</strong></td>
+            <td>${saleDate.toLocaleDateString('fr-FR')}<br><small>${vente.sale_time}</small></td>
+            <td>${vente.customer_name || 'Client'}</td>
+            <td>${vente.product_type}</td>
+            <td>${vente.quantity} ${vente.unit_type}</td>
+            <td><strong>${vente.total_amount.toLocaleString()} F</strong></td>
+            <td>${paymentBadge}</td>
+            <td><span class="badge success">Complété</span></td>
+          `;
+          tbody.appendChild(row);
+        });
+      } catch (error) {
+        console.error('Erreur ventes:', error);
+      }
+    }
+
+    // ============================================================================
+    // CHARGER LES DÉPENSES
+    // ============================================================================
+    async function loadDepenses() {
+      try {
+        const dateDebut = document.getElementById('dateDebut').value;
+        const dateFin = document.getElementById('dateFin').value;
+        
+        const response = await fetch(
+          `${API_BASE_URL}/api/depenses?start_date=${dateDebut}&end_date=${dateFin}&limit=1000`
+        );
+        const depenses = await response.json();
+
+        const tbody = document.getElementById('depensesBody');
+        tbody.innerHTML = '';
+
+        if (depenses.length === 0) {
+          tbody.innerHTML = `
+            <tr><td colspan="8" class="empty-state">
+              <i class="fas fa-inbox"></i>
+              <p>Aucune dépense trouvée</p>
+            </td></tr>
+          `;
+          return;
+        }
+
+        document.getElementById('depensesCount').textContent = `${depenses.length} transactions`;
+
+        depenses.forEach(dep => {
+          const row = document.createElement('tr');
+          const expDate = new Date(dep.expense_date);
+          
+          row.innerHTML = `
+            <td><strong>${dep.expense_number}</strong></td>
+            <td>${expDate.toLocaleDateString('fr-FR')}<br><small>${dep.expense_time}</small></td>
+            <td><span class="badge info">${dep.expense_category}</span></td>
+            <td>${dep.beneficiary}</td>
+            <td><strong class="text-danger">${dep.expense_amount.toLocaleString()} F</strong></td>
+            <td>${dep.cash_before.toLocaleString()} F</td>
+            <td>${dep.cash_after.toLocaleString()} F</td>
+            <td>${dep.authorized_by}</td>
+          `;
+          tbody.appendChild(row);
+        });
+      } catch (error) {
+        console.error('Erreur dépenses:', error);
+      }
+    }
+
+    // ============================================================================
+    // CHARGER L'INVENTAIRE
+    // ============================================================================
+    async function loadInventaire() {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/inventaire?limit=1000`);
+        const inventaire = await response.json();
+
+        const tbody = document.getElementById('inventaireBody');
+        tbody.innerHTML = '';
+
+        if (inventaire.length === 0) {
+          tbody.innerHTML = `
+            <tr><td colspan="8" class="empty-state">
+              <i class="fas fa-inbox"></i>
+              <p>Aucun inventaire trouvé</p>
+            </td></tr>
+          `;
+          return;
+        }
+
+        document.getElementById('inventaireCount').textContent = `${inventaire.length} entrées`;
+
+        inventaire.forEach(item => {
+          const row = document.createElement('tr');
+          const arrivalDate = new Date(item.arrival_date);
+          
+          row.innerHTML = `
+            <td><strong>#${item.id}</strong></td>
+            <td>${arrivalDate.toLocaleDateString('fr-FR')}</td>
+            <td><span class="badge info">${item.grain_type}</span></td>
+            <td>${item.quantity_bags} sacs</td>
+            <td>${item.price_per_bowl.toLocaleString()} F</td>
+            <td><strong>${item.total_cost.toLocaleString()} F</strong></td>
+            <td>${item.transport_cost.toLocaleString()} F</td>
+            <td>${item.current_stock} bols</td>
+          `;
+          tbody.appendChild(row);
+        });
+      } catch (error) {
+        console.error('Erreur inventaire:', error);
+      }
+    }
+
+    // ============================================================================
+    // CHARGER LES AVANCES
+    // ============================================================================
+    async function loadAvances() {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/historique/avances`);
+        const avances = await response.json();
+
+        const tbody = document.getElementById('avancesBody');
+        tbody.innerHTML = '';
+
+        if (avances.length === 0) {
+          tbody.innerHTML = `
+            <tr><td colspan="7" class="empty-state">
+              <i class="fas fa-inbox"></i>
+              <p>Aucune avance trouvée</p>
+            </td></tr>
+          `;
+          return;
+        }
+
+        document.getElementById('avancesCount').textContent = `${avances.length} transactions`;
+
+        avances.forEach(avance => {
+          const row = document.createElement('tr');
+          const saleDate = new Date(avance.sale_date);
+          const resteAPayer = avance.total_amount - avance.advance_amount;
+          
+          let statusBadge = resteAPayer > 0 
+            ? '<span class="badge warning">Partiel</span>' 
+            : '<span class="badge success">Payé</span>';
+          
+          row.innerHTML = `
+            <td><strong>${avance.receipt_number}</strong></td>
+            <td>${saleDate.toLocaleDateString('fr-FR')}</td>
+            <td>${avance.customer_name || 'Client'}</td>
+            <td><strong>${avance.total_amount.toLocaleString()} F</strong></td>
+            <td>${avance.advance_amount.toLocaleString()} F</td>
+            <td class="text-danger"><strong>${resteAPayer.toLocaleString()} F</strong></td>
+            <td>${statusBadge}</td>
+          `;
+          tbody.appendChild(row);
+        });
+      } catch (error) {
+        console.error('Erreur avances:', error);
+      }
+    }
+
+    // ============================================================================
+    // CHARGER LES CRÉDITS
+    // ============================================================================
+    async function loadCredits() {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/historique/credits`);
+        const credits = await response.json();
+
+        const tbody = document.getElementById('creditsBody');
+        tbody.innerHTML = '';
+
+        if (credits.length === 0) {
+          tbody.innerHTML = `
+            <tr><td colspan="8" class="empty-state">
+              <i class="fas fa-inbox"></i>
+              <p>Aucun crédit trouvé</p>
+            </td></tr>
+          `;
+          return;
+        }
+
+        document.getElementById('creditsCount').textContent = `${credits.length} transactions`;
+
+        credits.forEach(credit => {
+          const row = document.createElement('tr');
+          const saleDate = new Date(credit.sale_date);
+          const today = new Date();
+          const joursEcoules = Math.floor((today - saleDate) / (1000 * 60 * 60 * 24));
+          
+          let statusBadge = '';
+          if (joursEcoules > 30) {
+            statusBadge = '<span class="badge danger">En retard</span>';
+          } else if (joursEcoules > 14) {
+            statusBadge = '<span class="badge warning">À suivre</span>';
+          } else {
+            statusBadge = '<span class="badge info">En cours</span>';
+          }
+          
+          row.innerHTML = `
+            <td><strong>${credit.receipt_number}</strong></td>
+            <td>${saleDate.toLocaleDateString('fr-FR')}</td>
+            <td>${credit.customer_name || 'Client'}</td>
+            <td>${credit.customer_phone || 'N/A'}</td>
+            <td>${credit.product_type}</td>
+            <td><strong>${credit.total_amount.toLocaleString()} F</strong></td>
+            <td>${joursEcoules} jours</td>
+            <td>${statusBadge}</td>
+          `;
+          tbody.appendChild(row);
+        });
+      } catch (error) {
+        console.error('Erreur crédits:', error);
+      }
+    }
+
+    // ============================================================================
+    // CHARGER LE CLASSEMENT
+    // ============================================================================
+    async function loadClassement() {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/historique/classement`);
+        const classement = await response.json();
+
+        const tbody = document.getElementById('classementBody');
+        tbody.innerHTML = '';
+
+        if (classement.length === 0) {
+          tbody.innerHTML = `
+            <tr><td colspan="6" class="empty-state">
+              <i class="fas fa-inbox"></i>
+              <p>Aucune donnée disponible</p>
+            </td></tr>
+          `;
+          return;
+        }
+
+        classement.forEach((item, index) => {
+          const row = document.createElement('tr');
+          
+          let rankIcon = '';
+          if (index === 0) rankIcon = '<i class="fas fa-trophy" style="color: gold;"></i> ';
+          else if (index === 1) rankIcon = '<i class="fas fa-medal" style="color: silver;"></i> ';
+          else if (index === 2) rankIcon = '<i class="fas fa-medal" style="color: #cd7f32;"></i> ';
+          
+          const performancePercent = (item.total_revenue / classement[0].total_revenue * 100).toFixed(1);
+          
+          row.innerHTML = `
+            <td><strong>${rankIcon}${index + 1}</strong></td>
+            <td><strong>${item.product_type}</strong></td>
+            <td>${item.total_quantity.toLocaleString()} bols</td>
+            <td>${item.total_sales} ventes</td>
+            <td><strong>${item.total_revenue.toLocaleString()} F</strong></td>
+            <td>
+              <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <div style="background: #e5e7eb; height: 8px; border-radius: 4px; flex: 1;">
+                  <div style="background: var(--primary-clr); height: 100%; border-radius: 4px; width: ${performancePercent}%;"></div>
+                </div>
+                <span>${performancePercent}%</span>
+              </div>
+            </td>
+          `;
+          tbody.appendChild(row);
+        });
+      } catch (error) {
+        console.error('Erreur classement:', error);
+      }
+    }
+
+    // ============================================================================
+    // RESET FILTERS
+    // ============================================================================
+    function resetFilters() {
+      const today = new Date();
+      const thirtyDaysAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
+      
+      document.getElementById('dateDebut').value = thirtyDaysAgo.toISOString().split('T')[0];
+      document.getElementById('dateFin').value = today.toISOString().split('T')[0];
+      document.getElementById('typeFilter').value = 'all';
+      document.getElementById('searchInput').value = '';
+      
+      loadAllData();
+    }
+
+    // ============================================================================
+    // EXPORT PDF
+    // ============================================================================
+    function exportPDF() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      
+      // Title
+      doc.setFontSize(20);
+      doc.text('Rapport Historique', 105, 15, { align: 'center' });
+      
+      doc.setFontSize(10);
+      const dateDebut = document.getElementById('dateDebut').value;
+      const dateFin = document.getElementById('dateFin').value;
+      doc.text(`Période: ${dateDebut} au ${dateFin}`, 105, 25, { align: 'center' });
+      
+      // Stats
+      doc.setFontSize(12);
+      doc.text('Statistiques Générales', 14, 35);
+      
+      let yPos = 45;
+      const stats = [
+        ['Caisse Actuelle', document.getElementById('caisseActuelle').textContent],
+        ['Total Ventes', document.getElementById('totalVentes').textContent],
+        ['Total Dépenses', document.getElementById('totalDepenses').textContent],
+        ['Total Avances', document.getElementById('totalAvances').textContent],
+        ['Reste à Payer', document.getElementById('resteAPayer').textContent],
+        ['Total Crédits', document.getElementById('totalCredits').textContent]
+      ];
+      
+      stats.forEach(([label, value]) => {
+        doc.text(`${label}: ${value}`, 14, yPos);
+        yPos += 8;
+      });
+      
+      // Save
+      doc.save('rapport-historique.pdf');
+    }
+
+
+
+    // Écouter les événements de paiement
+    window.addEventListener('paymentUpdated', async function(event) {
+    console.log('✅ Paiement détecté dans historique, rechargement...', event.detail);
+    await loadStats();
+    await loadAvances();
+    await loadCredits();
+    });
+
+    // Auto-refresh toutes les 30 secondes
+    setInterval(async () => {
+    console.log('🔄 Auto-refresh des statistiques...');
+    await loadStats();
+    
+    if (currentTab === 'avances') {
+        await loadAvances();
+    } else if (currentTab === 'credits') {
+        await loadCredits();
+    }
+    }, 30000);
+  </script>
+</body>
+</html>

@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Jeu de Citations - Testez vos connaissances</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --primary-clr: #9640e3;
+      --secondary-clr: #f8e8fd;
+      --medium-clr: #d399fb;
+      --dark-clr: #0a0a0a;
+      --light-clr: #ffffff;
+      --success-clr: #10b981;
+      --error-clr: #ef4444;
+      --warning-clr: #f59e0b;
+      --info-clr: #3b82f6;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Fira Sans', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: var(--dark-clr);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .navbar {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+
+    .navbar-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 1rem 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--primary-clr);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 2rem;
+      list-style: none;
+    }
+
+    .nav-links a {
+      color: var(--dark-clr);
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 3rem auto;
+      padding: 0 15px 2rem;
+    }
+
+    .page-header {
+      text-align: center;
+      color: white;
+      margin-bottom: 3rem;
+    }
+
+    .page-header h1 {
+      font-size: clamp(2rem, 5vw, 3rem);
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .score-card {
+      background: white;
+      padding: 1.5rem;
+      border-radius: 15px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+      margin-bottom: 2rem;
+      display: flex;
+      justify-content: space-around;
+      text-align: center;
+    }
+
+    .score-value {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--primary-clr);
+    }
+
+    .score-label {
+      font-size: 0.9rem;
+      color: #666;
+    }
+
+    .game-card {
+      background: white;
+      border-radius: 20px;
+      padding: 3rem;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+      min-height: 400px;
+    }
+
+    .citation-icon {
+      font-size: 4rem;
+      color: var(--medium-clr);
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .citation-text {
+      font-size: 1.3rem;
+      line-height: 1.8;
+      text-align: center;
+      font-style: italic;
+      margin-bottom: 1rem;
+      position: relative;
+      padding: 0 2rem;
+    }
+
+    .citation-text::before {
+      content: '"';
+      font-size: 3rem;
+      color: var(--medium-clr);
+      position: absolute;
+      top: -20px;
+      left: 0;
+    }
+
+    .citation-page {
+      text-align: center;
+      color: #666;
+      margin-bottom: 2rem;
+    }
+
+    .question {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--primary-clr);
+      margin: 2rem 0;
+      text-align: center;
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 1.5rem;
+      margin-top: 2rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      padding: 1rem 2.5rem;
+      border: none;
+      border-radius: 12px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      min-width: 150px;
+      justify-content: center;
+    }
+
+    .btn-yes {
+      background: linear-gradient(135deg, var(--success-clr), #059669);
+      color: white;
+      box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+    }
+
+    .btn-yes:hover {
+      transform: translateY(-2px);
+    }
+
+    .btn-no {
+      background: linear-gradient(135deg, var(--error-clr), #dc2626);
+      color: white;
+      box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+    }
+
+    .btn-no:hover {
+      transform: translateY(-2px);
+    }
+
+    .btn-next {
+      background: linear-gradient(135deg, var(--primary-clr), var(--medium-clr));
+      color: white;
+      box-shadow: 0 4px 15px rgba(150, 64, 227, 0.3);
+    }
+
+    .btn-next:hover {
+      transform: translateY(-2px);
+    }
+
+    .book-display {
+      width: 100%;
+      margin-top: 2rem;
+      animation: fadeIn 0.5s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .book-info {
+      display: flex;
+      gap: 2rem;
+      margin-bottom: 2rem;
+    }
+
+    .book-cover {
+      width: 150px;
+      height: 220px;
+      object-fit: cover;
+      border-radius: 10px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    }
+
+    .book-details {
+      flex: 1;
+    }
+
+    .book-title {
+      font-size: 1.8rem;
+      color: var(--primary-clr);
+      margin-bottom: 0.5rem;
+      font-weight: 700;
+    }
+
+    .book-author {
+      font-size: 1.1rem;
+      color: #666;
+      margin-bottom: 1rem;
+    }
+
+    .book-description {
+      line-height: 1.6;
+      margin-bottom: 1rem;
+    }
+
+    .book-meta {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.5rem;
+      margin-top: 1rem;
+    }
+
+    .meta-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.9rem;
+    }
+
+    .meta-item i {
+      color: var(--primary-clr);
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      z-index: 2000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal.show {
+      display: flex;
+    }
+
+    .modal-content {
+      background: white;
+      border-radius: 20px;
+      padding: 2.5rem;
+      max-width: 500px;
+      width: 90%;
+      position: relative;
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+    }
+
+    .contact-name {
+      text-align: center;
+      font-size: 1.5rem;
+      color: var(--primary-clr);
+      margin-bottom: 1rem;
+    }
+
+    .contact-info {
+      display: grid;
+      gap: 1rem;
+    }
+
+    .contact-item {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem;
+      background: #f8f9fa;
+      border-radius: 10px;
+    }
+
+    .contact-item i {
+      color: var(--primary-clr);
+    }
+
+    .contact-item a {
+      color: var(--dark-clr);
+      text-decoration: none;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 3rem;
+    }
+
+    .spinner {
+      width: 50px;
+      height: 50px;
+      border: 4px solid var(--secondary-clr);
+      border-top-color: var(--primary-clr);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 1rem;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    @media (max-width: 768px) {
+      .book-info {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+      }
+
+      .btn-group {
+        flex-direction: column;
+      }
+
+      .btn {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <div class="navbar-content">
+      <a href="/" class="logo">
+        <i class="fas fa-gamepad"></i>
+        Jeu de Citations
+      </a>
+      <ul class="nav-links">
+        <li><a href="/">Accueil</a></li>
+        <li><a href="/bibliotheque.html">Bibliothèque</a></li>
+        <li><a href="/boutique.html">Boutique</a></li>
+        <li><a href="/jeu_citations.html">Jeu</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <div class="container">
+    <div class="page-header">
+      <h1><i class="fas fa-trophy"></i> Testez vos Connaissances Littéraires</h1>
+      <p>Découvrez si vous connaissez ces citations célèbres !</p>
+    </div>
+
+    <div class="score-card">
+      <div class="score-item">
+        <div class="score-value" id="totalCitations">0</div>
+        <div class="score-label">Citations vues</div>
+      </div>
+      <div class="score-item">
+        <div class="score-value" id="knownCitations">0</div>
+        <div class="score-label">Connues</div>
+      </div>
+      <div class="score-item">
+        <div class="score-value" id="discoveredBooks">0</div>
+        <div class="score-label">Livres découverts</div>
+      </div>
+    </div>
+
+    <div class="game-card" id="gameCard">
+      <div class="loading" id="loadingState">
+        <div class="spinner"></div>
+        <p>Chargement d'une citation...</p>
+      </div>
+
+      <div id="citationDisplay" style="display: none;">
+        <i class="fas fa-quote-left citation-icon"></i>
+        <div class="citation-text" id="citationText"></div>
+        <div class="citation-page" id="citationPage"></div>
+        
+        <div class="question" id="questionText">Connaissez-vous cette citation ?</div>
+        
+        <div class="btn-group" id="buttonGroup"></div>
+      </div>
+
+      <div id="bookDisplay" style="display: none;">
+        <div class="book-info">
+          <img id="bookCover" src="" alt="" class="book-cover">
+          <div class="book-details">
+            <h2 class="book-title" id="bookTitle"></h2>
+            <div class="book-author" id="bookAuthor"></div>
+            <div class="book-description" id="bookDescription"></div>
+            
+            <div class="book-meta">
+              <div class="meta-item">
+                <i class="fas fa-tag"></i>
+                <span id="bookCategory"></span>
+              </div>
+              <div class="meta-item">
+                <i class="fas fa-star"></i>
+                <span id="bookRating"></span>
+              </div>
+              <div class="meta-item">
+                <i class="fas fa-money-bill"></i>
+                <span id="bookPrice"></span>
+              </div>
+              <div class="meta-item">
+                <i class="fas fa-box"></i>
+                <span id="bookStock"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="btn-group">
+          <button class="btn btn-yes" onclick="showContact()">
+            <i class="fas fa-user"></i> Infos Propriétaire
+          </button>
+          <button class="btn btn-next" onclick="reserve()">
+            <i class="fas fa-bookmark"></i> Réserver
+          </button>
+          <button class="btn btn-next" onclick="nextCitation()">
+            <i class="fas fa-forward"></i> Citation Suivante
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="contactModal">
+    <div class="modal-content">
+      <button class="modal-close" onclick="closeModal()">
+        <i class="fas fa-times"></i>
+      </button>
+      
+      <h2 class="contact-name">Coach Blaise GNODJA</h2>
+      <p style="text-align: center; color: #666; margin-bottom: 2rem;">Propriétaire - Coach en Développement Personnel</p>
+      
+      <div class="contact-info">
+        <div class="contact-item">
+          <i class="fab fa-whatsapp"></i>
+          <a href="https://wa.me/22890123456" target="_blank">+228 90 12 34 56</a>
+        </div>
+        <div class="contact-item">
+          <i class="fas fa-phone"></i>
+          <a href="tel:+22890123456">+228 90 12 34 56</a>
+        </div>
+        <div class="contact-item">
+          <i class="fas fa-envelope"></i>
+          <a href="mailto:contact@blaisegivingcoach.com">contact@blaisegivingcoach.com</a>
+        </div>
+        <div class="contact-item">
+          <i class="fas fa-map-marker-alt"></i>
+          <span>Lomé, Togo</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE_URL = 'http://localhost:8040/api';
+    
+    let currentCitation = null;
+    let viewedCitationIds = [];
+    let stats = {
+      total: 0,
+      known: 0,
+      discovered: 0
+    };
+
+    window.addEventListener('DOMContentLoaded', () => {
+      loadCitation();
+    });
+
+    async function loadCitation() {
+      try {
+        document.getElementById('loadingState').style.display = 'block';
+        document.getElementById('citationDisplay').style.display = 'none';
+        document.getElementById('bookDisplay').style.display = 'none';
+
+        const excludeIds = viewedCitationIds.join(',');
+        const url = `${API_BASE_URL}/jeu/citation-aleatoire${excludeIds ? `?exclude_ids=${excludeIds}` : ''}`;
+        
+        console.log('Chargement citation:', url);
+        
+        const response = await fetch(url);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        console.log('Réponse API:', data);
+
+        if (!data.success || !data.citation) {
+          alert('Plus de citations disponibles ! Bravo, vous avez tout vu !');
+          return;
+        }
+
+        currentCitation = data.citation;
+        viewedCitationIds.push(currentCitation.citation_id);
+        stats.total++;
+        updateStats();
+
+        document.getElementById('citationText').textContent = currentCitation.citation_text;
+        document.getElementById('citationPage').textContent = currentCitation.page_number 
+          ? `Page ${currentCitation.page_number}` 
+          : '';
+        
+        document.getElementById('loadingState').style.display = 'none';
+        document.getElementById('citationDisplay').style.display = 'block';
+        document.getElementById('questionText').textContent = 'Connaissez-vous cette citation ?';
+        document.getElementById('buttonGroup').innerHTML = `
+          <button class="btn btn-yes" onclick="answerYes()">
+            <i class="fas fa-check"></i> Oui
+          </button>
+          <button class="btn btn-no" onclick="answerNo()">
+            <i class="fas fa-times"></i> Non
+          </button>
+        `;
+
+      } catch (error) {
+        console.error('Erreur chargement:', error);
+        document.getElementById('loadingState').innerHTML = `
+          <p style="color: var(--error-clr);">Erreur: ${error.message}</p>
+          <button class="btn btn-next" onclick="loadCitation()">Réessayer</button>
+        `;
+      }
+    }
+
+    function answerYes() {
+      stats.known++;
+      updateStats();
+      nextCitation();
+    }
+
+    function answerNo() {
+      document.getElementById('questionText').textContent = `Avez-vous déjà lu "${currentCitation.book.title}" ?`;
+      document.getElementById('buttonGroup').innerHTML = `
+        <button class="btn btn-yes" onclick="alreadyRead()">
+          <i class="fas fa-check"></i> Oui
+        </button>
+        <button class="btn btn-no" onclick="wantToRead()">
+          <i class="fas fa-times"></i> Non
+        </button>
+      `;
+    }
+
+    function alreadyRead() {
+      nextCitation();
+    }
+
+    function wantToRead() {
+      document.getElementById('questionText').textContent = 'Aimeriez-vous lire ce livre ?';
+      document.getElementById('buttonGroup').innerHTML = `
+        <button class="btn btn-yes" onclick="showBook()">
+          <i class="fas fa-check"></i> Oui, montrez-moi !
+        </button>
+        <button class="btn btn-no" onclick="nextCitation()">
+          <i class="fas fa-times"></i> Non merci
+        </button>
+      `;
+    }
+
+    function showBook() {
+      stats.discovered++;
+      updateStats();
+
+      const book = currentCitation.book;
+      
+      document.getElementById('bookCover').src = book.image_url || 'https://via.placeholder.com/150x220?text=Livre';
+      document.getElementById('bookTitle').textContent = book.title;
+      document.getElementById('bookAuthor').textContent = `Par ${book.author}`;
+      document.getElementById('bookDescription').textContent = book.description || 'Aucune description disponible.';
+      document.getElementById('bookCategory').textContent = book.category || 'Non spécifié';
+      document.getElementById('bookRating').textContent = book.rating ? `${book.rating}/5` : 'Non noté';
+      document.getElementById('bookPrice').textContent = book.price ? `${book.price} FCFA` : 'Prix non disponible';
+      document.getElementById('bookStock').textContent = book.copies_count > 0 
+        ? `${book.copies_count} disponible(s)` 
+        : 'Épuisé';
+
+      document.getElementById('citationDisplay').style.display = 'none';
+      document.getElementById('bookDisplay').style.display = 'block';
+    }
+
+    function nextCitation() {
+      loadCitation();
+    }
+
+    function showContact() {
+      document.getElementById('contactModal').classList.add('show');
+    }
+
+    function closeModal() {
+      document.getElementById('contactModal').classList.remove('show');
+    }
+
+    function reserve() {
+      const message = `Bonjour ! Je souhaite réserver le livre "${currentCitation.book.title}" de ${currentCitation.book.author}.`;
+      window.open(`https://wa.me/22890123456?text=${encodeURIComponent(message)}`, '_blank');
+    }
+
+    function updateStats() {
+      document.getElementById('totalCitations').textContent = stats.total;
+      document.getElementById('knownCitations').textContent = stats.known;
+      document.getElementById('discoveredBooks').textContent = stats.discovered;
+    }
+
+    document.getElementById('contactModal').addEventListener('click', (e) => {
+      if (e.target.classList.contains('modal')) {
+        closeModal();
+      }
+    });
+  </script>
+</body>
+</html>

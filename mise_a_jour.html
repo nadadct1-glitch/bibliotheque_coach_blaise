@@ -1,0 +1,1262 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Historique & Paiements - Céréales</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --primary-clr: #16a34a;
+      --secondary-clr: #dcfce7;
+      --medium-clr: #86efac;
+      --dark-clr: #0a0a0a;
+      --light-clr: #ffffff;
+      --success-clr: #10b981;
+      --warning-clr: #f59e0b;
+      --info-clr: #3b82f6;
+      --danger-clr: #ef4444;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Fira Sans', sans-serif;
+      background: #f0fdf4;
+      color: var(--dark-clr);
+      min-height: 100vh;
+    }
+
+    .navbar {
+      background: var(--light-clr);
+      box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+
+    .navbar-content {
+      max-width: 1600px;
+      margin: 0 auto;
+      padding: 1rem 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--primary-clr);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 2rem;
+      list-style: none;
+      align-items: center;
+    }
+
+    .nav-links a {
+      color: var(--dark-clr);
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.3s;
+    }
+
+    .nav-links a:hover {
+      color: var(--primary-clr);
+    }
+
+    .container {
+      max-width: 1600px;
+      margin: 0 auto;
+      padding: 2rem 15px;
+    }
+
+    .page-header {
+      margin-bottom: 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .page-title h1 {
+      font-size: 2.5rem;
+      color: var(--primary-clr);
+    }
+
+    .page-title p {
+      color: #666;
+      margin-top: 0.5rem;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 1rem;
+    }
+
+    .btn {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .btn-primary {
+      background: var(--primary-clr);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #15803d;
+      transform: translateY(-2px);
+    }
+
+    .btn-secondary {
+      background: #6b7280;
+      color: white;
+    }
+
+    .btn-secondary:hover {
+      background: #4b5563;
+    }
+
+    .btn-sm {
+      padding: 6px 12px;
+      font-size: 0.85rem;
+    }
+
+    /* Stats Cards */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .stat-card {
+      background: white;
+      padding: 1.5rem;
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+    }
+
+    .stat-card h3 {
+      font-size: 0.85rem;
+      color: #666;
+      margin-bottom: 0.5rem;
+      text-transform: uppercase;
+    }
+
+    .stat-card .value {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--primary-clr);
+    }
+
+    .stat-card.danger .value {
+      color: var(--danger-clr);
+    }
+
+    .stat-card.warning .value {
+      color: var(--warning-clr);
+    }
+
+    /* Tabs */
+    .tabs {
+      background: white;
+      padding: 1rem;
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+      margin-bottom: 2rem;
+      display: flex;
+      gap: 1rem;
+      overflow-x: auto;
+    }
+
+    .tab-btn {
+      padding: 12px 24px;
+      border: none;
+      background: transparent;
+      color: #666;
+      font-weight: 600;
+      cursor: pointer;
+      border-radius: 8px;
+      transition: all 0.3s;
+      white-space: nowrap;
+    }
+
+    .tab-btn.active {
+      background: var(--primary-clr);
+      color: white;
+    }
+
+    .tab-btn:hover:not(.active) {
+      background: var(--secondary-clr);
+    }
+
+    /* Table */
+    .table-container {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+      overflow: hidden;
+      margin-bottom: 2rem;
+    }
+
+    .table-header {
+      padding: 1.5rem;
+      border-bottom: 2px solid #e5e7eb;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .table-header h2 {
+      color: var(--primary-clr);
+    }
+
+    .table-wrapper {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    thead {
+      background: var(--secondary-clr);
+    }
+
+    th {
+      padding: 1rem;
+      text-align: left;
+      font-weight: 600;
+      color: var(--primary-clr);
+      font-size: 0.9rem;
+    }
+
+    td {
+      padding: 1rem;
+      border-bottom: 1px solid #e5e7eb;
+      font-size: 0.95rem;
+    }
+
+    tbody tr:hover {
+      background: #f9fafb;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    .badge.success {
+      background: #d1fae5;
+      color: var(--success-clr);
+    }
+
+    .badge.warning {
+      background: #fed7aa;
+      color: var(--warning-clr);
+    }
+
+    .badge.danger {
+      background: #fee2e2;
+      color: var(--danger-clr);
+    }
+
+    .badge.info {
+      background: #dbeafe;
+      color: var(--info-clr);
+    }
+
+    /* Modal */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 2000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      animation: fadeIn 0.3s;
+    }
+
+    .modal.active {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-content {
+      background: white;
+      padding: 2rem;
+      border-radius: 15px;
+      max-width: 600px;
+      width: 90%;
+      max-height: 90vh;
+      overflow-y: auto;
+      animation: slideIn 0.3s;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes slideIn {
+      from { transform: translateY(-50px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+      padding-bottom: 1rem;
+      border-bottom: 2px solid #e5e7eb;
+    }
+
+    .modal-header h3 {
+      color: var(--primary-clr);
+      font-size: 1.5rem;
+    }
+
+    .close-btn {
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      color: #666;
+      cursor: pointer;
+      transition: color 0.3s;
+    }
+
+    .close-btn:hover {
+      color: var(--danger-clr);
+    }
+
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+      color: #333;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      padding: 0.75rem;
+      border: 2px solid #e5e7eb;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      transition: border-color 0.3s;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: var(--primary-clr);
+    }
+
+    .form-group small {
+      display: block;
+      margin-top: 0.25rem;
+      color: #666;
+      font-size: 0.85rem;
+    }
+
+    .info-box {
+      background: var(--secondary-clr);
+      padding: 1rem;
+      border-radius: 8px;
+      margin-bottom: 1.5rem;
+    }
+
+    .info-box-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid #86efac;
+    }
+
+    .info-box-row:last-child {
+      border-bottom: none;
+    }
+
+    .info-label {
+      font-weight: 600;
+      color: #666;
+    }
+
+    .info-value {
+      font-weight: 700;
+      color: var(--primary-clr);
+    }
+
+    .payment-history {
+      margin-top: 2rem;
+      padding-top: 1.5rem;
+      border-top: 2px solid #e5e7eb;
+    }
+
+    .payment-item {
+      background: #f9fafb;
+      padding: 1rem;
+      border-radius: 8px;
+      margin-bottom: 0.75rem;
+      border-left: 4px solid var(--success-clr);
+    }
+
+    .payment-item-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 0.5rem;
+    }
+
+    .payment-item-header strong {
+      color: var(--primary-clr);
+    }
+
+    .payment-item-details {
+      font-size: 0.85rem;
+      color: #666;
+    }
+
+    .text-danger {
+      color: var(--danger-clr);
+    }
+
+    .text-success {
+      color: var(--success-clr);
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 3rem;
+      color: #666;
+    }
+
+    .empty-state i {
+      font-size: 4rem;
+      color: #d1d5db;
+      margin-bottom: 1rem;
+    }
+
+    /* Client Summary Cards */
+    .clients-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .client-card {
+      background: white;
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+      border-left: 4px solid var(--warning-clr);
+    }
+
+    .client-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      margin-bottom: 1rem;
+    }
+
+    .client-info h4 {
+      color: var(--primary-clr);
+      margin-bottom: 0.25rem;
+    }
+
+    .client-info p {
+      color: #666;
+      font-size: 0.9rem;
+    }
+
+    .client-debt {
+      text-align: right;
+    }
+
+    .client-debt .label {
+      font-size: 0.85rem;
+      color: #666;
+      margin-bottom: 0.25rem;
+    }
+
+    .client-debt .amount {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--danger-clr);
+    }
+
+    .client-debts-list {
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid #e5e7eb;
+    }
+
+    .debt-item {
+      padding: 0.5rem;
+      margin-bottom: 0.5rem;
+      background: #f9fafb;
+      border-radius: 6px;
+      font-size: 0.9rem;
+    }
+
+    .debt-item-header {
+      display: flex;
+      justify-content: space-between;
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+    }
+
+    .debt-item-date {
+      font-size: 0.85rem;
+      color: #666;
+    }
+
+    @media (max-width: 768px) {
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .clients-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      table {
+        font-size: 0.85rem;
+      }
+
+      th, td {
+        padding: 0.75rem 0.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="navbar-content">
+      <a href="#" class="logo">
+        <i class="fas fa-money-bill-wave"></i>
+        Gestion des Paiements
+      </a>
+      <ul class="nav-links">
+        <li><a href="dashboard.html">Dashboard</a></li>
+        <li><a href="vente.html">Ventes</a></li>
+        <li><a href="historique.html">Historique</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="container">
+    <!-- Page Header -->
+    <div class="page-header">
+      <div class="page-title">
+        <h1>Gestion des Paiements</h1>
+        <p>Suivi des crédits et avances</p>
+      </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="stats-grid">
+      <div class="stat-card warning">
+        <h3>Total Avances</h3>
+        <div class="value" id="totalAvances">0 FCFA</div>
+      </div>
+      <div class="stat-card warning">
+        <h3>Reste à Payer (Avances)</h3>
+        <div class="value" id="resteAPayer">0 FCFA</div>
+      </div>
+      <div class="stat-card danger">
+        <h3>Total Crédits</h3>
+        <div class="value" id="totalCredits">0 FCFA</div>
+      </div>
+      <div class="stat-card">
+        <h3>Clients avec Dettes</h3>
+        <div class="value" id="clientsWithDebts">0</div>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="clients">
+        <i class="fas fa-users"></i> Résumé Clients
+      </button>
+      <button class="tab-btn" data-tab="avances">
+        <i class="fas fa-hand-holding-usd"></i> Avances
+      </button>
+      <button class="tab-btn" data-tab="credits">
+        <i class="fas fa-clock"></i> Crédits
+      </button>
+      <button class="tab-btn" data-tab="history">
+        <i class="fas fa-history"></i> Historique Paiements
+      </button>
+    </div>
+
+    <!-- Table Content -->
+    <div id="tabContent">
+      <!-- Clients Summary -->
+      <div id="clientsTab">
+        <div class="table-header" style="background: white; padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem;">
+          <h2>Résumé par Client</h2>
+          <span id="clientsCount">0 clients</span>
+        </div>
+        <div class="clients-grid" id="clientsGrid">
+          <div class="empty-state">
+            <i class="fas fa-users"></i>
+            <p>Chargement des données clients...</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Avances Table -->
+      <div class="table-container" id="avancesTable" style="display:none;">
+        <div class="table-header">
+          <h2>Paiements avec Avance</h2>
+          <span id="avancesCount">0 transactions</span>
+        </div>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Reçu N°</th>
+                <th>Date</th>
+                <th>Client</th>
+                <th>Montant Total</th>
+                <th>Déjà Payé</th>
+                <th>Reste à Payer</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="avancesBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Crédits Table -->
+      <div class="table-container" id="creditsTable" style="display:none;">
+        <div class="table-header">
+          <h2>Ventes à Crédit</h2>
+          <span id="creditsCount">0 transactions</span>
+        </div>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Reçu N°</th>
+                <th>Date</th>
+                <th>Client</th>
+                <th>Téléphone</th>
+                <th>Montant Total</th>
+                <th>Déjà Payé</th>
+                <th>Reste à Payer</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="creditsBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Payment History -->
+      <div class="table-container" id="historyTable" style="display:none;">
+        <div class="table-header">
+          <h2>Historique des Paiements Partiels</h2>
+          <span id="historyCount">0 paiements</span>
+        </div>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Reçu N°</th>
+                <th>Client</th>
+                <th>Montant Payé</th>
+                <th>Solde Avant</th>
+                <th>Solde Après</th>
+                <th>Méthode</th>
+                <th>Caissier</th>
+              </tr>
+            </thead>
+            <tbody id="historyBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Payment Modal -->
+  <div id="paymentModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3><i class="fas fa-money-bill-wave"></i> Enregistrer un Paiement</h3>
+        <button class="close-btn" onclick="closePaymentModal()">&times;</button>
+      </div>
+
+      <div class="info-box" id="saleInfo">
+        <!-- Informations de la vente -->
+      </div>
+
+      <form id="paymentForm">
+        <input type="hidden" id="saleId" name="sale_id">
+
+        <div class="form-group">
+          <label>Montant du Paiement <span style="color: red;">*</span></label>
+          <input type="number" id="paymentAmount" name="payment_amount" step="0.01" min="0" required>
+          <small>Montant maximum: <span id="maxAmount">0</span> FCFA</small>
+        </div>
+
+        <div class="form-group">
+          <label>Méthode de Paiement <span style="color: red;">*</span></label>
+          <select id="paymentMethod" name="payment_method" required>
+            <option value="cash">Espèces</option>
+            <option value="mobile">Mobile Money</option>
+            <option value="bank">Virement Bancaire</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Date du Paiement <span style="color: red;">*</span></label>
+          <input type="date" id="paymentDate" name="payment_date" required>
+        </div>
+
+        <div class="form-group">
+          <label>Heure du Paiement <span style="color: red;">*</span></label>
+          <input type="time" id="paymentTime" name="payment_time" required>
+        </div>
+
+        <div class="form-group">
+          <label>Caissier <span style="color: red;">*</span></label>
+          <input type="text" id="cashier" name="cashier" required>
+        </div>
+
+        <div class="form-group">
+          <label>Notes (optionnel)</label>
+          <textarea id="notes" name="notes" rows="3" placeholder="Commentaires ou remarques..."></textarea>
+        </div>
+
+        <div class="header-actions">
+          <button type="submit" class="btn btn-primary">
+            <i class="fas fa-save"></i> Enregistrer le Paiement
+          </button>
+          <button type="button" class="btn btn-secondary" onclick="closePaymentModal()">
+            <i class="fas fa-times"></i> Annuler
+          </button>
+        </div>
+      </form>
+
+      <div class="payment-history" id="paymentHistory" style="display:none;">
+        <!-- Historique des paiements -->
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE_URL = 'http://localhost:8050';
+    let currentTab = 'clients';
+    let currentSaleData = null;
+
+    // ============================================================================
+    // CHARGEMENT INITIAL
+    // ============================================================================
+    document.addEventListener('DOMContentLoaded', () => {
+      loadAllData();
+
+      // Tab switching
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          
+          currentTab = btn.dataset.tab;
+          switchTab(currentTab);
+        });
+      });
+
+      // Set default date and time
+      const now = new Date();
+      document.getElementById('paymentDate').value = now.toISOString().split('T')[0];
+      document.getElementById('paymentTime').value = now.toTimeString().slice(0, 5);
+
+      // Form submission
+      document.getElementById('paymentForm').addEventListener('submit', handlePaymentSubmit);
+    });
+
+    // ============================================================================
+    // SWITCH TAB
+    // ============================================================================
+    function switchTab(tab) {
+      document.getElementById('clientsTab').style.display = 'none';
+      document.getElementById('avancesTable').style.display = 'none';
+      document.getElementById('creditsTable').style.display = 'none';
+      document.getElementById('historyTable').style.display = 'none';
+
+      switch(tab) {
+        case 'clients':
+          document.getElementById('clientsTab').style.display = 'block';
+          break;
+        case 'avances':
+          document.getElementById('avancesTable').style.display = 'block';
+          break;
+        case 'credits':
+          document.getElementById('creditsTable').style.display = 'block';
+          break;
+        case 'history':
+          document.getElementById('historyTable').style.display = 'block';
+          break;
+      }
+    }
+
+    // ============================================================================
+    // CHARGER TOUTES LES DONNÉES
+    // ============================================================================
+    async function loadAllData() {
+      await Promise.all([
+        loadStats(),
+        loadClientsDebts(),
+        loadAvances(),
+        loadCredits(),
+        loadPaymentHistory()
+      ]);
+    }
+
+    // ============================================================================
+    // CHARGER LES STATISTIQUES
+    // ============================================================================
+    async function loadStats() {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/historique/stats`);
+        const stats = await response.json();
+
+        document.getElementById('totalAvances').textContent = 
+          stats.total_avances.toLocaleString() + ' FCFA';
+        document.getElementById('resteAPayer').textContent = 
+          stats.reste_a_payer.toLocaleString() + ' FCFA';
+        document.getElementById('totalCredits').textContent = 
+          stats.total_credits.toLocaleString() + ' FCFA';
+      } catch (error) {
+        console.error('Erreur stats:', error);
+      }
+    }
+
+    // ============================================================================
+    // CHARGER LE RÉSUMÉ DES CLIENTS
+    // ============================================================================
+    async function loadClientsDebts() {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/historique/customers-debts`);
+        const clients = await response.json();
+
+        document.getElementById('clientsWithDebts').textContent = clients.length;
+        document.getElementById('clientsCount').textContent = `${clients.length} clients`;
+
+        const grid = document.getElementById('clientsGrid');
+        grid.innerHTML = '';
+
+        if (clients.length === 0) {
+          grid.innerHTML = `
+            <div class="empty-state">
+              <i class="fas fa-check-circle"></i>
+              <p>Aucune dette en cours</p>
+            </div>
+          `;
+          return;
+        }
+
+        clients.forEach(client => {
+          const card = document.createElement('div');
+          card.className = 'client-card';
+          
+          let debtsHtml = '';
+          client.debts.forEach(debt => {
+            const debtDate = new Date(debt.sale_date);
+            debtsHtml += `
+              <div class="debt-item">
+                <div class="debt-item-header">
+                  <span>${debt.receipt_number}</span>
+                  <span class="text-danger">${debt.remaining_balance.toLocaleString()} F</span>
+                </div>
+                <div class="debt-item-date">
+                  ${debtDate.toLocaleDateString('fr-FR')} • 
+                  ${debt.payment_type === 'credit' ? 'Crédit' : 'Avance'}
+                </div>
+              </div>
+            `;
+          });
+
+          card.innerHTML = `
+            <div class="client-card-header">
+              <div class="client-info">
+                <h4><i class="fas fa-user"></i> ${client.customer_name}</h4>
+                <p>${client.customer_phone || 'Pas de téléphone'}</p>
+              </div>
+              <div class="client-debt">
+                <div class="label">Dette Totale</div>
+                <div class="amount">${client.total_debt.toLocaleString()} F</div>
+              </div>
+            </div>
+            <div class="client-debts-list">
+              <strong>${client.number_of_debts} dette(s) en cours:</strong>
+              ${debtsHtml}
+            </div>
+          `;
+          
+          grid.appendChild(card);
+        });
+      } catch (error) {
+        console.error('Erreur clients:', error);
+      }
+    }
+
+    // ============================================================================
+    // CHARGER LES AVANCES
+    // ============================================================================
+    async function loadAvances() {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/historique/avances-detailed`);
+        const avances = await response.json();
+
+        const tbody = document.getElementById('avancesBody');
+        tbody.innerHTML = '';
+
+        if (avances.length === 0) {
+          tbody.innerHTML = `
+            <tr><td colspan="8" class="empty-state">
+              <i class="fas fa-inbox"></i>
+              <p>Aucune avance trouvée</p>
+            </td></tr>
+          `;
+          return;
+        }
+
+        document.getElementById('avancesCount').textContent = `${avances.length} transactions`;
+
+        avances.forEach(avance => {
+          const row = document.createElement('tr');
+          const saleDate = new Date(avance.sale_date);
+          
+          let statusBadge = avance.is_fully_paid 
+            ? '<span class="badge success">Complet</span>' 
+            : '<span class="badge warning">Partiel</span>';
+          
+          let actionBtn = avance.is_fully_paid
+            ? '<button class="btn btn-sm btn-secondary" disabled>Payé</button>'
+            : `<button class="btn btn-sm btn-primary" onclick="openPaymentModal(${avance.id})">
+                <i class="fas fa-plus"></i> Payer
+              </button>`;
+          
+          row.innerHTML = `
+            <td><strong>${avance.receipt_number}</strong></td>
+            <td>${saleDate.toLocaleDateString('fr-FR')}</td>
+            <td>${avance.customer_name || 'Client'}</td>
+            <td><strong>${avance.total_amount.toLocaleString()} F</strong></td>
+            <td class="text-success">${avance.total_paid.toLocaleString()} F</td>
+            <td class="text-danger"><strong>${avance.remaining_balance.toLocaleString()} F</strong></td>
+            <td>${statusBadge}</td>
+            <td>${actionBtn}</td>
+          `;
+          tbody.appendChild(row);
+        });
+      } catch (error) {
+        console.error('Erreur avances:', error);
+      }
+    }
+
+    // ============================================================================
+    // CHARGER LES CRÉDITS
+    // ============================================================================
+    async function loadCredits() {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/historique/credits-detailed`);
+        const credits = await response.json();
+
+        const tbody = document.getElementById('creditsBody');
+        tbody.innerHTML = '';
+
+        if (credits.length === 0) {
+          tbody.innerHTML = `
+            <tr><td colspan="9" class="empty-state">
+              <i class="fas fa-inbox"></i>
+              <p>Aucun crédit trouvé</p>
+            </td></tr>
+          `;
+          return;
+        }
+
+        document.getElementById('creditsCount').textContent = `${credits.length} transactions`;
+
+        credits.forEach(credit => {
+          const row = document.createElement('tr');
+          const saleDate = new Date(credit.sale_date);
+          
+          let statusBadge = credit.is_fully_paid 
+            ? '<span class="badge success">Payé</span>' 
+            : '<span class="badge danger">Impayé</span>';
+          
+          let actionBtn = credit.is_fully_paid
+            ? '<button class="btn btn-sm btn-secondary" disabled>Payé</button>'
+            : `<button class="btn btn-sm btn-primary" onclick="openPaymentModal(${credit.id})">
+                <i class="fas fa-plus"></i> Payer
+              </button>`;
+          
+          row.innerHTML = `
+            <td><strong>${credit.receipt_number}</strong></td>
+            <td>${saleDate.toLocaleDateString('fr-FR')}</td>
+            <td>${credit.customer_name || 'Client'}</td>
+            <td>${credit.customer_phone || 'N/A'}</td>
+            <td><strong>${credit.total_amount.toLocaleString()} F</strong></td>
+            <td class="text-success">${credit.total_paid.toLocaleString()} F</td>
+            <td class="text-danger"><strong>${credit.remaining_balance.toLocaleString()} F</strong></td>
+            <td>${statusBadge}</td>
+            <td>${actionBtn}</td>
+          `;
+          tbody.appendChild(row);
+        });
+      } catch (error) {
+        console.error('Erreur crédits:', error);
+      }
+    }
+
+    // ============================================================================
+    // CHARGER L'HISTORIQUE DES PAIEMENTS
+    // ============================================================================
+    async function loadPaymentHistory() {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/partial-payments/history?limit=100`);
+        const payments = await response.json();
+
+        const tbody = document.getElementById('historyBody');
+        tbody.innerHTML = '';
+
+        if (payments.length === 0) {
+          tbody.innerHTML = `
+            <tr><td colspan="8" class="empty-state">
+              <i class="fas fa-inbox"></i>
+              <p>Aucun paiement enregistré</p>
+            </td></tr>
+          `;
+          return;
+        }
+
+        document.getElementById('historyCount').textContent = `${payments.length} paiements`;
+
+        payments.forEach(payment => {
+          const row = document.createElement('tr');
+          const paymentDate = new Date(payment.payment_date);
+          
+          row.innerHTML = `
+            <td>${paymentDate.toLocaleDateString('fr-FR')}<br><small>${payment.payment_time}</small></td>
+            <td><strong>${payment.receipt_number}</strong></td>
+            <td>${payment.customer_name || 'Client'}</td>
+            <td class="text-success"><strong>${payment.payment_amount.toLocaleString()} F</strong></td>
+            <td>${payment.balance_before.toLocaleString()} F</td>
+            <td>${payment.balance_after.toLocaleString()} F</td>
+            <td><span class="badge info">${payment.payment_method}</span></td>
+            <td>${payment.cashier}</td>
+          `;
+          tbody.appendChild(row);
+        });
+      } catch (error) {
+        console.error('Erreur historique:', error);
+      }
+    }
+
+    // ============================================================================
+    // OUVRIR LE MODAL DE PAIEMENT
+    // ============================================================================
+    async function openPaymentModal(saleId) {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/sales/${saleId}/payments`);
+        const data = await response.json();
+        
+        currentSaleData = data;
+        
+        // Remplir les informations de la vente
+        const saleInfo = document.getElementById('saleInfo');
+        saleInfo.innerHTML = `
+          <div class="info-box-row">
+            <span class="info-label">Reçu N°</span>
+            <span class="info-value">${data.sale.receipt_number}</span>
+          </div>
+          <div class="info-box-row">
+            <span class="info-label">Client</span>
+            <span class="info-value">${data.sale.customer_name || 'Client'}</span>
+          </div>
+          <div class="info-box-row">
+            <span class="info-label">Montant Total</span>
+            <span class="info-value">${data.sale.total_amount.toLocaleString()} F</span>
+          </div>
+          <div class="info-box-row">
+            <span class="info-label">Déjà Payé</span>
+            <span class="info-value text-success">${data.total_paid.toLocaleString()} F</span>
+          </div>
+          <div class="info-box-row">
+            <span class="info-label">Reste à Payer</span>
+            <span class="info-value text-danger">${data.remaining_balance.toLocaleString()} F</span>
+          </div>
+        `;
+        
+        // Définir le montant maximum
+        document.getElementById('maxAmount').textContent = data.remaining_balance.toLocaleString();
+        document.getElementById('paymentAmount').max = data.remaining_balance;
+        document.getElementById('saleId').value = saleId;
+        
+        // Afficher l'historique des paiements si disponible
+        if (data.payments.length > 0) {
+          const historyDiv = document.getElementById('paymentHistory');
+          historyDiv.style.display = 'block';
+          
+          let paymentsHtml = '<h4>Historique des Paiements:</h4>';
+          data.payments.forEach(payment => {
+            const paymentDate = new Date(payment.payment_date);
+            paymentsHtml += `
+              <div class="payment-item">
+                <div class="payment-item-header">
+                  <strong>${payment.payment_amount.toLocaleString()} F</strong>
+                  <span>${paymentDate.toLocaleDateString('fr-FR')}</span>
+                </div>
+                <div class="payment-item-details">
+                  ${payment.payment_method.toUpperCase()} • Par ${payment.cashier}
+                  ${payment.notes ? `<br>Note: ${payment.notes}` : ''}
+                </div>
+              </div>
+            `;
+          });
+          
+          historyDiv.innerHTML = paymentsHtml;
+        } else {
+          document.getElementById('paymentHistory').style.display = 'none';
+        }
+        
+        // Ouvrir le modal
+        document.getElementById('paymentModal').classList.add('active');
+        
+      } catch (error) {
+        console.error('Erreur ouverture modal:', error);
+        alert('Erreur lors du chargement des informations de paiement');
+      }
+    }
+
+    // ============================================================================
+    // FERMER LE MODAL
+    // ============================================================================
+    function closePaymentModal() {
+      document.getElementById('paymentModal').classList.remove('active');
+      document.getElementById('paymentForm').reset();
+      currentSaleData = null;
+    }
+
+    // ============================================================================
+    // SOUMETTRE LE FORMULAIRE DE PAIEMENT
+    // ============================================================================
+    async function handlePaymentSubmit(e) {
+      e.preventDefault();
+      
+      const formData = new FormData(e.target);
+      const paymentData = {
+        sale_id: parseInt(formData.get('sale_id')),
+        payment_amount: parseFloat(formData.get('payment_amount')),
+        payment_method: formData.get('payment_method'),
+        payment_date: formData.get('payment_date') + 'T' + formData.get('payment_time'),
+        payment_time: formData.get('payment_time'),
+        cashier: formData.get('cashier'),
+        notes: formData.get('notes') || null
+      };
+      
+      // Validation
+      if (paymentData.payment_amount <= 0) {
+        alert('Le montant doit être supérieur à 0');
+        return;
+      }
+      
+      if (paymentData.payment_amount > currentSaleData.remaining_balance) {
+        alert(`Le montant ne peut pas dépasser ${currentSaleData.remaining_balance.toLocaleString()} F`);
+        return;
+      }
+      
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/partial-payments`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(paymentData)
+        });
+        
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.detail || 'Erreur lors de l\'enregistrement');
+        }
+        
+        const result = await response.json();
+        
+        // Dans handlePaymentSubmit(), après le succès
+        alert('Paiement enregistré avec succès!');
+        closePaymentModal();
+
+        // ✅ Recharger TOUTES les données
+        await loadAllData();
+
+        // ✅ Déclencher un événement pour notifier d'autres pages
+        window.dispatchEvent(new CustomEvent('paymentUpdated', { 
+        detail: { saleId: paymentData.sale_id, amount: paymentData.payment_amount }
+        }));
+        
+      } catch (error) {
+        console.error('Erreur soumission:', error);
+        alert('Erreur: ' + error.message);
+      }
+    }
+
+    // Fermer le modal en cliquant en dehors
+    window.onclick = function(event) {
+      const modal = document.getElementById('paymentModal');
+      if (event.target === modal) {
+        closePaymentModal();
+      }
+    }
+  </script>
+</body>
+</html>

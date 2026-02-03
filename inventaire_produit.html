@@ -1,0 +1,1018 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Inventaire des Céréales</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --primary-clr: #16a34a;
+      --secondary-clr: #dcfce7;
+      --medium-clr: #86efac;
+      --dark-clr: #0a0a0a;
+      --light-clr: #ffffff;
+      --success-clr: #10b981;
+      --warning-clr: #f59e0b;
+      --danger-clr: #ef4444;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Fira Sans', sans-serif;
+      background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+      color: var(--dark-clr);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .navbar {
+      background: var(--light-clr);
+      box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      animation: slideDown 0.5s ease;
+    }
+
+    @keyframes slideDown {
+      from {
+        transform: translateY(-100%);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    .navbar-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 1rem 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: relative;
+    }
+
+    .logo {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--primary-clr);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: transform 0.3s;
+      z-index: 1001;
+    }
+
+    .logo:hover {
+      transform: scale(1.05);
+    }
+
+    .menu-toggle {
+      display: none;
+      background: var(--primary-clr);
+      border: none;
+      color: white;
+      font-size: 1.5rem;
+      width: 45px;
+      height: 45px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s;
+      z-index: 1001;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 2rem;
+      list-style: none;
+      align-items: center;
+    }
+
+    .nav-links a {
+      color: var(--dark-clr);
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.3s;
+      position: relative;
+    }
+
+    .nav-links a::after {
+      content: '';
+      position: absolute;
+      bottom: -5px;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: var(--primary-clr);
+      transition: width 0.3s;
+    }
+
+    .nav-links a:hover::after {
+      width: 100%;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 3rem auto;
+      padding: 0 15px 2rem;
+    }
+
+    .page-header {
+      text-align: center;
+      margin-bottom: 3rem;
+      animation: fadeInUp 0.8s ease;
+    }
+
+    @keyframes fadeInUp {
+      from {
+        transform: translateY(30px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    .page-header h1 {
+      font-size: clamp(2rem, 5vw, 3rem);
+      color: var(--primary-clr);
+      margin-bottom: 0.5rem;
+    }
+
+    .page-header p {
+      color: #666;
+      font-size: 1.1rem;
+    }
+
+    .api-status {
+      background: white;
+      padding: 1rem;
+      border-radius: 10px;
+      margin-bottom: 2rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .api-status.connected {
+      border-left: 4px solid var(--success-clr);
+    }
+
+    .api-status.disconnected {
+      border-left: 4px solid var(--danger-clr);
+    }
+
+    .api-status i {
+      font-size: 1.2rem;
+    }
+
+    .api-status.connected i {
+      color: var(--success-clr);
+    }
+
+    .api-status.disconnected i {
+      color: var(--danger-clr);
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .summary-card {
+      background: white;
+      padding: 1.5rem;
+      border-radius: 15px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      text-align: center;
+      animation: scaleIn 0.5s ease;
+    }
+
+    @keyframes scaleIn {
+      from {
+        transform: scale(0.9);
+        opacity: 0;
+      }
+      to {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
+    .summary-card i {
+      font-size: 2rem;
+      color: var(--primary-clr);
+      margin-bottom: 0.5rem;
+    }
+
+    .summary-card h3 {
+      font-size: 0.9rem;
+      color: #666;
+      margin-bottom: 0.5rem;
+    }
+
+    .summary-card .value {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--primary-clr);
+    }
+
+    .form-card {
+      background: white;
+      border-radius: 20px;
+      padding: 2.5rem;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+      animation: scaleIn 0.6s ease;
+    }
+
+    .form-section {
+      margin-bottom: 2rem;
+    }
+
+    .section-title {
+      font-size: 1.3rem;
+      color: var(--primary-clr);
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid var(--secondary-clr);
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+
+    .form-group.full-width {
+      grid-column: 1 / -1;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+      color: var(--dark-clr);
+      font-size: 0.95rem;
+    }
+
+    .form-group label .required {
+      color: #ef4444;
+      margin-left: 0.2rem;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      padding: 12px 15px;
+      border: 2px solid #e0e0e0;
+      border-radius: 10px;
+      font-family: inherit;
+      font-size: 1rem;
+      transition: all 0.3s;
+      background: white;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: var(--primary-clr);
+      box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.1);
+    }
+
+    .form-group textarea {
+      resize: vertical;
+      min-height: 100px;
+    }
+
+    .input-group {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+    }
+
+    .input-group input {
+      flex: 1;
+    }
+
+    .input-suffix {
+      padding: 12px 15px;
+      background: var(--secondary-clr);
+      border: 2px solid var(--medium-clr);
+      border-radius: 10px;
+      font-weight: 600;
+      color: var(--primary-clr);
+      min-width: 80px;
+      text-align: center;
+    }
+
+    .calculated-field {
+      background: var(--secondary-clr);
+      border: 2px solid var(--medium-clr);
+      font-weight: 600;
+      color: var(--primary-clr);
+      cursor: not-allowed;
+    }
+
+    .info-box {
+      background: #eff6ff;
+      border-left: 4px solid #3b82f6;
+      padding: 1rem;
+      border-radius: 8px;
+      margin-top: 1rem;
+    }
+
+    .info-box p {
+      font-size: 0.9rem;
+      color: #1e40af;
+      margin-bottom: 0.5rem;
+    }
+
+    .info-box strong {
+      color: #1e3a8a;
+    }
+
+    .form-actions {
+      display: flex;
+      gap: 1rem;
+      margin-top: 2rem;
+      justify-content: flex-end;
+    }
+
+    .btn {
+      padding: 14px 30px;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary-clr), var(--medium-clr));
+      color: white;
+      box-shadow: 0 4px 15px rgba(22, 163, 74, 0.3);
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(22, 163, 74, 0.4);
+    }
+
+    .btn-secondary {
+      background: #e0e0e0;
+      color: var(--dark-clr);
+    }
+
+    .btn-secondary:hover {
+      background: #d0d0d0;
+    }
+
+    .spinner {
+      border: 3px solid #f3f3f3;
+      border-top: 3px solid var(--primary-clr);
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .success-message {
+      position: fixed;
+      top: 100px;
+      right: 20px;
+      background: var(--success-clr);
+      color: white;
+      padding: 1rem 1.5rem;
+      border-radius: 10px;
+      box-shadow: 0 5px 20px rgba(16, 185, 129, 0.3);
+      display: none;
+      align-items: center;
+      gap: 0.5rem;
+      z-index: 2000;
+      animation: slideInRight 0.5s ease;
+    }
+
+    @keyframes slideInRight {
+      from {
+        transform: translateX(400px);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    .success-message.show {
+      display: flex;
+    }
+
+    .alert {
+      padding: 1rem;
+      border-radius: 10px;
+      margin-bottom: 1rem;
+      display: none;
+    }
+
+    .alert.show {
+      display: block;
+      animation: slideDown 0.3s ease;
+    }
+
+    .alert-error {
+      background: #fee;
+      border-left: 4px solid var(--danger-clr);
+      color: var(--danger-clr);
+    }
+
+    @media (max-width: 768px) {
+      .menu-toggle {
+        display: block;
+      }
+
+      .nav-links {
+        position: fixed;
+        top: 0;
+        right: -100%;
+        width: 70%;
+        max-width: 300px;
+        height: 100vh;
+        background: white;
+        flex-direction: column;
+        justify-content: flex-start;
+        padding: 80px 2rem 2rem;
+        box-shadow: -5px 0 20px rgba(0, 0, 0, 0.2);
+        transition: right 0.4s ease;
+        z-index: 1000;
+      }
+
+      .nav-links.active {
+        right: 0;
+      }
+
+      .nav-links li {
+        width: 100%;
+        text-align: center;
+        padding: 1rem 0;
+        border-bottom: 1px solid #eee;
+      }
+
+      .form-card {
+        padding: 1.5rem;
+      }
+
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .form-actions {
+        flex-direction: column;
+      }
+
+      .btn {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="navbar-content">
+      <a href="#" class="logo">
+        <i class="fas fa-seedling"></i>
+        Inventaire Céréales
+      </a>
+      <button class="menu-toggle" id="menuToggle">
+        <i class="fas fa-bars"></i>
+      </button>
+      <ul class="nav-links" id="navLinks">
+        <li><a href="#home">Accueil</a></li>
+        <li><a href="#inventory">Inventaire</a></li>
+        <li><a href="#add">Ajouter</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Success Message -->
+  <div class="success-message" id="successMessage">
+    <i class="fas fa-check-circle"></i>
+    <span>Stock ajouté avec succès dans la base de données !</span>
+  </div>
+
+  <!-- Main Content -->
+  <div class="container">
+    <div class="page-header">
+      <h1><i class="fas fa-warehouse"></i> Gestion de Stock</h1>
+      <p>Enregistrez vos arrivages de céréales dans la base de données</p>
+    </div>
+
+    <!-- API Status -->
+    <div class="api-status disconnected" id="apiStatus">
+      <i class="fas fa-circle"></i>
+      <span id="apiStatusText">Connexion à l'API...</span>
+    </div>
+
+    <!-- Error Alert -->
+    <div class="alert alert-error" id="errorAlert"></div>
+
+    <!-- Summary Cards -->
+    <div class="summary-grid">
+      <div class="summary-card">
+        <i class="fas fa-boxes"></i>
+        <h3>Total Entrées</h3>
+        <div class="value" id="totalEntries">0</div>
+      </div>
+      <div class="summary-card">
+        <i class="fas fa-money-bill-wave"></i>
+        <h3>Valeur Totale</h3>
+        <div class="value" id="totalValue">0 FCFA</div>
+      </div>
+      <div class="summary-card">
+        <i class="fas fa-truck"></i>
+        <h3>Frais Transport</h3>
+        <div class="value" id="totalTransport">0 FCFA</div>
+      </div>
+    </div>
+
+    <div class="form-card">
+      <form id="cerealForm">
+        <!-- Type de Céréale -->
+        <div class="form-section">
+          <h2 class="section-title">
+            <i class="fas fa-wheat-awn"></i>
+            Type de Céréale
+          </h2>
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="cerealType">Type de Céréale <span class="required">*</span></label>
+              <select id="cerealType" name="cerealType" required>
+                <option value="">Sélectionner un type</option>
+                <option value="mais">Maïs</option>
+                <option value="mil">Mil</option>
+                <option value="sorgho">Sorgho</option>
+                <option value="riz">Riz</option>
+                <option value="haricot">Haricot</option>
+                <option value="niebe">Niébé</option>
+                <option value="arachide">Arachide</option>
+                <option value="soja">Soja</option>
+                <option value="sesame">Sésame</option>
+                <option value="voandzou">Voandzou</option>
+                <option value="fonio">Fonio</option>
+                <option value="gombo">Gombo (graines)</option>
+                <option value="autre">Autre</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="variety">Variété / Qualité</label>
+              <input type="text" id="variety" name="variety" placeholder="Ex: Maïs blanc, Local...">
+            </div>
+          </div>
+        </div>
+
+        <!-- Quantité -->
+        <div class="form-section">
+          <h2 class="section-title">
+            <i class="fas fa-balance-scale"></i>
+            Quantité en Stock
+          </h2>
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="bowlQuantity">Quantité en Bols <span class="required">*</span></label>
+              <div class="input-group">
+                <input type="number" id="bowlQuantity" name="bowlQuantity" min="0" step="1" required placeholder="0">
+                <span class="input-suffix">bols</span>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="sacQuantity">Nombre de Sacs <span class="required">*</span></label>
+              <div class="input-group">
+                <input type="number" id="sacQuantity" name="sacQuantity" min="0" step="1" required placeholder="0">
+                <span class="input-suffix">sacs</span>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="sacType">Type de Sac <span class="required">*</span></label>
+              <select id="sacType" name="sacType" required>
+                <option value="">Sélectionner</option>
+                <option value="20">Sac de 20 bols</option>
+                <option value="40">Sac de 40 bols</option>
+                <option value="60">Sac de 60 bols</option>
+                <option value="80">Sac de 80 bols</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Quantité Totale en Bols</label>
+              <input type="text" id="totalBowls" class="calculated-field" readonly placeholder="Auto-calculé">
+            </div>
+          </div>
+          <div class="info-box">
+            <p><strong>💡 Calcul automatique :</strong> Quantité totale = (Nombre de sacs × Bols par sac) + Bols supplémentaires</p>
+          </div>
+        </div>
+
+        <!-- Prix d'Achat -->
+        <div class="form-section">
+          <h2 class="section-title">
+            <i class="fas fa-tag"></i>
+            Prix d'Achat
+          </h2>
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="pricePerBowl">Prix par Bol <span class="required">*</span></label>
+              <div class="input-group">
+                <input type="number" id="pricePerBowl" name="pricePerBowl" min="0" step="1" required placeholder="0">
+                <span class="input-suffix">FCFA</span>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="pricePerSac">Prix par Sac</label>
+              <div class="input-group">
+                <input type="text" id="pricePerSac" class="calculated-field" readonly placeholder="Auto-calculé">
+                <span class="input-suffix">FCFA</span>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Coût Total Achat</label>
+              <input type="text" id="totalPurchaseCost" class="calculated-field" readonly placeholder="Auto-calculé">
+            </div>
+          </div>
+          <div class="info-box">
+            <p><strong>💡 Calcul automatique :</strong> Prix par sac = Prix par bol × Nombre de bols dans le sac</p>
+            <p><strong>Coût total :</strong> (Nombre de sacs × Prix par sac) + (Bols supplémentaires × Prix par bol)</p>
+          </div>
+        </div>
+
+        <!-- Informations Logistiques -->
+        <div class="form-section">
+          <h2 class="section-title">
+            <i class="fas fa-truck-loading"></i>
+            Informations Logistiques
+          </h2>
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="arrivalDate">Date d'Arrivée <span class="required">*</span></label>
+              <input type="date" id="arrivalDate" name="arrivalDate" required>
+            </div>
+            <div class="form-group">
+              <label for="origin">Provenance <span class="required">*</span></label>
+              <input type="text" id="origin" name="origin" required placeholder="Ex: Kara, Atakpamé, Dapaong...">
+            </div>
+            <div class="form-group">
+              <label for="transportCost">Frais de Transport <span class="required">*</span></label>
+              <div class="input-group">
+                <input type="number" id="transportCost" name="transportCost" min="0" step="1" required placeholder="0">
+                <span class="input-suffix">FCFA</span>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Coût Total (Achat + Transport)</label>
+              <input type="text" id="grandTotal" class="calculated-field" readonly placeholder="Auto-calculé">
+            </div>
+          </div>
+        </div>
+
+        <!-- Notes -->
+        <div class="form-section">
+          <h2 class="section-title">
+            <i class="fas fa-sticky-note"></i>
+            Notes & Observations
+          </h2>
+          <div class="form-group full-width">
+            <label for="notes">Notes Additionnelles</label>
+            <textarea id="notes" name="notes" placeholder="Qualité du produit, conditions de stockage, observations particulières..."></textarea>
+          </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" id="resetBtn">
+            <i class="fas fa-redo"></i>
+            Réinitialiser
+          </button>
+          <button type="submit" class="btn btn-primary" id="submitBtn">
+            <i class="fas fa-save"></i>
+            Enregistrer le Stock
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // ============================================================================
+    // CONFIGURATION API
+    // ============================================================================
+    const API_BASE_URL = 'http://localhost:8050';  // Modifier si nécessaire
+    
+    // ============================================================================
+    // MOBILE MENU
+    // ============================================================================
+    const menuToggle = document.getElementById('menuToggle');
+    const navLinks = document.getElementById('navLinks');
+
+    menuToggle.addEventListener('click', () => {
+      navLinks.classList.toggle('active');
+      const icon = menuToggle.querySelector('i');
+      if (navLinks.classList.contains('active')) {
+        icon.classList.remove('fa-bars');
+        icon.classList.add('fa-times');
+      } else {
+        icon.classList.remove('fa-times');
+        icon.classList.add('fa-bars');
+      }
+    });
+
+    navLinks.querySelectorAll('a').forEach(link => {
+      link.addEventListener('click', () => {
+        navLinks.classList.remove('active');
+        const icon = menuToggle.querySelector('i');
+        icon.classList.remove('fa-times');
+        icon.classList.add('fa-bars');
+      });
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!navLinks.contains(e.target) && !menuToggle.contains(e.target)) {
+        navLinks.classList.remove('active');
+        const icon = menuToggle.querySelector('i');
+        icon.classList.remove('fa-times');
+        icon.classList.add('fa-bars');
+      }
+    });
+
+    // ============================================================================
+    // FORM ELEMENTS
+    // ============================================================================
+    const cerealForm = document.getElementById('cerealForm');
+    const bowlQuantity = document.getElementById('bowlQuantity');
+    const sacQuantity = document.getElementById('sacQuantity');
+    const sacType = document.getElementById('sacType');
+    const totalBowls = document.getElementById('totalBowls');
+    const pricePerBowl = document.getElementById('pricePerBowl');
+    const pricePerSac = document.getElementById('pricePerSac');
+    const totalPurchaseCost = document.getElementById('totalPurchaseCost');
+    const transportCost = document.getElementById('transportCost');
+    const grandTotal = document.getElementById('grandTotal');
+    const submitBtn = document.getElementById('submitBtn');
+    const successMessage = document.getElementById('successMessage');
+    const errorAlert = document.getElementById('errorAlert');
+    const apiStatus = document.getElementById('apiStatus');
+    const apiStatusText = document.getElementById('apiStatusText');
+
+    // ============================================================================
+    // API STATUS CHECK
+    // ============================================================================
+    async function checkApiStatus() {
+      try {
+        const response = await fetch(`${API_BASE_URL}/health`);
+        if (response.ok) {
+          apiStatus.classList.remove('disconnected');
+          apiStatus.classList.add('connected');
+          apiStatusText.textContent = 'Connecté à la base de données';
+          loadInventoryStats();
+        } else {
+          throw new Error('API non disponible');
+        }
+      } catch (error) {
+        apiStatus.classList.remove('connected');
+        apiStatus.classList.add('disconnected');
+        apiStatusText.textContent = 'Erreur de connexion à l\'API';
+        console.error('Erreur API:', error);
+      }
+    }
+
+    // ============================================================================
+    // LOAD INVENTORY STATS
+    // ============================================================================
+    async function loadInventoryStats() {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/inventaire/stats/summary`);
+        if (response.ok) {
+          const stats = await response.json();
+          document.getElementById('totalEntries').textContent = stats.total_entries;
+          document.getElementById('totalValue').textContent = stats.total_value.toLocaleString() + ' FCFA';
+          document.getElementById('totalTransport').textContent = stats.total_transport.toLocaleString() + ' FCFA';
+        }
+      } catch (error) {
+        console.error('Erreur chargement stats:', error);
+      }
+    }
+
+    // ============================================================================
+    // CALCULATE TOTAL BOWLS
+    // ============================================================================
+    function calculateTotalBowls() {
+      const bowls = parseInt(bowlQuantity.value) || 0;
+      const sacs = parseInt(sacQuantity.value) || 0;
+      const bowlsPerSac = parseInt(sacType.value) || 0;
+      
+      const total = (sacs * bowlsPerSac) + bowls;
+      totalBowls.value = total > 0 ? total + ' bols' : '';
+      
+      calculatePrices();
+    }
+
+    // ============================================================================
+    // CALCULATE PRICES
+    // ============================================================================
+    function calculatePrices() {
+      const bowls = parseInt(bowlQuantity.value) || 0;
+      const sacs = parseInt(sacQuantity.value) || 0;
+      const bowlsPerSac = parseInt(sacType.value) || 0;
+      const priceBowl = parseFloat(pricePerBowl.value) || 0;
+      
+      // Calculate price per sac
+      let sacPrice = 0;
+      if (bowlsPerSac > 0 && priceBowl > 0) {
+        sacPrice = bowlsPerSac * priceBowl;
+        pricePerSac.value = sacPrice.toLocaleString() + ' FCFA';
+      } else {
+        pricePerSac.value = '';
+      }
+      
+      // Calculate total purchase cost
+      const totalCost = (sacs * sacPrice) + (bowls * priceBowl);
+      totalPurchaseCost.value = totalCost > 0 ? totalCost.toLocaleString() + ' FCFA' : '';
+      
+      calculateGrandTotal();
+    }
+
+    // ============================================================================
+    // CALCULATE GRAND TOTAL
+    // ============================================================================
+    function calculateGrandTotal() {
+      const purchaseCostStr = totalPurchaseCost.value.replace(/[^\d]/g, '');
+      const purchaseCost = parseFloat(purchaseCostStr) || 0;
+      const transport = parseFloat(transportCost.value) || 0;
+      
+      const total = purchaseCost + transport;
+      grandTotal.value = total > 0 ? total.toLocaleString() + ' FCFA' : '';
+    }
+
+    // Event listeners
+    bowlQuantity.addEventListener('input', calculateTotalBowls);
+    sacQuantity.addEventListener('input', calculateTotalBowls);
+    sacType.addEventListener('change', calculateTotalBowls);
+    pricePerBowl.addEventListener('input', calculatePrices);
+    transportCost.addEventListener('input', calculateGrandTotal);
+
+    // ============================================================================
+    // SET CURRENT DATE
+    // ============================================================================
+    function setCurrentDate() {
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById('arrivalDate').value = today;
+    }
+
+    setCurrentDate();
+
+    // ============================================================================
+    // SHOW ERROR
+    // ============================================================================
+    function showError(message) {
+      errorAlert.textContent = message;
+      errorAlert.classList.add('show');
+      setTimeout(() => {
+        errorAlert.classList.remove('show');
+      }, 5000);
+    }
+
+    // ============================================================================
+    // FORM SUBMISSION
+    // ============================================================================
+    cerealForm.addEventListener('submit', async function(e) {
+      e.preventDefault();
+
+      // Validation
+      const sacTypeValue = parseInt(sacType.value);
+      if (![20, 40, 60, 80].includes(sacTypeValue)) {
+        showError('Veuillez sélectionner un type de sac valide (20, 40, 60 ou 80 bols)');
+        return;
+      }
+
+      // Disable submit button
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<div class="spinner"></div> Enregistrement...';
+
+      try {
+        // Get form data
+        const formData = {
+          cereal_type: document.getElementById('cerealType').value,
+          variety: document.getElementById('variety').value || null,
+          bowl_quantity: parseInt(bowlQuantity.value),
+          sac_quantity: parseInt(sacQuantity.value),
+          sac_type: sacTypeValue,
+          price_per_bowl: parseFloat(pricePerBowl.value),
+          arrival_date: new Date(document.getElementById('arrivalDate').value).toISOString(),
+          origin: document.getElementById('origin').value,
+          transport_cost: parseFloat(transportCost.value),
+          notes: document.getElementById('notes').value || null
+        };
+
+        // Send to API
+        const response = await fetch(`${API_BASE_URL}/api/inventaire`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(formData)
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.detail || 'Erreur lors de l\'enregistrement');
+        }
+
+        const result = await response.json();
+
+        // Show success message
+        successMessage.classList.add('show');
+        setTimeout(() => {
+          successMessage.classList.remove('show');
+        }, 3000);
+
+        // Reload stats
+        loadInventoryStats();
+
+        // Reset form after 1 second
+        setTimeout(() => {
+          cerealForm.reset();
+          totalBowls.value = '';
+          pricePerSac.value = '';
+          totalPurchaseCost.value = '';
+          grandTotal.value = '';
+          setCurrentDate();
+        }, 1000);
+
+      } catch (error) {
+        console.error('Erreur:', error);
+        showError(error.message || 'Erreur lors de l\'enregistrement du stock');
+      } finally {
+        // Re-enable submit button
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="fas fa-save"></i> Enregistrer le Stock';
+      }
+    });
+
+    // ============================================================================
+    // RESET BUTTON
+    // ============================================================================
+    document.getElementById('resetBtn').addEventListener('click', function() {
+      if (confirm('Êtes-vous sûr de vouloir réinitialiser le formulaire ?')) {
+        cerealForm.reset();
+        totalBowls.value = '';
+        pricePerSac.value = '';
+        totalPurchaseCost.value = '';
+        grandTotal.value = '';
+        setCurrentDate();
+      }
+    });
+
+    // ============================================================================
+    // CHECK API STATUS ON LOAD
+    // ============================================================================
+    checkApiStatus();
+  </script>
+</body>
+</html>

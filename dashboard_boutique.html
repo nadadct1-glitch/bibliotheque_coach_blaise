@@ -1,0 +1,1853 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard Analytique - Céréales</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --primary-clr: #16a34a;
+      --secondary-clr: #dcfce7;
+      --medium-clr: #86efac;
+      --dark-clr: #0a0a0a;
+      --light-clr: #ffffff;
+      --success-clr: #10b981;
+      --warning-clr: #f59e0b;
+      --info-clr: #3b82f6;
+      --danger-clr: #ef4444;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Fira Sans', sans-serif;
+      background: #f0fdf4;
+      color: var(--dark-clr);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Navigation */
+    .navbar {
+      background: var(--light-clr);
+      box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      animation: slideDown 0.5s ease;
+    }
+
+    @keyframes slideDown {
+      from {
+        transform: translateY(-100%);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    .navbar-content {
+      max-width: 1600px;
+      margin: 0 auto;
+      padding: 1rem 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: relative;
+    }
+
+    .logo {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--primary-clr);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: transform 0.3s;
+      z-index: 1001;
+    }
+
+    .logo:hover {
+      transform: scale(1.05);
+    }
+
+    .menu-toggle {
+      display: none;
+      background: var(--primary-clr);
+      border: none;
+      color: white;
+      font-size: 1.5rem;
+      width: 45px;
+      height: 45px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s;
+      z-index: 1001;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 2rem;
+      list-style: none;
+      align-items: center;
+    }
+
+    .nav-links a {
+      color: var(--dark-clr);
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.3s;
+      position: relative;
+    }
+
+    .nav-links a::after {
+      content: '';
+      position: absolute;
+      bottom: -5px;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: var(--primary-clr);
+      transition: width 0.3s;
+    }
+
+    .nav-links a:hover::after {
+      width: 100%;
+    }
+
+    /* Container */
+    .container {
+      max-width: 1600px;
+      margin: 0 auto;
+      padding: 2rem 15px;
+    }
+
+    .page-header {
+      margin-bottom: 2rem;
+      animation: fadeInUp 0.8s ease;
+    }
+
+    @keyframes fadeInUp {
+      from {
+        transform: translateY(30px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    .page-header h1 {
+      font-size: clamp(2rem, 5vw, 3rem);
+      color: var(--primary-clr);
+      margin-bottom: 0.5rem;
+    }
+
+    .page-header p {
+      color: #666;
+      font-size: 1.1rem;
+    }
+
+    /* Real-time badge */
+    .realtime-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: var(--success-clr);
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 25px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      margin-left: 1rem;
+    }
+
+    .realtime-dot {
+      width: 8px;
+      height: 8px;
+      background: white;
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    /* Loading Indicator */
+    .loading-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(255, 255, 255, 0.9);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+    }
+
+    .loading-overlay.active {
+      display: flex;
+    }
+
+    .spinner {
+      width: 50px;
+      height: 50px;
+      border: 5px solid var(--secondary-clr);
+      border-top-color: var(--primary-clr);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Filters */
+    .filters {
+      background: white;
+      padding: 1.5rem;
+      border-radius: 15px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      margin-bottom: 2rem;
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .filter-group {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .filter-btn {
+      padding: 0.7rem 1.5rem;
+      border: 2px solid var(--medium-clr);
+      background: white;
+      color: var(--primary-clr);
+      border-radius: 25px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .filter-btn:hover,
+    .filter-btn.active {
+      background: var(--primary-clr);
+      color: white;
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(22, 163, 74, 0.3);
+    }
+
+    /* Stats Grid */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .stat-card {
+      background: white;
+      border-radius: 15px;
+      padding: 1.5rem;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s;
+      animation: scaleIn 0.5s ease both;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Carte de stock en temps réel */
+    .stat-card.realtime {
+      border: 2px solid var(--success-clr);
+      background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%);
+    }
+
+    .stat-card.realtime::after {
+      content: 'TEMPS RÉEL';
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: var(--success-clr);
+      color: white;
+      padding: 0.3rem 0.6rem;
+      border-radius: 12px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+
+    @keyframes scaleIn {
+      from {
+        transform: scale(0.9);
+        opacity: 0;
+      }
+      to {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
+    .stat-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    }
+
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      opacity: 0.1;
+      transform: translate(30%, -30%);
+    }
+
+    .stat-card.green::before {
+      background: var(--success-clr);
+    }
+
+    .stat-card.blue::before {
+      background: var(--info-clr);
+    }
+
+    .stat-card.orange::before {
+      background: var(--warning-clr);
+    }
+
+    .stat-card.red::before {
+      background: var(--danger-clr);
+    }
+
+    .stat-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    .stat-icon {
+      width: 50px;
+      height: 50px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      color: white;
+    }
+
+    .stat-card.green .stat-icon {
+      background: linear-gradient(135deg, var(--success-clr), #34d399);
+    }
+
+    .stat-card.blue .stat-icon {
+      background: linear-gradient(135deg, var(--info-clr), #60a5fa);
+    }
+
+    .stat-card.orange .stat-icon {
+      background: linear-gradient(135deg, var(--warning-clr), #fbbf24);
+    }
+
+    .stat-card.red .stat-icon {
+      background: linear-gradient(135deg, var(--danger-clr), #f87171);
+    }
+
+    .stat-trend {
+      font-size: 0.9rem;
+      padding: 0.3rem 0.6rem;
+      border-radius: 20px;
+      font-weight: 600;
+    }
+
+    .stat-trend.up {
+      background: #d1fae5;
+      color: var(--success-clr);
+    }
+
+    .stat-trend.down {
+      background: #fee2e2;
+      color: var(--danger-clr);
+    }
+
+    .stat-body h3 {
+      font-size: 0.85rem;
+      color: #666;
+      margin-bottom: 0.5rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .stat-value {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--dark-clr);
+      margin-bottom: 0.5rem;
+    }
+
+    .stat-subtitle {
+      font-size: 0.85rem;
+      color: #999;
+    }
+
+    /* Mini stats dans la carte stock */
+    .mini-stats {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.5rem;
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid #e5e7eb;
+    }
+
+    .mini-stat {
+      text-align: center;
+    }
+
+    .mini-stat-label {
+      font-size: 0.75rem;
+      color: #666;
+      margin-bottom: 0.25rem;
+    }
+
+    .mini-stat-value {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--primary-clr);
+    }
+
+    /* Charts Section */
+    .charts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+      gap: 2rem;
+      margin-bottom: 2rem;
+    }
+
+    .chart-card {
+      background: white;
+      border-radius: 15px;
+      padding: 1.5rem;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      animation: fadeInUp 0.8s ease;
+    }
+
+    .chart-card.full-width {
+      grid-column: 1 / -1;
+    }
+
+    .chart-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .chart-header h3 {
+      font-size: 1.2rem;
+      color: var(--dark-clr);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .chart-container {
+      position: relative;
+      height: 350px;
+    }
+
+    /* Tables */
+    .table-card {
+      background: white;
+      border-radius: 15px;
+      padding: 1.5rem;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      margin-bottom: 2rem;
+      animation: fadeInUp 0.8s ease;
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 600px;
+    }
+
+    thead {
+      background: var(--secondary-clr);
+    }
+
+    th {
+      padding: 1rem;
+      text-align: left;
+      font-weight: 600;
+      color: var(--primary-clr);
+      border-bottom: 2px solid var(--medium-clr);
+    }
+
+    td {
+      padding: 1rem;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    tbody tr:hover {
+      background: #f9fafb;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 0.3rem 0.8rem;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    .badge.success {
+      background: #d1fae5;
+      color: var(--success-clr);
+    }
+
+    .badge.warning {
+      background: #fed7aa;
+      color: var(--warning-clr);
+    }
+
+    .badge.danger {
+      background: #fee2e2;
+      color: var(--danger-clr);
+    }
+
+    /* Progress bar pour le stock */
+    .stock-progress {
+      width: 100%;
+      height: 8px;
+      background: #e5e7eb;
+      border-radius: 10px;
+      overflow: hidden;
+      margin-top: 0.5rem;
+    }
+
+    .stock-progress-bar {
+      height: 100%;
+      transition: width 0.3s ease;
+      border-radius: 10px;
+    }
+
+    .stock-progress-bar.high {
+      background: var(--success-clr);
+    }
+
+    .stock-progress-bar.medium {
+      background: var(--warning-clr);
+    }
+
+    .stock-progress-bar.low {
+      background: var(--danger-clr);
+    }
+
+    /* Price Recommendations */
+    .recommendations-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .recommendation-card {
+      background: white;
+      border-radius: 15px;
+      padding: 1.5rem;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      border-left: 4px solid var(--primary-clr);
+    }
+
+    .recommendation-card h4 {
+      color: var(--primary-clr);
+      margin-bottom: 1rem;
+      font-size: 1.1rem;
+    }
+
+    .price-info {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.8rem 0;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    .price-info:last-child {
+      border-bottom: none;
+    }
+
+    .price-label {
+      color: #666;
+      font-size: 0.9rem;
+    }
+
+    .price-value {
+      font-weight: 700;
+      color: var(--primary-clr);
+    }
+
+    .recommendation {
+      background: var(--secondary-clr);
+      padding: 1rem;
+      border-radius: 8px;
+      margin-top: 1rem;
+    }
+
+    .recommendation strong {
+      color: var(--primary-clr);
+    }
+
+    /* Footer */
+    footer {
+      background: var(--dark-clr);
+      color: white;
+      padding: 3rem 15px 1rem;
+      margin-top: 5rem;
+    }
+
+    .footer-content {
+      max-width: 1600px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 2rem;
+      margin-bottom: 2rem;
+    }
+
+    .footer-section h3 {
+      color: var(--primary-clr);
+      margin-bottom: 1rem;
+    }
+
+    .footer-section p,
+    .footer-section a {
+      color: #ccc;
+      line-height: 1.8;
+      text-decoration: none;
+      display: block;
+      transition: color 0.3s;
+    }
+
+    .footer-section a:hover {
+      color: var(--primary-clr);
+    }
+
+    .footer-section .social-links {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .footer-section .social-links a {
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .footer-bottom {
+      text-align: center;
+      padding-top: 2rem;
+      border-top: 1px solid #333;
+      color: #888;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .menu-toggle {
+        display: block;
+      }
+
+      .nav-links {
+        position: fixed;
+        top: 0;
+        right: -100%;
+        width: 70%;
+        max-width: 300px;
+        height: 100vh;
+        background: white;
+        flex-direction: column;
+        justify-content: flex-start;
+        padding: 80px 2rem 2rem;
+        box-shadow: -5px 0 20px rgba(0, 0, 0, 0.2);
+        transition: right 0.4s ease;
+        z-index: 1000;
+      }
+
+      .nav-links.active {
+        right: 0;
+      }
+
+      .nav-links li {
+        width: 100%;
+        text-align: center;
+        padding: 1rem 0;
+        border-bottom: 1px solid #eee;
+      }
+
+      .charts-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .chart-container {
+        height: 300px;
+      }
+
+      table {
+        font-size: 0.9rem;
+      }
+
+      .realtime-badge {
+        display: block;
+        margin-left: 0;
+        margin-top: 0.5rem;
+        width: fit-content;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Loading Overlay -->
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="spinner"></div>
+  </div>
+
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="navbar-content">
+      <a href="#" class="logo">
+        <i class="fas fa-chart-line"></i>
+        Dashboard Analytique
+      </a>
+      <button class="menu-toggle" id="menuToggle">
+        <i class="fas fa-bars"></i>
+      </button>
+      <ul class="nav-links" id="navLinks">
+        <li><a href="dashboard_boutique.html">Vue d'ensemble</a></li>
+        <li><a href="inventaire_produit.html">Inventaire</a></li>
+        <li><a href="ajout_achat.html">Ventes</a></li>
+        <li><a href="depenses.html">Dépenses</a></li>
+        <li><a href="historique.html">Historiques</a></li>
+        <li><a href="mise_a_jour.html">Mise à jour</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="container">
+    <div class="page-header">
+      <h1>Tableau de Bord Analytique
+        <span class="realtime-badge">
+          <span class="realtime-dot"></span>
+          Mise à jour automatique
+        </span>
+      </h1>
+      <p id="periodDescription">Vue complète de votre activité commerciale - Aujourd'hui</p>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters">
+      <div class="filter-group">
+        <button class="filter-btn active" data-period="today">Aujourd'hui</button>
+        <button class="filter-btn" data-period="week">7 Jours</button>
+        <button class="filter-btn" data-period="month">30 Jours</button>
+        <button class="filter-btn" data-period="6months">6 Mois</button>
+        <button class="filter-btn" data-period="year">1 An</button>
+      </div>
+    </div>
+
+    <!-- Main Stats -->
+    <div class="stats-grid">
+      <!-- CARTE STOCK EN TEMPS RÉEL -->
+      <div class="stat-card green realtime" style="animation-delay: 0.1s; grid-column: span 2;">
+        <div class="stat-header">
+          <div class="stat-icon">
+            <i class="fas fa-warehouse"></i>
+          </div>
+          <span class="stat-trend up">
+            <i class="fas fa-sync-alt"></i> Live
+          </span>
+        </div>
+        <div class="stat-body">
+          <h3>📦 Stock Restant Total (Temps Réel)</h3>
+          <div class="stat-value" id="stockRestantTotal">0 bols</div>
+          <p class="stat-subtitle">Mis à jour il y a <span id="lastUpdate">0</span> secondes</p>
+          
+          <div class="mini-stats">
+            <div class="mini-stat">
+              <div class="mini-stat-label">Stock Initial</div>
+              <div class="mini-stat-value" id="stockInitial">0</div>
+            </div>
+            <div class="mini-stat">
+              <div class="mini-stat-label">Vendu</div>
+              <div class="mini-stat-value" id="stockVendu">0</div>
+            </div>
+            <div class="mini-stat">
+              <div class="mini-stat-label">Sacs Restants</div>
+              <div class="mini-stat-value" id="sacsRestants">0</div>
+            </div>
+            <div class="mini-stat">
+              <div class="mini-stat-label">Taux Rotation</div>
+              <div class="mini-stat-value" id="tauxRotation">0%</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="stat-card green" style="animation-delay: 0.2s">
+        <div class="stat-header">
+          <div class="stat-icon">
+            <i class="fas fa-boxes"></i>
+          </div>
+          <span class="stat-trend up">
+            <i class="fas fa-arrow-up"></i> 0%
+          </span>
+        </div>
+        <div class="stat-body">
+          <h3>Stock Total</h3>
+          <div class="stat-value">0 bols</div>
+          <p class="stat-subtitle">0 sacs en stock</p>
+        </div>
+      </div>
+
+      <div class="stat-card blue" style="animation-delay: 0.3s">
+        <div class="stat-header">
+          <div class="stat-icon">
+            <i class="fas fa-shopping-cart"></i>
+          </div>
+          <span class="stat-trend up">
+            <i class="fas fa-arrow-up"></i> 0%
+          </span>
+        </div>
+        <div class="stat-body">
+          <h3>Ventes Totales</h3>
+          <div class="stat-value">0 F</div>
+          <p class="stat-subtitle">0 transactions</p>
+        </div>
+      </div>
+
+      <div class="stat-card orange" style="animation-delay: 0.4s">
+        <div class="stat-header">
+          <div class="stat-icon">
+            <i class="fas fa-wallet"></i>
+          </div>
+          <span class="stat-trend down">
+            <i class="fas fa-arrow-down"></i> 0%
+          </span>
+        </div>
+        <div class="stat-body">
+          <h3>Dépenses</h3>
+          <div class="stat-value">0 F</div>
+          <p class="stat-subtitle">Achats + Transport</p>
+        </div>
+      </div>
+
+      <div class="stat-card green" style="animation-delay: 0.5s">
+        <div class="stat-header">
+          <div class="stat-icon">
+            <i class="fas fa-chart-line"></i>
+          </div>
+          <span class="stat-trend up">
+            <i class="fas fa-arrow-up"></i> 0%
+          </span>
+        </div>
+        <div class="stat-body">
+          <h3>Bénéfice Net</h3>
+          <div class="stat-value">0 F</div>
+          <p class="stat-subtitle">Marge: 0%</p>
+        </div>
+      </div>
+
+      <div class="stat-card blue" style="animation-delay: 0.6s">
+        <div class="stat-header">
+          <div class="stat-icon">
+            <i class="fas fa-users"></i>
+          </div>
+          <span class="stat-trend up">
+            <i class="fas fa-arrow-up"></i> 0%
+          </span>
+        </div>
+        <div class="stat-body">
+          <h3>Clients</h3>
+          <div class="stat-value">0</div>
+          <p class="stat-subtitle">0 visites</p>
+        </div>
+      </div>
+
+      <div class="stat-card orange" style="animation-delay: 0.7s">
+        <div class="stat-header">
+          <div class="stat-icon">
+            <i class="fas fa-truck"></i>
+          </div>
+          <span class="stat-trend up">
+            <i class="fas fa-arrow-up"></i> 0%
+          </span>
+        </div>
+        <div class="stat-body">
+          <h3>Arrivages</h3>
+          <div class="stat-value">0</div>
+          <p class="stat-subtitle">Ce mois-ci</p>
+        </div>
+      </div>
+
+      <div class="stat-card green" style="animation-delay: 0.8s">
+        <div class="stat-header">
+          <div class="stat-icon">
+            <i class="fas fa-percentage"></i>
+          </div>
+          <span class="stat-trend up">
+            <i class="fas fa-arrow-up"></i> 0%
+          </span>
+        </div>
+        <div class="stat-body">
+          <h3>Taux de Rotation</h3>
+          <div class="stat-value">0 jours</div>
+          <p class="stat-subtitle">-</p>
+        </div>
+      </div>
+
+      <div class="stat-card red" style="animation-delay: 0.9s">
+        <div class="stat-header">
+          <div class="stat-icon">
+            <i class="fas fa-exclamation-triangle"></i>
+          </div>
+          <span class="stat-trend down">
+            <i class="fas fa-arrow-down"></i>
+          </span>
+        </div>
+        <div class="stat-body">
+          <h3>Stock Faible</h3>
+          <div class="stat-value">0</div>
+          <p class="stat-subtitle">Produits à réapprovisionner</p>
+        </div>
+      </div>
+
+      <div class="stat-card blue" style="animation-delay: 1.0s">
+        <div class="stat-header">
+          <div class="stat-icon">
+            <i class="fas fa-hand-holding-usd"></i>
+          </div>
+          <span class="stat-trend up">
+            <i class="fas fa-info-circle"></i>
+          </span>
+        </div>
+        <div class="stat-body">
+          <h3>Avances Données</h3>
+          <div class="stat-value" id="totalAdvances">0 F</div>
+          <p class="stat-subtitle">Reste: <span id="totalRemaining">0 F</span></p>
+        </div>
+      </div>
+
+      <div class="stat-card orange" style="animation-delay: 1.1s">
+        <div class="stat-header">
+          <div class="stat-icon">
+            <i class="fas fa-clock"></i>
+          </div>
+          <span class="stat-trend down">
+            <i class="fas fa-info-circle"></i>
+          </span>
+        </div>
+        <div class="stat-body">
+          <h3>Ventes à Crédit</h3>
+          <div class="stat-value" id="creditCount">0</div>
+          <p class="stat-subtitle">Total: <span id="totalCredit">0 F</span></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Charts -->
+    <div class="charts-grid">
+      <div class="chart-card">
+        <div class="chart-header">
+          <h3><i class="fas fa-chart-bar"></i> Ventes vs Achats</h3>
+        </div>
+        <div class="chart-container">
+          <canvas id="salesPurchasesChart"></canvas>
+        </div>
+      </div>
+
+      <div class="chart-card">
+        <div class="chart-header">
+          <h3><i class="fas fa-chart-pie"></i> Répartition des Stocks</h3>
+        </div>
+        <div class="chart-container">
+          <canvas id="stockDistributionChart"></canvas>
+        </div>
+      </div>
+
+      <div class="chart-card full-width">
+        <div class="chart-header">
+          <h3><i class="fas fa-chart-line"></i> Évolution des Revenus et Bénéfices</h3>
+        </div>
+        <div class="chart-container">
+          <canvas id="revenueProfitChart"></canvas>
+        </div>
+      </div>
+
+      <div class="chart-card">
+        <div class="chart-header">
+          <h3><i class="fas fa-chart-area"></i> Quantités Vendues par Produit</h3>
+        </div>
+        <div class="chart-container">
+          <canvas id="productSalesChart"></canvas>
+        </div>
+      </div>
+
+      <div class="chart-card">
+        <div class="chart-header">
+          <h3><i class="fas fa-calendar-alt"></i> Ventes par Jour de la Semaine</h3>
+        </div>
+        <div class="chart-container">
+          <canvas id="weekdaySalesChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stock Details Table -->
+    <div class="table-card">
+      <h3 style="margin-bottom: 1.5rem; color: var(--primary-clr);">
+        <i class="fas fa-warehouse"></i> Détails du Stock par Céréale
+      </h3>
+      <table id="stockTable">
+        <thead>
+          <tr>
+            <th>Céréale</th>
+            <th>Quantité (bols)</th>
+            <th>Quantité (sacs)</th>
+            <th>Prix Achat/Bol</th>
+            <th>Valeur Stock</th>
+            <th>Statut</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td colspan="6" style="text-align: center; padding: 2rem;">
+              Chargement des données...
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- NOUVEAU TABLEAU DÉTAILLÉ PAR PRODUIT -->
+    <div class="table-card">
+      <h3 style="margin-bottom: 1.5rem; color: var(--primary-clr);">
+        <i class="fas fa-chart-bar"></i> Analyse Détaillée par Produit (Stock Total, Vendu, Restant)
+      </h3>
+      <table id="productAnalysisTable">
+        <thead>
+          <tr>
+            <th>Produit</th>
+            <th>Stock Initial Total</th>
+            <th>Stock Vendu</th>
+            <th>Stock Restant</th>
+            <th>Taux de Vente</th>
+            <th>Progression</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td colspan="6" style="text-align: center; padding: 2rem;">
+              Chargement des données...
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Price Recommendations -->
+    <h3 style="margin-bottom: 1.5rem; color: var(--primary-clr);">
+      <i class="fas fa-lightbulb"></i> Recommandations de Prix
+    </h3>
+    <div class="recommendations-grid">
+      <!-- Les recommandations seront chargées dynamiquement -->
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-content">
+      <div class="footer-section">
+        <h3>À propos</h3>
+        <p>Dashboard analytique complet pour la gestion de votre commerce de céréales.</p>
+      </div>
+      <div class="footer-section">
+        <h3>Liens rapides</h3>
+        <a href="depenses.html">Vue d'ensemble</a>
+        <a href="inventaire_produit.html">Inventaire</a>
+        <a href="ajout_achat.html">Ventes</a>
+      </div>
+      <div class="footer-section">
+        <h3>Contact</h3>
+        <p>Email: bertin@gmail.com</p>
+        <p>Tél: +228 91 38 31 21</p>
+      </div>
+      <div class="footer-section">
+        <h3>Suivez-nous</h3>
+        <div class="social-links">
+          <a href="#"><i class="fab fa-facebook"></i></a>
+          <a href="#"><i class="fab fa-twitter"></i></a>
+          <a href="#"><i class="fab fa-instagram"></i></a>
+          <a href="#"><i class="fab fa-whatsapp"></i></a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2025 Dashboard Céréales Togo. Tous droits réservés.</p>
+    </div>
+  </footer>
+
+  <script>
+    // ============================================================================
+    // CONFIGURATION API
+    // ============================================================================
+    const API_BASE_URL = 'http://localhost:8050';
+    let currentPeriod = 'today';
+    let charts = {};
+    let lastUpdateTime = 0;
+    let updateInterval;
+
+    // Descriptions des périodes
+    const periodDescriptions = {
+      'today': 'Aujourd\'hui',
+      'week': 'Ces 7 derniers jours',
+      'month': 'Ces 30 derniers jours',
+      '6months': 'Ces 6 derniers mois',
+      'year': 'Cette année'
+    };
+
+    // ============================================================================
+    // UTILITAIRES
+    // ============================================================================
+    function showLoading() {
+      document.getElementById('loadingOverlay').classList.add('active');
+    }
+
+    function hideLoading() {
+      document.getElementById('loadingOverlay').classList.remove('active');
+    }
+
+    function formatNumber(num) {
+      return num.toLocaleString('fr-FR');
+    }
+
+    function updatePeriodDescription(period) {
+      const desc = periodDescriptions[period] || 'Vue complète de votre activité commerciale';
+      document.getElementById('periodDescription').textContent = 
+        `Vue complète de votre activité commerciale - ${desc}`;
+    }
+
+    // ============================================================================
+    // MISE À JOUR DU TIMER
+    // ============================================================================
+    function updateTimer() {
+      lastUpdateTime++;
+      document.getElementById('lastUpdate').textContent = lastUpdateTime;
+    }
+
+    // ============================================================================
+    // CHARGEMENT DU STOCK EN TEMPS RÉEL
+    // ============================================================================
+    async function loadRealtimeStock() {
+      try {
+        // Récupérer les données d'inventaire
+        const inventaireResponse = await fetch(`${API_BASE_URL}/api/inventaire?in_stock_only=true`);
+        const inventaire = await inventaireResponse.json();
+
+        // Récupérer les ventes pour calculer le stock vendu
+        const ventesResponse = await fetch(`${API_BASE_URL}/api/ventes`);
+        const ventes = await ventesResponse.json();
+
+        // Calculer les totaux
+        let stockInitialTotal = 0;
+        let stockRestantTotal = 0;
+        let sacsRestantsTotal = 0;
+
+        inventaire.forEach(item => {
+          stockInitialTotal += item.total_bowls;
+          stockRestantTotal += item.current_stock;
+          
+          // Calculer les sacs restants
+          const sacsRestants = Math.floor(item.current_stock / item.sac_type);
+          sacsRestantsTotal += sacsRestants;
+        });
+
+        // Calculer le stock vendu
+        const stockVendu = stockInitialTotal - stockRestantTotal;
+
+        // Calculer le taux de rotation
+        const tauxRotation = stockInitialTotal > 0 
+          ? Math.round((stockVendu / stockInitialTotal) * 100) 
+          : 0;
+
+        // Mettre à jour l'affichage
+        document.getElementById('stockRestantTotal').textContent = `${formatNumber(stockRestantTotal)} bols`;
+        document.getElementById('stockInitial').textContent = formatNumber(stockInitialTotal);
+        document.getElementById('stockVendu').textContent = formatNumber(stockVendu);
+        document.getElementById('sacsRestants').textContent = sacsRestantsTotal;
+        document.getElementById('tauxRotation').textContent = `${tauxRotation}%`;
+
+        // Réinitialiser le timer
+        lastUpdateTime = 0;
+        document.getElementById('lastUpdate').textContent = '0';
+
+      } catch (error) {
+        console.error('❌ Erreur chargement stock temps réel:', error);
+      }
+    }
+
+    // ============================================================================
+    // CHARGEMENT DU TABLEAU D'ANALYSE DÉTAILLÉE
+    // ============================================================================
+    async function loadProductAnalysis() {
+      try {
+        // Récupérer les données d'inventaire
+        const inventaireResponse = await fetch(`${API_BASE_URL}/api/inventaire`);
+        const inventaire = await inventaireResponse.json();
+
+        // Récupérer les ventes
+        const ventesResponse = await fetch(`${API_BASE_URL}/api/ventes`);
+        const ventes = await ventesResponse.json();
+
+        // Grouper les données par produit
+        const productsMap = {};
+
+        inventaire.forEach(item => {
+          if (!productsMap[item.cereal_type]) {
+            productsMap[item.cereal_type] = {
+              nom: item.cereal_type,
+              stockInitial: 0,
+              stockRestant: 0
+            };
+          }
+          productsMap[item.cereal_type].stockInitial += item.total_bowls;
+          productsMap[item.cereal_type].stockRestant += item.current_stock;
+        });
+
+        // Calculer le stock vendu pour chaque produit
+        const productsSales = {};
+        ventes.forEach(vente => {
+          if (!productsSales[vente.product_type]) {
+            productsSales[vente.product_type] = 0;
+          }
+          // Convertir en bols si c'est en sacs
+          let quantityInBowls = vente.quantity;
+          if (vente.unit_type === 'sac' && vente.sac_size) {
+            quantityInBowls = vente.quantity * vente.sac_size;
+          }
+          productsSales[vente.product_type] += quantityInBowls;
+        });
+
+        // Construire le tableau
+        const tbody = document.querySelector('#productAnalysisTable tbody');
+        tbody.innerHTML = '';
+
+        if (Object.keys(productsMap).length === 0) {
+          tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 2rem;">Aucune donnée disponible</td></tr>';
+          return;
+        }
+
+        Object.keys(productsMap).forEach(productName => {
+          const product = productsMap[productName];
+          const stockVendu = productsSales[productName] || 0;
+          
+          // Vérifier la cohérence
+          const stockInitialCalcule = product.stockRestant + stockVendu;
+          const stockInitialFinal = Math.max(product.stockInitial, stockInitialCalcule);
+          
+          const tauxVente = stockInitialFinal > 0 
+            ? Math.round((stockVendu / stockInitialFinal) * 100) 
+            : 0;
+
+          // Déterminer la classe de la progression
+          let progressClass = 'high';
+          if (tauxVente < 30) progressClass = 'low';
+          else if (tauxVente < 70) progressClass = 'medium';
+
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td><strong>${productName.charAt(0).toUpperCase() + productName.slice(1)}</strong></td>
+            <td>${formatNumber(stockInitialFinal)} bols</td>
+            <td>${formatNumber(stockVendu)} bols</td>
+            <td>${formatNumber(product.stockRestant)} bols</td>
+            <td><strong>${tauxVente}%</strong></td>
+            <td>
+              <div class="stock-progress">
+                <div class="stock-progress-bar ${progressClass}" style="width: ${tauxVente}%"></div>
+              </div>
+            </td>
+          `;
+          tbody.appendChild(row);
+        });
+
+      } catch (error) {
+        console.error('❌ Erreur chargement analyse produits:', error);
+      }
+    }
+
+    // ============================================================================
+    // CHARGEMENT DES DONNÉES
+    // ============================================================================
+    async function loadDashboardData(period = 'today') {
+      showLoading();
+      
+      try {
+        console.log(`🔄 Chargement des données pour la période: ${period}`);
+        
+        // Mettre à jour la description de la période
+        updatePeriodDescription(period);
+        
+        // Charger les statistiques principales
+        const statsResponse = await fetch(`${API_BASE_URL}/api/dashboard/stats?period=${period}`);
+        
+        if (!statsResponse.ok) {
+          throw new Error(`Erreur HTTP: ${statsResponse.status}`);
+        }
+        
+        const data = await statsResponse.json();
+        console.log('✅ Données reçues:', data);
+        
+        updateMainStats(data.stats, data.trends);
+        updateInsights(data.insights);
+        
+        // Charger tous les graphiques avec la période
+        await loadAllCharts(period);
+        
+        // Charger les détails du stock
+        await loadStockDetails();
+        
+        // Charger les recommandations
+        await loadRecommendations();
+        
+        // Charger le stock en temps réel
+        await loadRealtimeStock();
+        
+        // Charger l'analyse détaillée par produit
+        await loadProductAnalysis();
+        
+        console.log('✅ Dashboard chargé avec succès');
+        
+      } catch (error) {
+        console.error('❌ Erreur chargement dashboard:', error);
+        alert('Erreur lors du chargement des données. Vérifiez que le serveur est bien démarré sur le port 8000.');
+      } finally {
+        hideLoading();
+      }
+    }
+
+    // ============================================================================
+    // MISE À JOUR DES STATISTIQUES PRINCIPALES
+    // ============================================================================
+    function updateMainStats(stats, trends) {
+      // Stock Total
+      document.querySelector('.stat-card:nth-child(2) .stat-value').textContent = 
+        `${formatNumber(stats.total_stock_bowls || 0)} bols`;
+      document.querySelector('.stat-card:nth-child(2) .stat-subtitle').textContent = 
+        `${stats.total_stock_sacs || 0} sacs en stock`;
+      updateTrend(2, trends?.stock);
+
+      // Ventes Totales
+      document.querySelector('.stat-card:nth-child(3) .stat-value').textContent = 
+        `${formatNumber(stats.total_sales || 0)} F`;
+      document.querySelector('.stat-card:nth-child(3) .stat-subtitle').textContent = 
+        `${stats.total_transactions || 0} transactions`;
+      updateTrend(3, trends?.sales);
+
+      // Dépenses
+      document.querySelector('.stat-card:nth-child(4) .stat-value').textContent = 
+        `${formatNumber(stats.total_expenses || 0)} F`;
+      updateTrend(4, trends?.expenses);
+
+      // Bénéfice Net
+      document.querySelector('.stat-card:nth-child(5) .stat-value').textContent = 
+        `${formatNumber(stats.net_profit || 0)} F`;
+      document.querySelector('.stat-card:nth-child(5) .stat-subtitle').textContent = 
+        `Marge: ${stats.profit_margin || 0}%`;
+
+      // Clients
+      document.querySelector('.stat-card:nth-child(6) .stat-value').textContent = 
+        stats.total_customers || 0;
+      document.querySelector('.stat-card:nth-child(6) .stat-subtitle').textContent = 
+        `${stats.total_transactions || 0} visites`;
+
+      // Arrivages
+      document.querySelector('.stat-card:nth-child(7) .stat-value').textContent = 
+        stats.total_arrivals || 0;
+
+      // Taux de Rotation
+      const rotationStatus = stats.rotation_rate ? 
+        (stats.rotation_rate <= 20 ? 'Excellent' : stats.rotation_rate <= 30 ? 'Bon' : 'Moyen') : '-';
+      document.querySelector('.stat-card:nth-child(8) .stat-value').textContent = 
+        `${stats.rotation_rate || 0} jours`;
+      document.querySelector('.stat-card:nth-child(8) .stat-subtitle').textContent = rotationStatus;
+
+      // Stock Faible
+      document.querySelector('.stat-card:nth-child(9) .stat-value').textContent = 
+        stats.low_stock_items || 0;
+
+      // Avances données
+      document.getElementById('totalAdvances').textContent = 
+        formatNumber(stats.total_advances || 0) + ' F';
+      document.getElementById('totalRemaining').textContent = 
+        formatNumber(stats.total_remaining || 0) + ' F';
+
+      // Ventes à crédit
+      document.getElementById('creditCount').textContent = stats.credit_count || 0;
+      document.getElementById('totalCredit').textContent = 
+        formatNumber(stats.total_credit || 0) + ' F';
+    }
+
+    function updateTrend(cardIndex, trendData) {
+      const card = document.querySelector(`.stat-card:nth-child(${cardIndex})`);
+      const trendEl = card.querySelector('.stat-trend');
+      
+      if (trendData && trendData.change !== undefined) {
+        const icon = trendData.is_increasing ? 'fa-arrow-up' : 'fa-arrow-down';
+        const className = trendData.is_increasing ? 'up' : 'down';
+        
+        trendEl.className = `stat-trend ${className}`;
+        trendEl.innerHTML = `
+          <i class="fas ${icon}"></i> ${Math.abs(trendData.change)}%
+        `;
+      } else {
+        trendEl.innerHTML = '<i class="fas fa-minus"></i> N/A';
+      }
+    }
+
+    // ============================================================================
+    // CHARGEMENT DES GRAPHIQUES
+    // ============================================================================
+    async function loadAllCharts(period = 'today') {
+      // Calculer le nombre de mois selon la période
+      let months = 1;
+      switch(period) {
+        case 'week': months = 1; break;
+        case 'month': months = 1; break;
+        case '6months': months = 6; break;
+        case 'year': months = 12; break;
+        default: months = 1;
+      }
+      
+      await Promise.all([
+        loadSalesPurchasesChart(months),
+        loadStockDistributionChart(),
+        loadRevenueProfitChart(period),
+        loadProductSalesChart(period),
+        loadWeekdaySalesChart(period)
+      ]);
+    }
+
+    async function loadSalesPurchasesChart(months = 6) {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/dashboard/charts/sales-vs-purchases?months=${months}`);
+        const data = await response.json();
+        
+        const ctx = document.getElementById('salesPurchasesChart').getContext('2d');
+        
+        if (charts.salesPurchases) charts.salesPurchases.destroy();
+        
+        charts.salesPurchases = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: data.labels,
+            datasets: data.datasets.map((ds, idx) => ({
+              ...ds,
+              backgroundColor: idx === 0 ? 'rgba(245, 158, 11, 0.7)' : 'rgba(22, 163, 74, 0.7)',
+              borderColor: idx === 0 ? 'rgba(245, 158, 11, 1)' : 'rgba(22, 163, 74, 1)',
+              borderWidth: 2,
+              borderRadius: 8
+            }))
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { position: 'top' }
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                ticks: {
+                  callback: function(value) {
+                    return formatNumber(value) + ' F';
+                  }
+                }
+              }
+            }
+          }
+        });
+      } catch (error) {
+        console.error('Erreur chargement graphique ventes/achats:', error);
+      }
+    }
+
+    async function loadStockDistributionChart() {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/dashboard/charts/stock-distribution`);
+        const data = await response.json();
+        
+        const ctx = document.getElementById('stockDistributionChart').getContext('2d');
+        
+        if (charts.stockDistribution) charts.stockDistribution.destroy();
+        
+        charts.stockDistribution = new Chart(ctx, {
+          type: 'doughnut',
+          data: {
+            labels: data.labels,
+            datasets: [{
+              ...data.datasets[0],
+              borderWidth: 2,
+              borderColor: '#fff'
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { position: 'right' }
+            }
+          }
+        });
+      } catch (error) {
+        console.error('Erreur chargement graphique distribution stock:', error);
+      }
+    }
+
+    async function loadRevenueProfitChart(period = 'today') {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/dashboard/charts/revenue-profit?period=${period}`);
+        const data = await response.json();
+        
+        const ctx = document.getElementById('revenueProfitChart').getContext('2d');
+        
+        if (charts.revenueProfit) charts.revenueProfit.destroy();
+        
+        charts.revenueProfit = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: data.labels,
+            datasets: data.datasets.map(ds => ({
+              ...ds,
+              borderWidth: 3,
+              fill: true,
+              tension: 0.4,
+              pointRadius: 5,
+              pointHoverRadius: 7
+            }))
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { position: 'top' }
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                ticks: {
+                  callback: function(value) {
+                    return (value / 1000) + 'K F';
+                  }
+                }
+              }
+            }
+          }
+        });
+      } catch (error) {
+        console.error('Erreur chargement graphique revenus/bénéfices:', error);
+      }
+    }
+
+    async function loadProductSalesChart(period = 'today') {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/dashboard/charts/product-sales?period=${period}`);
+        const data = await response.json();
+        
+        const ctx = document.getElementById('productSalesChart').getContext('2d');
+        
+        if (charts.productSales) charts.productSales.destroy();
+        
+        charts.productSales = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: data.labels,
+            datasets: [{
+              ...data.datasets[0],
+              borderColor: data.datasets[0].backgroundColor.map(c => c.replace('0.7', '1')),
+              borderWidth: 2,
+              borderRadius: 8
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            indexAxis: 'y',
+            plugins: {
+              legend: { display: false }
+            },
+            scales: {
+              x: { beginAtZero: true }
+            }
+          }
+        });
+      } catch (error) {
+        console.error('Erreur chargement graphique ventes par produit:', error);
+      }
+    }
+
+    async function loadWeekdaySalesChart(period = 'today') {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/dashboard/charts/weekday-sales?period=${period}`);
+        const data = await response.json();
+        
+        const ctx = document.getElementById('weekdaySalesChart').getContext('2d');
+        
+        if (charts.weekdaySales) charts.weekdaySales.destroy();
+        
+        charts.weekdaySales = new Chart(ctx, {
+          type: 'radar',
+          data: {
+            labels: data.labels,
+            datasets: [{
+              ...data.datasets[0],
+              borderWidth: 2,
+              pointBackgroundColor: 'rgba(22, 163, 74, 1)',
+              pointBorderColor: '#fff',
+              pointHoverBackgroundColor: '#fff',
+              pointHoverBorderColor: 'rgba(22, 163, 74, 1)',
+              pointRadius: 5,
+              pointHoverRadius: 7
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              r: {
+                beginAtZero: true,
+                max: 100
+              }
+            },
+            plugins: {
+              legend: { display: false }
+            }
+          }
+        });
+      } catch (error) {
+        console.error('Erreur chargement graphique ventes par jour:', error);
+      }
+    }
+
+    // ============================================================================
+    // CHARGEMENT DES DÉTAILS DU STOCK
+    // ============================================================================
+    async function loadStockDetails() {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/dashboard/stock-details`);
+        const data = await response.json();
+        
+        const tbody = document.querySelector('#stockTable tbody');
+        tbody.innerHTML = '';
+        
+        if (data.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 2rem;">Aucune donnée disponible</td></tr>';
+          return;
+        }
+        
+        data.forEach(item => {
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td><strong>${item.cereal_type}</strong></td>
+            <td>${formatNumber(item.quantity_bowls)}</td>
+            <td>${item.quantity_sacs} sacs</td>
+            <td>${formatNumber(item.purchase_price)} F</td>
+            <td>${formatNumber(item.stock_value)} F</td>
+            <td><span class="badge ${item.status_class}">${item.status}</span></td>
+          `;
+          tbody.appendChild(row);
+        });
+      } catch (error) {
+        console.error('Erreur chargement détails stock:', error);
+      }
+    }
+
+    // ============================================================================
+    // CHARGEMENT DES RECOMMANDATIONS
+    // ============================================================================
+    async function loadRecommendations() {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/dashboard/recommendations`);
+        const data = await response.json();
+        
+        const grid = document.querySelector('.recommendations-grid');
+        grid.innerHTML = '';
+        
+        if (data.length === 0) {
+          grid.innerHTML = '<p style="text-align: center; padding: 2rem;">Aucune recommandation disponible</p>';
+          return;
+        }
+        
+        // Emojis par produit
+        const emojis = {
+          'mais': '🌽',
+          'mil': '🌾',
+          'riz': '🍚',
+          'haricot': '🫘',
+          'arachide': '🥜',
+          'soja': '🌱',
+          'sorgho': '🌾',
+          'niebe': '🫘'
+        };
+        
+        data.slice(0, 4).forEach(rec => {
+          const emoji = emojis[rec.product_name.toLowerCase()] || '🌾';
+          const card = document.createElement('div');
+          card.className = 'recommendation-card';
+          card.innerHTML = `
+            <h4>${emoji} ${rec.product_name.charAt(0).toUpperCase() + rec.product_name.slice(1)}</h4>
+            <div class="price-info">
+              <span class="price-label">Prix d'achat</span>
+              <span class="price-value">${formatNumber(rec.purchase_price)} F/bol</span>
+            </div>
+            <div class="price-info">
+              <span class="price-label">Prix actuel</span>
+              <span class="price-value">${formatNumber(rec.current_price)} F/bol</span>
+            </div>
+            <div class="price-info">
+              <span class="price-label">Marge actuelle</span>
+              <span class="price-value">${rec.current_margin}%</span>
+            </div>
+            <div class="recommendation">
+              <strong>Recommandation:</strong> ${formatNumber(rec.recommended_min)}-${formatNumber(rec.recommended_max)} F/bol<br>
+              <small>${rec.recommendation_reason}</small>
+            </div>
+          `;
+          grid.appendChild(card);
+        });
+      } catch (error) {
+        console.error('Erreur chargement recommandations:', error);
+      }
+    }
+
+    // ============================================================================
+    // CHARGEMENT DES INSIGHTS
+    // ============================================================================
+    function updateInsights(insights) {
+      console.log('📊 Insights:', insights);
+      
+      // Afficher les alertes importantes
+      if (insights?.alerts && insights.alerts.length > 0) {
+        console.log(`⚠️ ${insights.alerts.length} alertes détectées`);
+        insights.alerts.forEach(alert => {
+          console.log(`  - ${alert.message}`);
+        });
+      }
+      
+      // Afficher les opportunités
+      if (insights?.opportunities && insights.opportunities.length > 0) {
+        console.log(`💡 ${insights.opportunities.length} opportunités`);
+        insights.opportunities.forEach(opp => {
+          console.log(`  ${opp.icon} ${opp.message}`);
+        });
+      }
+      
+      // Afficher les réalisations
+      if (insights?.achievements && insights.achievements.length > 0) {
+        insights.achievements.forEach(ach => {
+          console.log(`${ach.icon} ${ach.message}`);
+        });
+      }
+    }
+
+    // ============================================================================
+    // GESTION DES FILTRES DE PÉRIODE
+    // ============================================================================
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        // Retirer la classe active de tous les boutons
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        
+        // Ajouter la classe active au bouton cliqué
+        this.classList.add('active');
+        
+        // Récupérer la période sélectionnée
+        currentPeriod = this.dataset.period;
+        
+        console.log(`📅 Période sélectionnée: ${currentPeriod}`);
+        
+        // Recharger les données avec la nouvelle période
+        loadDashboardData(currentPeriod);
+      });
+    });
+
+    // ============================================================================
+    // MOBILE MENU
+    // ============================================================================
+    const menuToggle = document.getElementById('menuToggle');
+    const navLinks = document.getElementById('navLinks');
+
+    menuToggle.addEventListener('click', () => {
+      navLinks.classList.toggle('active');
+      const icon = menuToggle.querySelector('i');
+      if (navLinks.classList.contains('active')) {
+        icon.classList.remove('fa-bars');
+        icon.classList.add('fa-times');
+      } else {
+        icon.classList.remove('fa-times');
+        icon.classList.add('fa-bars');
+      }
+    });
+
+    // ============================================================================
+    // CHARGEMENT INITIAL ET MISES À JOUR AUTOMATIQUES
+    // ============================================================================
+    document.addEventListener('DOMContentLoaded', () => {
+      console.log('🚀 Initialisation du dashboard...');
+      
+      // Charger les données initiales
+      loadDashboardData(currentPeriod);
+      
+      // Mettre à jour le stock en temps réel toutes les 10 secondes
+      setInterval(() => {
+        console.log('🔄 Rafraîchissement stock temps réel...');
+        loadRealtimeStock();
+        loadProductAnalysis();
+      }, 10000);
+      
+      // Mettre à jour le timer chaque seconde
+      setInterval(updateTimer, 1000);
+      
+      // Rafraîchir le dashboard complet toutes les 5 minutes
+      setInterval(() => {
+        console.log('🔄 Rafraîchissement complet du dashboard...');
+        loadDashboardData(currentPeriod);
+      }, 300000);
+    });
+  </script>
+</body>
+</html>

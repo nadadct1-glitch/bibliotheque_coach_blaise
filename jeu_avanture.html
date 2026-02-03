@@ -1,0 +1,1278 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Adventure Reading - Débloquez vos Compétences</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --primary-clr: #9640e3;
+      --secondary-clr: #f8e8fd;
+      --medium-clr: #d399fb;
+      --dark-clr: #0a0a0a;
+      --light-clr: #ffffff;
+      --success-clr: #10b981;
+      --error-clr: #ef4444;
+      --warning-clr: #f59e0b;
+      --info-clr: #3b82f6;
+      --gold: #fbbf24;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Fira Sans', sans-serif;
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      color: var(--dark-clr);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Navigation Header */
+    .navbar {
+      background: var(--light-clr);
+      box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      animation: slideDown 0.5s ease;
+    }
+
+    @keyframes slideDown {
+      from { transform: translateY(-100%); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    .navbar-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 1rem 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--primary-clr);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: transform 0.3s;
+    }
+
+    .logo:hover { transform: scale(1.05); }
+
+    .menu-toggle {
+      display: none;
+      background: var(--primary-clr);
+      border: none;
+      color: white;
+      font-size: 1.5rem;
+      width: 45px;
+      height: 45px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 2rem;
+      list-style: none;
+      align-items: center;
+    }
+
+    .nav-links a {
+      color: var(--dark-clr);
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.3s;
+      position: relative;
+    }
+
+    .nav-links a::after {
+      content: '';
+      position: absolute;
+      bottom: -5px;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: var(--primary-clr);
+      transition: width 0.3s;
+    }
+
+    .nav-links a:hover::after { width: 100%; }
+
+    /* Container */
+    .container {
+      max-width: 1200px;
+      margin: 3rem auto;
+      padding: 0 15px 2rem;
+    }
+
+    .page-header {
+      text-align: center;
+      margin-bottom: 3rem;
+      animation: fadeInUp 0.8s ease;
+    }
+
+    @keyframes fadeInUp {
+      from { transform: translateY(30px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    .page-header h1 {
+      font-size: clamp(2rem, 5vw, 3rem);
+      color: var(--primary-clr);
+      margin-bottom: 0.5rem;
+    }
+
+    .page-header p {
+      color: #666;
+      font-size: 1.1rem;
+    }
+
+    /* Stats Cards */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 3rem;
+      animation: fadeInUp 0.8s ease 0.2s both;
+    }
+
+    .stat-card {
+      background: white;
+      padding: 1.5rem;
+      border-radius: 15px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      text-align: center;
+      transition: transform 0.3s;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    }
+
+    .stat-card i {
+      font-size: 2.5rem;
+      color: var(--primary-clr);
+      margin-bottom: 0.5rem;
+    }
+
+    .stat-card h3 {
+      font-size: 2rem;
+      color: var(--dark-clr);
+      margin-bottom: 0.3rem;
+    }
+
+    .stat-card p {
+      color: #666;
+      font-size: 0.9rem;
+    }
+
+    /* Packets Grid */
+    .packets-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 2rem;
+      margin-bottom: 3rem;
+    }
+
+    .packet-card {
+      background: white;
+      border-radius: 20px;
+      padding: 2rem;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s;
+      position: relative;
+      overflow: hidden;
+      cursor: pointer;
+      animation: scaleIn 0.6s ease;
+    }
+
+    @keyframes scaleIn {
+      from { transform: scale(0.95); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    .packet-card:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 15px 50px rgba(0, 0, 0, 0.15);
+    }
+
+    .packet-card.locked {
+      opacity: 0.7;
+    }
+
+    .packet-card.unlocked {
+      background: linear-gradient(135deg, #fef3c7, #fde68a);
+      border: 3px solid var(--gold);
+    }
+
+    .packet-number {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      background: var(--primary-clr);
+      color: white;
+      width: 45px;
+      height: 45px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 1.3rem;
+    }
+
+    .packet-icon {
+      font-size: 4rem;
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+
+    .packet-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--primary-clr);
+      margin-bottom: 0.5rem;
+      text-align: center;
+    }
+
+    .packet-requirement {
+      text-align: center;
+      color: #666;
+      margin-bottom: 1rem;
+      font-size: 1rem;
+    }
+
+    .packet-progress {
+      width: 100%;
+      height: 10px;
+      background: #e5e7eb;
+      border-radius: 10px;
+      overflow: hidden;
+      margin-bottom: 1rem;
+    }
+
+    .packet-progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, var(--primary-clr), var(--gold));
+      transition: width 0.6s ease;
+    }
+
+    .packet-status {
+      text-align: center;
+      font-size: 0.9rem;
+      color: #666;
+      margin-bottom: 1rem;
+    }
+
+    .btn {
+      padding: 12px 30px;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      width: 100%;
+    }
+
+    .btn-unlock {
+      background: linear-gradient(135deg, var(--success-clr), #059669);
+      color: white;
+      box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+    }
+
+    .btn-unlock:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+    }
+
+    .btn-unlock:disabled {
+      background: #9ca3af;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-view {
+      background: linear-gradient(135deg, var(--primary-clr), var(--medium-clr));
+      color: white;
+      box-shadow: 0 4px 15px rgba(150, 64, 227, 0.3);
+    }
+
+    .btn-view:hover {
+      transform: translateY(-2px);
+    }
+
+    /* Modal */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(5px);
+      z-index: 2000;
+      align-items: center;
+      justify-content: center;
+      overflow-y: auto;
+    }
+
+    .modal.show {
+      display: flex;
+    }
+
+    .modal-content {
+      background: white;
+      border-radius: 20px;
+      padding: 2.5rem;
+      max-width: 700px;
+      width: 90%;
+      max-height: 90vh;
+      overflow-y: auto;
+      position: relative;
+      animation: modalPop 0.5s ease;
+    }
+
+    @keyframes modalPop {
+      from { transform: scale(0.8); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: #666;
+      width: 35px;
+      height: 35px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s;
+    }
+
+    .modal-close:hover {
+      background: #f3f4f6;
+      color: var(--dark-clr);
+    }
+
+    .modal-header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .modal-icon {
+      font-size: 5rem;
+      margin-bottom: 1rem;
+      animation: bounce 1s ease infinite;
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-15px); }
+    }
+
+    .modal-title {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--primary-clr);
+      margin-bottom: 0.5rem;
+    }
+
+    .modal-subtitle {
+      color: #666;
+      font-size: 1.1rem;
+    }
+
+    /* Books List Form */
+    .books-list-section {
+      margin-bottom: 2rem;
+    }
+
+    .section-title {
+      font-size: 1.3rem;
+      color: var(--primary-clr);
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .book-entry {
+      background: #f8f9fa;
+      padding: 1rem;
+      border-radius: 10px;
+      margin-bottom: 1rem;
+      position: relative;
+    }
+
+    .book-entry-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    .book-number {
+      background: var(--primary-clr);
+      color: white;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+    }
+
+    .btn-remove {
+      background: var(--error-clr);
+      color: white;
+      border: none;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .btn-remove:hover {
+      transform: scale(1.1);
+    }
+
+    .form-group {
+      margin-bottom: 1rem;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+      color: var(--dark-clr);
+      font-size: 0.95rem;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 12px 15px;
+      border: 2px solid #e0e0e0;
+      border-radius: 10px;
+      font-family: inherit;
+      font-size: 1rem;
+      transition: all 0.3s;
+    }
+
+    .form-group input:focus {
+      outline: none;
+      border-color: var(--primary-clr);
+      box-shadow: 0 0 0 3px rgba(150, 64, 227, 0.1);
+    }
+
+    .form-group input.valid {
+      border-color: var(--success-clr);
+      background: #f0fdf4;
+    }
+
+    .form-group input.invalid {
+      border-color: var(--error-clr);
+      background: #fef2f2;
+    }
+
+    .validation-message {
+      font-size: 0.85rem;
+      margin-top: 0.3rem;
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+
+    .validation-message.success {
+      color: var(--success-clr);
+    }
+
+    .validation-message.error {
+      color: var(--error-clr);
+    }
+
+    .btn-add-book {
+      background: var(--info-clr);
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .btn-add-book:hover {
+      background: #2563eb;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 1rem;
+      margin-top: 2rem;
+    }
+
+    .btn-submit {
+      flex: 1;
+      background: linear-gradient(135deg, var(--success-clr), #059669);
+      color: white;
+      border: none;
+      padding: 15px;
+      border-radius: 10px;
+      font-size: 1.1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+
+    .btn-submit:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+    }
+
+    .btn-submit:disabled {
+      background: #9ca3af;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-cancel {
+      background: #6b7280;
+      color: white;
+      border: none;
+      padding: 15px 30px;
+      border-radius: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .btn-cancel:hover {
+      background: #4b5563;
+    }
+
+    /* Success Content */
+    .success-content {
+      background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+      padding: 2rem;
+      border-radius: 15px;
+      margin-bottom: 2rem;
+    }
+
+    .content-title {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #065f46;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .content-list {
+      list-style: none;
+      padding: 0;
+    }
+
+    .content-list li {
+      background: white;
+      padding: 0.8rem;
+      margin-bottom: 0.5rem;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .content-list li i {
+      color: var(--success-clr);
+    }
+
+    /* Toast Notifications */
+    .toast-container {
+      position: fixed;
+      top: 100px;
+      right: 20px;
+      z-index: 3000;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      max-width: 400px;
+    }
+
+    .toast {
+      background: white;
+      padding: 1rem 1.5rem;
+      border-radius: 10px;
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      animation: slideInRight 0.5s ease;
+      border-left: 4px solid;
+    }
+
+    @keyframes slideInRight {
+      from { transform: translateX(400px); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    .toast.success { border-left-color: var(--success-clr); }
+    .toast.error { border-left-color: var(--error-clr); }
+    .toast.warning { border-left-color: var(--warning-clr); }
+    .toast.info { border-left-color: var(--info-clr); }
+
+    .toast i {
+      font-size: 1.5rem;
+    }
+
+    .toast.success i { color: var(--success-clr); }
+    .toast.error i { color: var(--error-clr); }
+    .toast.warning i { color: var(--warning-clr); }
+    .toast.info i { color: var(--info-clr); }
+
+    .toast-content {
+      flex: 1;
+    }
+
+    .toast-title {
+      font-weight: 600;
+      margin-bottom: 0.2rem;
+    }
+
+    .toast-message {
+      font-size: 0.9rem;
+      color: #666;
+    }
+
+    /* Confetti Animation */
+    @keyframes confetti-fall {
+      to {
+        transform: translateY(100vh) rotate(360deg);
+        opacity: 0;
+      }
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .menu-toggle {
+        display: block;
+      }
+
+      .nav-links {
+        position: fixed;
+        top: 0;
+        right: -100%;
+        width: 70%;
+        max-width: 300px;
+        height: 100vh;
+        background: white;
+        flex-direction: column;
+        padding: 80px 2rem 2rem;
+        box-shadow: -5px 0 20px rgba(0, 0, 0, 0.2);
+        transition: right 0.4s ease;
+        z-index: 1000;
+      }
+
+      .nav-links.active {
+        right: 0;
+      }
+
+      .packets-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .modal-content {
+        padding: 2rem 1.5rem;
+      }
+
+      .modal-actions {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="navbar-content">
+      <a href="/" class="logo">
+        <i class="fas fa-book-reader"></i>
+        Adventure Reading
+      </a>
+      <button class="menu-toggle" id="menuToggle">
+        <i class="fas fa-bars"></i>
+      </button>
+      <ul class="nav-links" id="navLinks">
+        <li><a href="/">Accueil</a></li>
+        <li><a href="/bibliotheque.html">Bibliothèque</a></li>
+        <li><a href="/boutique.html">Boutique</a></li>
+        <li><a href="/jeu_citations.html">Jeu Citations</a></li>
+        <li><a href="/adventure_reading.html">Adventure</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Main Container -->
+  <div class="container">
+    <!-- Page Header -->
+    <div class="page-header">
+      <h1><i class="fas fa-star"></i> Adventure Reading</h1>
+      <p>Débloquez des compétences en lecture et devenez un maître lecteur !</p>
+    </div>
+
+    <!-- Stats Dashboard -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <i class="fas fa-book"></i>
+        <h3 id="totalBooks">0</h3>
+        <p>Livres Validés</p>
+      </div>
+      <div class="stat-card">
+        <i class="fas fa-gift"></i>
+        <h3 id="packetsUnlocked">0/10</h3>
+        <p>Packets Débloqués</p>
+      </div>
+      <div class="stat-card">
+        <i class="fas fa-trophy"></i>
+        <h3 id="totalPoints">0</h3>
+        <p>Points XP</p>
+      </div>
+      <div class="stat-card">
+        <i class="fas fa-fire"></i>
+        <h3 id="streakDays">0</h3>
+        <p>Jours de Suite</p>
+      </div>
+    </div>
+
+    <!-- Packets Grid -->
+    <div class="packets-grid" id="packetsGrid">
+      <!-- Packets will be generated by JavaScript -->
+    </div>
+  </div>
+
+  <!-- Validation Modal -->
+  <div class="modal" id="validationModal">
+    <div class="modal-content">
+      <button class="modal-close" onclick="closeValidationModal()">
+        <i class="fas fa-times"></i>
+      </button>
+      
+      <div class="modal-header">
+        <div class="modal-icon" id="modalIcon">📚</div>
+        <h2 class="modal-title" id="modalTitle">Valider vos Lectures</h2>
+        <p class="modal-subtitle" id="modalSubtitle">Prouvez que vous avez lu ces livres</p>
+      </div>
+
+      <div class="books-list-section">
+        <div class="section-title">
+          <i class="fas fa-list"></i>
+          Liste des livres (<span id="booksCount">0</span> / <span id="requiredCount">0</span>)
+        </div>
+        
+        <div id="booksListContainer">
+          <!-- Books will be added here -->
+        </div>
+
+        <button class="btn-add-book" onclick="addBookEntry()">
+          <i class="fas fa-plus"></i> Ajouter un livre
+        </button>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn-cancel" onclick="closeValidationModal()">
+          <i class="fas fa-times"></i> Annuler
+        </button>
+        <button class="btn-submit" id="submitBtn" onclick="validateBooks()" disabled>
+          <i class="fas fa-check"></i> Valider mes Lectures
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Success Modal -->
+  <div class="modal" id="successModal">
+    <div class="modal-content">
+      <button class="modal-close" onclick="closeSuccessModal()">
+        <i class="fas fa-times"></i>
+      </button>
+      
+      <div class="modal-header">
+        <div class="modal-icon" id="successIcon">🎉</div>
+        <h2 class="modal-title" id="successTitle">Félicitations !</h2>
+        <p class="modal-subtitle" id="successMessage">Vous avez débloqué un nouveau packet !</p>
+      </div>
+
+      <div class="success-content" id="successContent">
+        <!-- Content will be inserted here -->
+      </div>
+
+      <button class="btn-submit" onclick="closeSuccessModal()" style="width: 100%;">
+        <i class="fas fa-check"></i> Continuer
+      </button>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE_URL = 'http://localhost:8040/api';
+
+    // Packet configurations
+    const packets = [
+      {
+        id: 1, title: "Fondamentaux de la Lecture", requirement: 20, icon: "📖", illustration: "🎯",
+        message: "Bravo ! Vous maîtrisez maintenant les bases de la lecture efficace !",
+        content: {
+          title: "Ce que vous avez appris :",
+          items: ["Comment choisir le bon livre", "Créer un environnement de lecture optimal", "Techniques de concentration", "Gestion du temps de lecture", "Prendre des notes efficaces"]
+        }
+      },
+      {
+        id: 2, title: "Lecture Rapide", requirement: 40, icon: "⚡", illustration: "🚀",
+        message: "Incroyable ! Vous lisez maintenant 2x plus vite !",
+        content: {
+          title: "Compétences débloquées :",
+          items: ["Éliminer la subvocalisation", "Élargir votre champ visuel", "Techniques de scanning", "Lecture par blocs de mots", "Exercices d'entraînement quotidiens"]
+        }
+      },
+      {
+        id: 3, title: "Compréhension Profonde", requirement: 60, icon: "🧠", illustration: "💡",
+        message: "Excellent ! Vous comprenez maintenant les subtilités des textes !",
+        content: {
+          title: "Nouvelles capacités :",
+          items: ["Analyse critique des arguments", "Identifier les idées principales", "Comprendre les métaphores", "Détecter les biais de l'auteur", "Synthétiser l'information"]
+        }
+      },
+      {
+        id: 4, title: "Mémoire et Rétention", requirement: 80, icon: "🎓", illustration: "🧩",
+        message: "Fantastique ! Vous retenez 90% de ce que vous lisez !",
+        content: {
+          title: "Techniques maîtrisées :",
+          items: ["Méthode des lieux (palais mental)", "Associations mnémotechniques", "Répétition espacée", "Mind mapping", "Récitation active"]
+        }
+      },
+      {
+        id: 5, title: "Lecture Critique", requirement: 100, icon: "🔍", illustration: "🎭",
+        message: "Impressionnant ! Vous êtes un lecteur critique expert !",
+        content: {
+          title: "Analyse avancée :",
+          items: ["Évaluer la crédibilité des sources", "Analyser les arguments rhétoriques", "Détecter les sophismes", "Comparer différentes perspectives", "Former des opinions éclairées"]
+        }
+      },
+      {
+        id: 6, title: "Lecture Multilingue", requirement: 120, icon: "🌍", illustration: "🗺️",
+        message: "Extraordinaire ! Vous pouvez lire dans plusieurs langues !",
+        content: {
+          title: "Compétences linguistiques :",
+          items: ["Comprendre les structures grammaticales", "Vocabulaire avancé", "Expressions idiomatiques", "Contexte culturel", "Traduction mentale rapide"]
+        }
+      },
+      {
+        id: 7, title: "Lecture Professionnelle", requirement: 140, icon: "💼", illustration: "📊",
+        message: "Magnifique ! Vous lisez comme un professionnel !",
+        content: {
+          title: "Compétences pro :",
+          items: ["Analyse de documents techniques", "Synthèse de rapports", "Lecture de données complexes", "Veille informationnelle", "Prise de décision basée sur la lecture"]
+        }
+      },
+      {
+        id: 8, title: "Lecture Académique", requirement: 160, icon: "🎯", illustration: "📚",
+        message: "Remarquable ! Vous maîtrisez la lecture académique !",
+        content: {
+          title: "Niveau académique :",
+          items: ["Lecture d'articles scientifiques", "Compréhension de méthodologies", "Analyse statistique", "Citations et références", "Rédaction de revues littéraires"]
+        }
+      },
+      {
+        id: 9, title: "Maître Lecteur", requirement: 180, icon: "👑", illustration: "🏆",
+        message: "Légendaire ! Vous êtes un Maître Lecteur !",
+        content: {
+          title: "Maîtrise totale :",
+          items: ["Toutes les techniques de lecture", "Vitesse optimale (1000+ mots/min)", "Compréhension parfaite (95%+)", "Mémoire photographique", "Capacité d'enseignement"]
+        }
+      },
+      {
+        id: 10, title: "Sage Omniscient", requirement: 200, icon: "🔮", illustration: "✨",
+        message: "LÉGENDAIRE ! Vous êtes un Sage Omniscient ! 🎊",
+        content: {
+          title: "Sagesse ultime :",
+          items: ["Connaissance universelle", "Sagesse ancestrale", "Mentor pour les autres", "Créateur de contenu", "Gardien du savoir"]
+        }
+      }
+    ];
+
+    let userData = {
+      booksRead: parseInt(localStorage.getItem('booksRead')) || 0,
+      packetsUnlocked: parseInt(localStorage.getItem('packetsUnlocked')) || 0,
+      totalPoints: parseInt(localStorage.getItem('totalPoints')) || 0,
+      unlockedPackets: JSON.parse(localStorage.getItem('unlockedPackets')) || [],
+      validatedBooks: JSON.parse(localStorage.getItem('validatedBooks')) || []
+    };
+
+    let currentPacketId = null;
+    let bookEntries = [];
+
+    function init() {
+      updateStats();
+      renderPackets();
+      console.log('📚 Adventure Reading initialisé !');
+      console.log('Données utilisateur:', userData);
+    }
+
+    function updateStats() {
+      document.getElementById('totalBooks').textContent = userData.booksRead;
+      document.getElementById('packetsUnlocked').textContent = `${userData.packetsUnlocked}/10`;
+      document.getElementById('totalPoints').textContent = userData.totalPoints;
+      document.getElementById('streakDays').textContent = Math.floor(userData.booksRead / 7);
+    }
+
+    function renderPackets() {
+      const grid = document.getElementById('packetsGrid');
+      grid.innerHTML = '';
+
+      packets.forEach(packet => {
+        const isUnlocked = userData.unlockedPackets.includes(packet.id);
+        const canUnlock = userData.booksRead >= packet.requirement && !isUnlocked;
+        const progress = Math.min(100, (userData.booksRead / packet.requirement) * 100);
+
+        const card = document.createElement('div');
+        card.className = `packet-card ${isUnlocked ? 'unlocked' : 'locked'}`;
+        card.innerHTML = `
+          <div class="packet-number">${packet.id}</div>
+          <div class="packet-icon">${isUnlocked ? packet.icon : '<i class="fas fa-lock"></i>'}</div>
+          <h3 class="packet-title">${packet.title}</h3>
+          <p class="packet-requirement">${isUnlocked ? '✅ Débloqué !' : `Requis: ${packet.requirement} livres`}</p>
+          <div class="packet-progress">
+            <div class="packet-progress-bar" style="width: ${progress}%"></div>
+          </div>
+          <p class="packet-status">${userData.booksRead} / ${packet.requirement} livres</p>
+          ${!isUnlocked ? `
+            <button class="btn btn-unlock" onclick="openValidationModal(${packet.id})">
+              <i class="fas fa-book-open"></i> Valider mes Lectures
+            </button>
+          ` : `
+            <button class="btn btn-view" onclick="viewPacket(${packet.id})">
+              <i class="fas fa-eye"></i> Revoir le contenu
+            </button>
+          `}
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    function openValidationModal(packetId) {
+      console.log('🔓 Tentative d\'ouverture du modal pour packet:', packetId);
+      
+      const packet = packets.find(p => p.id === packetId);
+      if (!packet) {
+        console.error('❌ Packet non trouvé:', packetId);
+        return;
+      }
+
+      // Vérifier si le packet est déjà débloqué
+      if (userData.unlockedPackets.includes(packetId)) {
+        showToast('info', 'Information', 'Ce packet est déjà débloqué ! Vous pouvez revoir le contenu.');
+        viewPacket(packetId);
+        return;
+      }
+
+      console.log('✅ Ouverture du modal de validation');
+      
+      currentPacketId = packetId;
+      
+      // Calculer combien de livres il faut valider pour débloquer ce packet
+      // Si c'est le packet 1 (20 livres requis) et qu'on a 0 livres, on doit valider 20 livres
+      // Si on a déjà 15 livres, on doit valider 5 livres de plus
+      const booksNeeded = packet.requirement - userData.booksRead;
+
+      document.getElementById('modalIcon').textContent = packet.icon;
+      document.getElementById('modalTitle').textContent = `Débloquer ${packet.title}`;
+      document.getElementById('modalSubtitle').textContent = `Confirmez que vous avez lu au moins ${booksNeeded} livre(s)`;
+      document.getElementById('requiredCount').textContent = booksNeeded;
+
+      bookEntries = [];
+      const container = document.getElementById('booksListContainer');
+      container.innerHTML = '';
+      
+      for (let i = 0; i < booksNeeded; i++) {
+        addBookEntry();
+      }
+
+      document.getElementById('validationModal').classList.add('show');
+    }
+
+    function addBookEntry() {
+      const container = document.getElementById('booksListContainer');
+      const index = bookEntries.length;
+
+      const entry = document.createElement('div');
+      entry.className = 'book-entry';
+      entry.id = `book-${index}`;
+      entry.innerHTML = `
+        <div class="book-entry-header">
+          <div class="book-number">${index + 1}</div>
+          <button class="btn-remove" onclick="removeBookEntry(${index})">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="form-group">
+          <label>Titre du livre <span style="color: var(--error-clr);">*</span></label>
+          <input type="text" id="title-${index}" placeholder="Ex: Réfléchissez et devenez riche" 
+                 oninput="validateBookField(${index}, 'title')">
+          <div class="validation-message" id="title-msg-${index}"></div>
+        </div>
+        <div class="form-group">
+          <label>Auteur <span style="color: var(--error-clr);">*</span></label>
+          <input type="text" id="author-${index}" placeholder="Ex: Napoleon Hill" 
+                 oninput="validateBookField(${index}, 'author')">
+          <div class="validation-message" id="author-msg-${index}"></div>
+        </div>
+      `;
+
+      container.appendChild(entry);
+      bookEntries.push({ index, title: '', author: '', titleValid: false, authorValid: false, valid: false });
+      updateBooksCount();
+    }
+
+    function removeBookEntry(index) {
+      const entry = document.getElementById(`book-${index}`);
+      if (entry) {
+        entry.remove();
+        bookEntries = bookEntries.filter(b => b.index !== index);
+        updateBooksCount();
+        checkSubmitButton();
+      }
+    }
+
+    function updateBooksCount() {
+      document.getElementById('booksCount').textContent = bookEntries.length;
+    }
+
+    async function validateBookField(index, field) {
+      const input = document.getElementById(`${field}-${index}`);
+      const msgDiv = document.getElementById(`${field}-msg-${index}`);
+      const value = input.value.trim();
+
+      if (!value) {
+        input.classList.remove('valid', 'invalid');
+        msgDiv.innerHTML = '';
+        msgDiv.className = 'validation-message';
+        return;
+      }
+
+      try {
+        const response = await fetch(`${API_BASE_URL}/books?search=${encodeURIComponent(value)}&limit=100`);
+        const books = await response.json();
+
+        const bookEntry = bookEntries.find(b => b.index === index);
+        if (!bookEntry) return;
+
+        if (field === 'title') {
+          const found = books.find(b => b.title.toLowerCase() === value.toLowerCase());
+          if (found) {
+            input.classList.add('valid');
+            input.classList.remove('invalid');
+            msgDiv.innerHTML = '<i class="fas fa-check-circle"></i> Livre trouvé !';
+            msgDiv.className = 'validation-message success';
+            bookEntry.title = found.title;
+            bookEntry.titleValid = true;
+          } else {
+            input.classList.add('invalid');
+            input.classList.remove('valid');
+            msgDiv.innerHTML = '<i class="fas fa-times-circle"></i> Livre non trouvé';
+            msgDiv.className = 'validation-message error';
+            bookEntry.titleValid = false;
+          }
+        } else if (field === 'author') {
+          const titleInput = document.getElementById(`title-${index}`);
+          const titleValue = titleInput.value.trim();
+          
+          const found = books.find(b => 
+            b.title.toLowerCase() === titleValue.toLowerCase() &&
+            b.author.toLowerCase() === value.toLowerCase()
+          );
+
+          if (found) {
+            input.classList.add('valid');
+            input.classList.remove('invalid');
+            msgDiv.innerHTML = '<i class="fas fa-check-circle"></i> Auteur correct !';
+            msgDiv.className = 'validation-message success';
+            bookEntry.author = found.author;
+            bookEntry.authorValid = true;
+          } else {
+            input.classList.add('invalid');
+            input.classList.remove('valid');
+            msgDiv.innerHTML = '<i class="fas fa-times-circle"></i> Auteur incorrect';
+            msgDiv.className = 'validation-message error';
+            bookEntry.authorValid = false;
+          }
+        }
+
+        bookEntry.valid = bookEntry.titleValid && bookEntry.authorValid;
+        checkSubmitButton();
+
+      } catch (error) {
+        console.error('Erreur validation:', error);
+      }
+    }
+
+    function checkSubmitButton() {
+      const submitBtn = document.getElementById('submitBtn');
+      const allValid = bookEntries.length > 0 && bookEntries.every(b => b.valid);
+      submitBtn.disabled = !allValid;
+    }
+
+    async function validateBooks() {
+      const packet = packets.find(p => p.id === currentPacketId);
+      if (!packet) return;
+
+      const validBooks = bookEntries.filter(b => b.valid);
+
+      userData.validatedBooks.push(...validBooks.map(b => ({ title: b.title, author: b.author, packetId: currentPacketId })));
+      userData.booksRead += validBooks.length;
+      userData.unlockedPackets.push(currentPacketId);
+      userData.packetsUnlocked++;
+      userData.totalPoints += currentPacketId * 100;
+
+      localStorage.setItem('validatedBooks', JSON.stringify(userData.validatedBooks));
+      localStorage.setItem('booksRead', userData.booksRead);
+      localStorage.setItem('unlockedPackets', JSON.stringify(userData.unlockedPackets));
+      localStorage.setItem('packetsUnlocked', userData.packetsUnlocked);
+      localStorage.setItem('totalPoints', userData.totalPoints);
+
+      closeValidationModal();
+      showSuccessModal(packet);
+      updateStats();
+      renderPackets();
+    }
+
+    function showSuccessModal(packet) {
+      document.getElementById('successIcon').textContent = packet.illustration;
+      document.getElementById('successTitle').textContent = packet.title + ' Débloqué !';
+      document.getElementById('successMessage').textContent = packet.message;
+
+      const contentBox = document.getElementById('successContent');
+      contentBox.innerHTML = `
+        <div class="content-title">
+          <i class="fas fa-graduation-cap"></i>
+          ${packet.content.title}
+        </div>
+        <ul class="content-list">
+          ${packet.content.items.map(item => `<li><i class="fas fa-check-circle"></i> ${item}</li>`).join('')}
+        </ul>
+      `;
+
+      document.getElementById('successModal').classList.add('show');
+      createConfetti();
+    }
+
+    function viewPacket(packetId) {
+      const packet = packets.find(p => p.id === packetId);
+      if (packet) showSuccessModal(packet);
+    }
+
+    function closeValidationModal() {
+      document.getElementById('validationModal').classList.remove('show');
+      document.getElementById('booksListContainer').innerHTML = '';
+      bookEntries = [];
+      currentPacketId = null;
+    }
+
+    function closeSuccessModal() {
+      document.getElementById('successModal').classList.remove('show');
+    }
+
+    function showToast(type, title, message) {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      
+      const icons = { 
+        success: 'fa-check-circle', 
+        error: 'fa-exclamation-circle', 
+        info: 'fa-info-circle',
+        warning: 'fa-exclamation-triangle'
+      };
+      
+      toast.innerHTML = `
+        <i class="fas ${icons[type]}"></i>
+        <div class="toast-content">
+          <div class="toast-title">${title}</div>
+          <div class="toast-message">${message}</div>
+        </div>
+      `;
+      
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.style.animation = 'slideInRight 0.5s ease reverse';
+        setTimeout(() => toast.remove(), 500);
+      }, 3000);
+    }
+
+    function createConfetti() {
+      for (let i = 0; i < 50; i++) {
+        const confetti = document.createElement('div');
+        confetti.style.cssText = `
+          position: fixed; width: 10px; height: 10px; border-radius: 50%; pointer-events: none;
+          left: ${Math.random() * 100}%; top: -20px; z-index: 4000; animation: confetti-fall 3s linear;
+          background: ${['#fbbf24', '#f59e0b', '#10b981', '#3b82f6', '#9640e3'][Math.floor(Math.random() * 5)]};
+        `;
+        document.body.appendChild(confetti);
+        setTimeout(() => confetti.remove(), 3000);
+      }
+    }
+
+    const menuToggle = document.getElementById('menuToggle');
+    const navLinks = document.getElementById('navLinks');
+
+    menuToggle.addEventListener('click', () => {
+      navLinks.classList.toggle('active');
+      const icon = menuToggle.querySelector('i');
+      icon.classList.toggle('fa-bars');
+      icon.classList.toggle('fa-times');
+    });
+
+    // Initialisation
+    init();
+  </script>
+</body>
+</html>

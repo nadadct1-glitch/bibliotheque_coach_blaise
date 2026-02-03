@@ -1,0 +1,1696 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gestion de Bibliothèque - Formulaire Avancé</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --primary-clr: #9640e3;
+      --secondary-clr: #f8e8fd;
+      --medium-clr: #d399fb;
+      --dark-clr: #0a0a0a;
+      --light-clr: #ffffff;
+      --success-clr: #10b981;
+      --error-clr: #ef4444;
+      --warning-clr: #f59e0b;
+      --info-clr: #3b82f6;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Fira Sans', sans-serif;
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      color: var(--dark-clr);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Navigation Header */
+    .navbar {
+      background: var(--light-clr);
+      box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      animation: slideDown 0.5s ease;
+    }
+
+    @keyframes slideDown {
+      from { transform: translateY(-100%); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    .navbar-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 1rem 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: relative;
+    }
+
+    .logo {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--primary-clr);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: transform 0.3s;
+      z-index: 1001;
+    }
+
+    .logo:hover { transform: scale(1.05); }
+
+    .menu-toggle {
+      display: none;
+      background: var(--primary-clr);
+      border: none;
+      color: white;
+      font-size: 1.5rem;
+      width: 45px;
+      height: 45px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s;
+      z-index: 1001;
+    }
+
+    .menu-toggle:hover {
+      background: var(--medium-clr);
+      transform: scale(1.05);
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 2rem;
+      list-style: none;
+      align-items: center;
+    }
+
+    .nav-links a {
+      color: var(--dark-clr);
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.3s;
+      position: relative;
+    }
+
+    .nav-links a::after {
+      content: '';
+      position: absolute;
+      bottom: -5px;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: var(--primary-clr);
+      transition: width 0.3s;
+    }
+
+    .nav-links a:hover::after { width: 100%; }
+
+    /* Main Container */
+    .container {
+      max-width: 1000px;
+      margin: 3rem auto;
+      padding: 0 15px 2rem;
+    }
+
+    .page-header {
+      text-align: center;
+      margin-bottom: 3rem;
+      animation: fadeInUp 0.8s ease;
+    }
+
+    @keyframes fadeInUp {
+      from { transform: translateY(30px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    .page-header h1 {
+      font-size: clamp(2rem, 5vw, 3rem);
+      color: var(--primary-clr);
+      margin-bottom: 0.5rem;
+    }
+
+    .page-header p {
+      color: #666;
+      font-size: 1.1rem;
+    }
+
+    /* Quick Stats */
+    .quick-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+      animation: fadeInUp 0.8s ease 0.2s both;
+    }
+
+    .stat-card {
+      background: white;
+      padding: 1.5rem;
+      border-radius: 15px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      text-align: center;
+      transition: transform 0.3s;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    }
+
+    .stat-card i {
+      font-size: 2.5rem;
+      color: var(--primary-clr);
+      margin-bottom: 0.5rem;
+    }
+
+    .stat-card h3 {
+      font-size: 2rem;
+      color: var(--dark-clr);
+      margin-bottom: 0.3rem;
+    }
+
+    .stat-card p {
+      color: #666;
+      font-size: 0.9rem;
+    }
+
+    /* Form Card */
+    .form-card {
+      background: white;
+      border-radius: 20px;
+      padding: 2.5rem;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+      animation: scaleIn 0.6s ease;
+    }
+
+    @keyframes scaleIn {
+      from { transform: scale(0.95); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    .form-section {
+      margin-bottom: 2rem;
+    }
+
+    .section-title {
+      font-size: 1.3rem;
+      color: var(--primary-clr);
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid var(--secondary-clr);
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .form-group {
+      margin-bottom: 1.5rem;
+      position: relative;
+    }
+
+    .form-group.full-width {
+      grid-column: 1 / -1;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+      color: var(--dark-clr);
+      font-size: 0.95rem;
+    }
+
+    .form-group label .required {
+      color: var(--error-clr);
+      margin-left: 0.2rem;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      padding: 12px 15px;
+      border: 2px solid #e0e0e0;
+      border-radius: 10px;
+      font-family: inherit;
+      font-size: 1rem;
+      transition: all 0.3s;
+      background: white;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: var(--primary-clr);
+      box-shadow: 0 0 0 3px rgba(150, 64, 227, 0.1);
+    }
+
+    .form-group input.error,
+    .form-group select.error,
+    .form-group textarea.error {
+      border-color: var(--error-clr);
+    }
+
+    .form-group textarea {
+      resize: vertical;
+      min-height: 120px;
+    }
+
+    .form-group input[type="number"] {
+      -moz-appearance: textfield;
+    }
+
+    .form-group input[type="number"]::-webkit-outer-spin-button,
+    .form-group input[type="number"]::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    .error-message {
+      color: var(--error-clr);
+      font-size: 0.85rem;
+      margin-top: 0.3rem;
+      display: none;
+      animation: shake 0.3s;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-5px); }
+      75% { transform: translateX(5px); }
+    }
+
+    .error-message.show {
+      display: block;
+    }
+
+    .char-counter {
+      font-size: 0.85rem;
+      color: #666;
+      text-align: right;
+      margin-top: 0.3rem;
+    }
+
+    .char-counter.warning {
+      color: var(--warning-clr);
+    }
+
+    .char-counter.error {
+      color: var(--error-clr);
+    }
+
+    /* Image Upload */
+    .image-upload {
+      border: 2px dashed var(--medium-clr);
+      border-radius: 15px;
+      padding: 2rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s;
+      background: var(--secondary-clr);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .image-upload:hover {
+      border-color: var(--primary-clr);
+      background: #f0e6ff;
+    }
+
+    .image-upload.drag-over {
+      border-color: var(--primary-clr);
+      background: #e6d9ff;
+      transform: scale(1.02);
+    }
+
+    .image-upload input[type="file"] {
+      display: none;
+    }
+
+    .upload-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .upload-icon {
+      width: 80px;
+      height: 80px;
+      background: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      color: var(--primary-clr);
+      margin-bottom: 0.5rem;
+    }
+
+    .upload-text h3 {
+      color: var(--primary-clr);
+      margin-bottom: 0.5rem;
+    }
+
+    .upload-text p {
+      color: #666;
+      font-size: 0.9rem;
+    }
+
+    .image-preview {
+      display: none;
+      width: 100%;
+      max-width: 300px;
+      margin: 0 auto;
+      position: relative;
+    }
+
+    .image-preview.show {
+      display: block;
+    }
+
+    .image-preview img {
+      width: 100%;
+      border-radius: 10px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .remove-image {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: var(--error-clr);
+      color: white;
+      border: none;
+      width: 35px;
+      height: 35px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: all 0.3s;
+    }
+
+    .remove-image:hover {
+      background: #dc2626;
+      transform: scale(1.1);
+    }
+
+    .image-info {
+      margin-top: 0.5rem;
+      font-size: 0.85rem;
+      color: #666;
+      text-align: center;
+    }
+
+    /* Reading Status */
+    .reading-status {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .status-option {
+      flex: 1;
+      min-width: 150px;
+    }
+
+    .status-option input[type="radio"] {
+      display: none;
+    }
+
+    .status-label {
+      display: block;
+      padding: 1rem;
+      border: 2px solid #e0e0e0;
+      border-radius: 10px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s;
+      background: white;
+    }
+
+    .status-label i {
+      font-size: 1.5rem;
+      display: block;
+      margin-bottom: 0.5rem;
+    }
+
+    .status-option input[type="radio"]:checked + .status-label {
+      border-color: var(--primary-clr);
+      background: var(--secondary-clr);
+      color: var(--primary-clr);
+      transform: scale(1.05);
+    }
+
+    .status-label:hover {
+      border-color: var(--primary-clr);
+    }
+
+    /* Form Actions */
+    .form-actions {
+      display: flex;
+      gap: 1rem;
+      margin-top: 2rem;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      padding: 14px 30px;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary-clr), var(--medium-clr));
+      color: white;
+      box-shadow: 0 4px 15px rgba(150, 64, 227, 0.3);
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(150, 64, 227, 0.4);
+    }
+
+    .btn-secondary {
+      background: #e0e0e0;
+      color: var(--dark-clr);
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      background: #d0d0d0;
+    }
+
+    .btn-info {
+      background: var(--info-clr);
+      color: white;
+    }
+
+    .btn-info:hover:not(:disabled) {
+      background: #2563eb;
+    }
+
+    .btn .spinner {
+      display: none;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    .btn.loading .spinner {
+      display: block;
+    }
+
+    .btn.loading .btn-text {
+      display: none;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Toast Notifications */
+    .toast-container {
+      position: fixed;
+      top: 100px;
+      right: 20px;
+      z-index: 2000;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      max-width: 400px;
+    }
+
+    .toast {
+      background: white;
+      padding: 1rem 1.5rem;
+      border-radius: 10px;
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      animation: slideInRight 0.5s ease;
+      border-left: 4px solid;
+    }
+
+    @keyframes slideInRight {
+      from { transform: translateX(400px); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    .toast.success {
+      border-left-color: var(--success-clr);
+    }
+
+    .toast.error {
+      border-left-color: var(--error-clr);
+    }
+
+    .toast.warning {
+      border-left-color: var(--warning-clr);
+    }
+
+    .toast.info {
+      border-left-color: var(--info-clr);
+    }
+
+    .toast i {
+      font-size: 1.5rem;
+    }
+
+    .toast.success i { color: var(--success-clr); }
+    .toast.error i { color: var(--error-clr); }
+    .toast.warning i { color: var(--warning-clr); }
+    .toast.info i { color: var(--info-clr); }
+
+    .toast-content {
+      flex: 1;
+    }
+
+    .toast-title {
+      font-weight: 600;
+      margin-bottom: 0.2rem;
+    }
+
+    .toast-message {
+      font-size: 0.9rem;
+      color: #666;
+    }
+
+    .toast-close {
+      background: none;
+      border: none;
+      font-size: 1.2rem;
+      color: #999;
+      cursor: pointer;
+      transition: color 0.3s;
+    }
+
+    .toast-close:hover {
+      color: var(--dark-clr);
+    }
+
+    /* Progress Bar */
+    .progress-bar {
+      height: 4px;
+      background: #e0e0e0;
+      border-radius: 10px;
+      overflow: hidden;
+      margin-top: 0.5rem;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--primary-clr), var(--medium-clr));
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.7);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 3000;
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .modal-overlay.show {
+      display: flex;
+    }
+
+    .modal {
+      background: white;
+      border-radius: 20px;
+      padding: 2rem;
+      max-width: 500px;
+      width: 90%;
+      animation: scaleIn 0.3s ease;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .modal-title {
+      font-size: 1.5rem;
+      color: var(--primary-clr);
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      color: #999;
+      cursor: pointer;
+      transition: color 0.3s;
+    }
+
+    .modal-close:hover {
+      color: var(--dark-clr);
+    }
+
+    .modal-body {
+      margin-bottom: 1.5rem;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 1rem;
+      justify-content: flex-end;
+    }
+
+    /* Footer */
+    footer {
+      background: var(--dark-clr);
+      color: white;
+      padding: 3rem 15px 1rem;
+      margin-top: 5rem;
+      animation: fadeInUp 1s ease;
+    }
+
+    .footer-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 2rem;
+      margin-bottom: 2rem;
+    }
+
+    .footer-section h3 {
+      color: var(--primary-clr);
+      margin-bottom: 1rem;
+    }
+
+    .footer-section p,
+    .footer-section a {
+      color: #ccc;
+      line-height: 1.8;
+      text-decoration: none;
+      display: block;
+      transition: color 0.3s;
+    }
+
+    .footer-section a:hover {
+      color: var(--primary-clr);
+      transform: translateX(5px);
+    }
+
+    .footer-section .social-links {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .footer-section .social-links a {
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(150, 64, 227, 0.2);
+      border-radius: 50%;
+      transition: all 0.3s;
+    }
+
+    .footer-section .social-links a:hover {
+      background: var(--primary-clr);
+      transform: scale(1.1);
+    }
+
+    .footer-bottom {
+      text-align: center;
+      padding-top: 2rem;
+      border-top: 1px solid #333;
+      color: #888;
+    }
+
+    /* Loading Overlay */
+    .loading-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(255, 255, 255, 0.9);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 4000;
+    }
+
+    .loading-overlay.show {
+      display: flex;
+    }
+
+    .loading-spinner {
+      width: 60px;
+      height: 60px;
+      border: 4px solid var(--secondary-clr);
+      border-top-color: var(--primary-clr);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .menu-toggle {
+        display: block;
+      }
+
+      .nav-links {
+        position: fixed;
+        top: 0;
+        right: -100%;
+        width: 70%;
+        max-width: 300px;
+        height: 100vh;
+        background: white;
+        flex-direction: column;
+        justify-content: flex-start;
+        padding: 80px 2rem 2rem;
+        box-shadow: -5px 0 20px rgba(0, 0, 0, 0.2);
+        transition: right 0.4s ease;
+        z-index: 1000;
+      }
+
+      .nav-links.active {
+        right: 0;
+      }
+
+      .nav-links li {
+        width: 100%;
+        text-align: center;
+        padding: 1rem 0;
+        border-bottom: 1px solid #eee;
+      }
+
+      .form-card {
+        padding: 1.5rem;
+      }
+
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .form-actions {
+        flex-direction: column;
+      }
+
+      .btn {
+        width: 100%;
+        justify-content: center;
+      }
+
+      .toast-container {
+        right: 10px;
+        left: 10px;
+        max-width: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="navbar-content">
+      <a href="#" class="logo">
+        <i class="fas fa-book"></i>
+        Ma Bibliothèque
+      </a>
+      <button class="menu-toggle" id="menuToggle">
+        <i class="fas fa-bars"></i>
+      </button>
+      <ul class="nav-links" id="navLinks">
+        <li><a href="#home">Accueil</a></li>
+        <li><a href="#library" onclick="viewLibrary()">Bibliothèque</a></li>
+        <li><a href="#add">Ajouter</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Loading Overlay -->
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <!-- Confirmation Modal -->
+  <div class="modal-overlay" id="confirmModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 class="modal-title" id="modalTitle">Confirmation</h2>
+        <button class="modal-close" onclick="closeModal()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p id="modalMessage">Êtes-vous sûr ?</p>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="closeModal()">
+          <i class="fas fa-times"></i>
+          Annuler
+        </button>
+        <button class="btn btn-primary" id="modalConfirmBtn">
+          <i class="fas fa-check"></i>
+          Confirmer
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="container">
+    <div class="page-header">
+      <h1><i class="fas fa-plus-circle"></i> Ajouter un Nouveau Livre</h1>
+      <p>Remplissez les informations du livre pour l'ajouter à votre bibliothèque</p>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="quick-stats" id="quickStats">
+      <div class="stat-card">
+        <i class="fas fa-books"></i>
+        <h3 id="totalBooks">0</h3>
+        <p>Total de livres</p>
+      </div>
+      <div class="stat-card">
+        <i class="fas fa-book-reader"></i>
+        <h3 id="booksReading">0</h3>
+        <p>En cours de lecture</p>
+      </div>
+      <div class="stat-card">
+        <i class="fas fa-check-circle"></i>
+        <h3 id="booksFinished">0</h3>
+        <p>Livres terminés</p>
+      </div>
+      <div class="stat-card">
+        <i class="fas fa-star"></i>
+        <h3 id="avgRating">0.0</h3>
+        <p>Note moyenne</p>
+      </div>
+    </div>
+
+    <div class="form-card">
+      <form id="bookForm">
+        <!-- Image Section -->
+        <div class="form-section">
+          <h2 class="section-title">
+            <i class="fas fa-image"></i>
+            Image de Couverture
+          </h2>
+          <div class="form-group full-width">
+            <label class="image-upload" for="bookImage" id="imageUploadLabel">
+              <input type="file" id="bookImage" accept="image/*">
+              <div class="upload-content" id="uploadContent">
+                <div class="upload-icon">
+                  <i class="fas fa-cloud-upload-alt"></i>
+                </div>
+                <div class="upload-text">
+                  <h3>Cliquez pour télécharger</h3>
+                  <p>ou glissez-déposez une image (JPG, PNG, max 5MB)</p>
+                </div>
+              </div>
+              <div class="image-preview" id="imagePreview">
+                <img src="" alt="Aperçu" id="previewImg">
+                <button type="button" class="remove-image" id="removeImage">
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+            </label>
+            <div class="image-info" id="imageInfo"></div>
+            <div class="error-message" id="imageError"></div>
+          </div>
+        </div>
+
+        <!-- Basic Information -->
+        <div class="form-section">
+          <h2 class="section-title">
+            <i class="fas fa-info-circle"></i>
+            Informations Générales
+          </h2>
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="title">Titre du Livre <span class="required">*</span></label>
+              <input type="text" id="title" name="title" required placeholder="Ex: Le Petit Prince" maxlength="500">
+              <div class="error-message" id="titleError"></div>
+              <div class="char-counter"><span id="titleCount">0</span>/500</div>
+            </div>
+            <div class="form-group">
+              <label for="author">Auteur <span class="required">*</span></label>
+              <input type="text" id="author" name="author" required placeholder="Ex: Antoine de Saint-Exupéry" maxlength="300">
+              <div class="error-message" id="authorError"></div>
+              <div class="char-counter"><span id="authorCount">0</span>/300</div>
+            </div>
+            <div class="form-group">
+              <label for="isbn">ISBN</label>
+              <input type="text" id="isbn" name="isbn" placeholder="Ex: 978-3-16-148410-0" maxlength="50">
+              <div class="error-message" id="isbnError"></div>
+            </div>
+            <div class="form-group">
+              <label for="publisher">Éditeur</label>
+              <input type="text" id="publisher" name="publisher" placeholder="Ex: Gallimard" maxlength="300">
+              <div class="error-message" id="publisherError"></div>
+            </div>
+            <div class="form-group">
+              <label for="publicationYear">Année de Publication</label>
+              <input type="number" id="publicationYear" name="publicationYear" min="1000" max="2025" placeholder="Ex: 1943">
+              <div class="error-message" id="publicationYearError"></div>
+            </div>
+            <div class="form-group">
+              <label for="pages">Nombre de Pages</label>
+              <input type="number" id="pages" name="pages" min="1" placeholder="Ex: 96">
+              <div class="error-message" id="pagesError"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Category & Genre -->
+        <div class="form-section">
+          <h2 class="section-title">
+            <i class="fas fa-tags"></i>
+            Catégorie & Genre
+          </h2>
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="category">Catégorie <span class="required">*</span></label>
+              <select id="category" name="category" required>
+                <option value="">Sélectionner une catégorie</option>
+                <option value="devperso">Développement personnel</option>
+                <option value="education">Éducation</option>
+                <option value="sante">Santé</option>
+                <option value="bonheur">Bonheur conjugal</option>
+                <option value="emploi">Emploi</option>
+                <option value="leadership">Leadership</option>
+                <option value="entreprenariat">Entrepreneuriat</option>
+                <option value="management">Management</option>
+                <option value="prosperite">Prospérité/Richesse</option>
+                <option value="literature">Littérature</option>
+                <option value="academie">Académie</option>
+                <option value="romance">Romance</option>
+                <option value="thriller">Thriller</option>
+                <option value="fantasy">Fantasy</option>
+                <option value="science-fiction">Science-Fiction</option>
+                <option value="historique">Historique</option>
+                <option value="biographie">Biographie</option>
+                <option value="essai">Essai</option>
+                <option value="poesie">Poésie</option>
+                <option value="jeunesse">Jeunesse</option>
+                <option value="autre">Autre</option>
+              </select>
+              <div class="error-message" id="categoryError"></div>
+            </div>
+            <div class="form-group">
+              <label for="language">Langue</label>
+              <select id="language" name="language">
+                <option value="">Sélectionner une langue</option>
+                <option value="francais" selected>Français</option>
+                <option value="anglais">Anglais</option>
+                <option value="espagnol">Espagnol</option>
+                <option value="allemand">Allemand</option>
+                <option value="italien">Italien</option>
+                <option value="portugais">Portugais</option>
+                <option value="chinois">Chinois</option>
+                <option value="japonais">Japonais</option>
+                <option value="arabe">Arabe</option>
+                <option value="autre">Autre</option>
+              </select>
+              <div class="error-message" id="languageError"></div>
+            </div>
+          </div>
+          <div class="form-group full-width">
+            <label for="description">Description / Résumé</label>
+            <textarea id="description" name="description" placeholder="Décrivez brièvement l'histoire du livre..." maxlength="2000"></textarea>
+            <div class="char-counter"><span id="descriptionCount">0</span>/2000</div>
+            <div class="error-message" id="descriptionError"></div>
+          </div>
+        </div>
+
+        <!-- Purchase & Reading Info -->
+        <div class="form-section">
+          <h2 class="section-title">
+            <i class="fas fa-shopping-cart"></i>
+            Informations d'Achat & Lecture
+          </h2>
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="purchaseDate">Date d'Achat</label>
+              <input type="date" id="purchaseDate" name="purchaseDate">
+              <div class="error-message" id="purchaseDateError"></div>
+            </div>
+            <div class="form-group">
+              <label for="price">Prix (Fcfa)</label>
+              <input type="number" id="price" name="price" step="0.01" min="0" placeholder="Ex: 15.99">
+              <div class="error-message" id="priceError"></div>
+            </div>
+            <div class="form-group">
+              <label for="readingTime">Temps de Lecture (heures)</label>
+              <input type="number" id="readingTime" name="readingTime" step="0.5" min="0" placeholder="Ex: 5.5">
+              <div class="error-message" id="readingTimeError"></div>
+            </div>
+            <div class="form-group">
+              <label for="rating">Note (sur 5)</label>
+              <input type="number" id="rating" name="rating" min="0" max="5" step="0.5" placeholder="Ex: 4.5">
+              <div class="error-message" id="ratingError"></div>
+            </div>
+
+            <!-- Number of Copies Section -->
+            <div class="form-group">
+              <label for="copiesCount">Nombre d'exemplaires disponibles</label>
+              <input 
+                type="number" 
+                id="copiesCount" 
+                name="copiesCount" 
+                min="0" 
+                value="1" 
+                placeholder="Ex: 1"
+              >
+              <div class="error-message" id="copiesCountError"></div>
+              <small style="color: #666; font-size: 0.85rem; margin-top: 0.3rem; display: block;">
+                Indiquez combien d'exemplaires de ce livre vous possédez
+              </small>
+            </div>
+            
+          </div>
+        </div>
+
+
+        </div>
+
+        
+        
+        <!-- Reading Status -->
+        <div class="form-section">
+          <h2 class="section-title">
+            <i class="fas fa-book-reader"></i>
+            Statut de Lecture
+          </h2>
+          <div class="reading-status">
+            <div class="status-option">
+              <input type="radio" id="statusToRead" name="status" value="to-read" checked>
+              <label for="statusToRead" class="status-label">
+                <i class="fas fa-bookmark"></i>
+                <span>À Lire</span>
+              </label>
+            </div>
+            <div class="status-option">
+              <input type="radio" id="statusReading" name="status" value="reading">
+              <label for="statusReading" class="status-label">
+                <i class="fas fa-book-open"></i>
+                <span>En Cours</span>
+              </label>
+            </div>
+            <div class="status-option">
+              <input type="radio" id="statusFinished" name="status" value="finished">
+              <label for="statusFinished" class="status-label">
+                <i class="fas fa-check-circle"></i>
+                <span>Terminé</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" id="resetBtn">
+            <i class="fas fa-redo"></i>
+            <span class="btn-text">Réinitialiser</span>
+          </button>
+          <button type="button" class="btn btn-info" id="previewBtn">
+            <i class="fas fa-eye"></i>
+            <span class="btn-text">Aperçu</span>
+          </button>
+          <button type="submit" class="btn btn-primary" id="submitBtn">
+            <div class="spinner"></div>
+            <i class="fas fa-save"></i>
+            <span class="btn-text">Enregistrer le Livre</span>
+          </button>
+        </div>
+
+        <div class="progress-bar">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer id="contact">
+    <div class="footer-content">
+      <div class="footer-section">
+        <h3>À propos</h3>
+        <p>Gérez votre bibliothèque personnelle facilement et efficacement avec notre système avancé.</p>
+      </div>
+      <div class="footer-section">
+        <h3>Liens rapides</h3>
+        <a href="#home">Accueil</a>
+        <a href="#library" onclick="viewLibrary()">Bibliothèque</a>
+        <a href="#add">Ajouter un Livre</a>
+        <a href="#contact">Contact</a>
+      </div>
+      <div class="footer-section">
+        <h3>Contact</h3>
+        <p>Email: contact@bibliotheque.com</p>
+        <p>Tél: +33 1 23 45 67 89</p>
+      </div>
+      <div class="footer-section">
+        <h3>Suivez-nous</h3>
+        <div class="social-links">
+          <a href="#"><i class="fab fa-facebook"></i></a>
+          <a href="#"><i class="fab fa-twitter"></i></a>
+          <a href="#"><i class="fab fa-instagram"></i></a>
+          <a href="#"><i class="fab fa-youtube"></i></a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2025 Bibliothèque Avancée. Tous droits réservés.</p>
+    </div>
+  </footer>
+
+  <script>
+    // Configuration de l'API
+    const API_BASE_URL = 'http://localhost:8040/api';
+
+    // ==================== UTILITAIRES ====================
+    
+    function showToast(type, title, message, duration = 3000) {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      
+      const icons = {
+        success: 'fa-check-circle',
+        error: 'fa-exclamation-circle',
+        warning: 'fa-exclamation-triangle',
+        info: 'fa-info-circle'
+      };
+      
+      toast.innerHTML = `
+        <i class="fas ${icons[type]}"></i>
+        <div class="toast-content">
+          <div class="toast-title">${title}</div>
+          <div class="toast-message">${message}</div>
+        </div>
+        <button class="toast-close" onclick="this.parentElement.remove()">
+          <i class="fas fa-times"></i>
+        </button>
+      `;
+      
+      container.appendChild(toast);
+      
+      setTimeout(() => {
+        toast.style.animation = 'slideInRight 0.5s ease reverse';
+        setTimeout(() => toast.remove(), 500);
+      }, duration);
+    }
+
+    function showLoading(show = true) {
+      document.getElementById('loadingOverlay').classList.toggle('show', show);
+    }
+
+    function showModal(title, message, onConfirm) {
+      const modal = document.getElementById('confirmModal');
+      document.getElementById('modalTitle').textContent = title;
+      document.getElementById('modalMessage').textContent = message;
+      
+      const confirmBtn = document.getElementById('modalConfirmBtn');
+      confirmBtn.onclick = () => {
+        onConfirm();
+        closeModal();
+      };
+      
+      modal.classList.add('show');
+    }
+
+    function closeModal() {
+      document.getElementById('confirmModal').classList.remove('show');
+    }
+
+    function updateProgress() {
+      const form = document.getElementById('bookForm');
+      const inputs = form.querySelectorAll('input[required], select[required]');
+      let filled = 0;
+      
+      inputs.forEach(input => {
+        if (input.value.trim()) filled++;
+      });
+      
+      const progress = (filled / inputs.length) * 100;
+      document.getElementById('progressFill').style.width = `${progress}%`;
+    }
+
+    // ==================== VALIDATION ====================
+    
+    function validateField(field) {
+      const value = field.value.trim();
+      // const errorElement = document.getElementById(`${field.id}Error`);
+      const errorElement = document.getElementById(`${field.id}Error`);
+      if (!errorElement) return true; // Si pas d'élément d'erreur, considérer comme valide
+      let error = '';
+      
+      if (field.hasAttribute('required') && !value) {
+        error = 'Ce champ est requis';
+      } else if (field.type === 'number') {
+        const num = parseFloat(value);
+        const min = parseFloat(field.min);
+        const max = parseFloat(field.max);
+        
+        if (value && isNaN(num)) {
+          error = 'Veuillez entrer un nombre valide';
+        } else if (value && min !== undefined && num < min) {
+          error = `La valeur doit être supérieure ou égale à ${min}`;
+        } else if (value && max !== undefined && num > max) {
+          error = `La valeur doit être inférieure ou égale à ${max}`;
+        }
+      } else if (field.id === 'isbn' && value) {
+        const isbnRegex = /^(?:\d{10}|\d{13}|(?:\d{1,5}-){1,6}\d{1,7})$/;
+        if (!isbnRegex.test(value.replace(/[-\s]/g, ''))) {
+          error = 'Format ISBN invalide';
+        }
+      }
+      
+      if (error) {
+        field.classList.add('error');
+        errorElement.textContent = error;
+        errorElement.classList.add('show');
+        return false;
+      } else {
+        field.classList.remove('error');
+        errorElement.classList.remove('show');
+        return true;
+      }
+    }
+
+    function validateForm() {
+      const form = document.getElementById('bookForm');
+      const inputs = form.querySelectorAll('input, select, textarea');
+      let isValid = true;
+      
+      inputs.forEach(input => {
+        if (!validateField(input)) {
+          isValid = false;
+        }
+      });
+      
+      return isValid;
+    }
+
+    // ==================== GESTION IMAGE ====================
+    
+    const bookImageInput = document.getElementById('bookImage');
+    const uploadContent = document.getElementById('uploadContent');
+    const imagePreview = document.getElementById('imagePreview');
+    const previewImg = document.getElementById('previewImg');
+    const removeImageBtn = document.getElementById('removeImage');
+    const imageUploadLabel = document.getElementById('imageUploadLabel');
+    const imageInfo = document.getElementById('imageInfo');
+    const imageError = document.getElementById('imageError');
+
+    function validateImage(file) {
+      const maxSize = 5 * 1024 * 1024; // 5MB
+      const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+      
+      if (!validTypes.includes(file.type)) {
+        return 'Format d\'image non supporté. Utilisez JPG, PNG, GIF ou WebP.';
+      }
+      
+      if (file.size > maxSize) {
+        return 'L\'image est trop grande. Taille maximale: 5MB.';
+      }
+      
+      return null;
+    }
+
+    function displayImage(file) {
+      const error = validateImage(file);
+      
+      if (error) {
+        imageError.textContent = error;
+        imageError.classList.add('show');
+        showToast('error', 'Erreur', error);
+        bookImageInput.value = '';
+        return;
+      }
+      
+      imageError.classList.remove('show');
+      
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        previewImg.src = event.target.result;
+        uploadContent.style.display = 'none';
+        imagePreview.classList.add('show');
+        
+        const sizeKB = (file.size / 1024).toFixed(2);
+        imageInfo.textContent = `${file.name} (${sizeKB} KB)`;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    bookImageInput.addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (file) {
+        displayImage(file);
+      }
+    });
+
+    removeImageBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      bookImageInput.value = '';
+      previewImg.src = '';
+      uploadContent.style.display = 'flex';
+      imagePreview.classList.remove('show');
+      imageInfo.textContent = '';
+    });
+
+    // Drag and drop
+    imageUploadLabel.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      imageUploadLabel.classList.add('drag-over');
+    });
+
+    imageUploadLabel.addEventListener('dragleave', () => {
+      imageUploadLabel.classList.remove('drag-over');
+    });
+
+    imageUploadLabel.addEventListener('drop', (e) => {
+      e.preventDefault();
+      imageUploadLabel.classList.remove('drag-over');
+      
+      const file = e.dataTransfer.files[0];
+      if (file && file.type.startsWith('image/')) {
+        const dataTransfer = new DataTransfer();
+        dataTransfer.items.add(file);
+        bookImageInput.files = dataTransfer.files;
+        displayImage(file);
+      }
+    });
+
+    // ==================== COMPTEURS DE CARACTÈRES ====================
+    
+    const charCountFields = ['title', 'author', 'description'];
+    
+    charCountFields.forEach(fieldId => {
+      const field = document.getElementById(fieldId);
+      const counter = document.getElementById(`${fieldId}Count`);
+      
+      field.addEventListener('input', () => {
+        const length = field.value.length;
+        const maxLength = field.maxLength;
+        counter.textContent = length;
+        
+        const counterParent = counter.parentElement;
+        if (length > maxLength * 0.9) {
+          counterParent.classList.add('error');
+          counterParent.classList.remove('warning');
+        } else if (length > maxLength * 0.7) {
+          counterParent.classList.add('warning');
+          counterParent.classList.remove('error');
+        } else {
+          counterParent.classList.remove('warning', 'error');
+        }
+        
+        updateProgress();
+      });
+    });
+
+    // ==================== VALIDATION EN TEMPS RÉEL ====================
+    
+    const form = document.getElementById('bookForm');
+    const inputs = form.querySelectorAll('input, select, textarea');
+    
+    inputs.forEach(input => {
+      input.addEventListener('blur', () => validateField(input));
+      input.addEventListener('input', () => {
+        if (input.classList.contains('error')) {
+          validateField(input);
+        }
+        updateProgress();
+      });
+    });
+
+    // ==================== SOUMISSION DU FORMULAIRE ====================
+    
+    form.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      if (!validateForm()) {
+        showToast('error', 'Erreur de validation', 'Veuillez corriger les erreurs dans le formulaire');
+        return;
+      }
+      
+      const submitBtn = document.getElementById('submitBtn');
+      submitBtn.disabled = true;
+      submitBtn.classList.add('loading');
+      
+      try {
+        const formData = new FormData();
+        
+        // Ajouter tous les champs du formulaire
+        formData.append('title', document.getElementById('title').value.trim());
+        formData.append('author', document.getElementById('author').value.trim());
+        formData.append('category', document.getElementById('category').value);
+        
+        const optionalFields = ['isbn', 'publisher', 'publication_year', 'pages', 'language', 
+                                'description', 'purchase_date', 'price', 'reading_time', 'rating'];
+        
+        optionalFields.forEach(field => {
+          const element = document.getElementById(field.replace('_', ''));
+          if (element && element.value) {
+            formData.append(field, element.value);
+          }
+        });
+
+        // Ajouter le nombre d'exemplaires
+        const copiesCount = document.getElementById('copiesCount');
+        if (copiesCount && copiesCount.value) {
+          formData.append('copies_count', copiesCount.value);
+        }
+        
+        // Ajouter le statut de lecture
+        const status = document.querySelector('input[name="status"]:checked').value;
+        formData.append('status', status);
+        
+        // Ajouter l'image si présente
+        if (previewImg.src && previewImg.src.startsWith('data:')) {
+          formData.append('image', previewImg.src);
+        }
+        
+        // Envoyer à l'API
+        const response = await fetch(`${API_BASE_URL}/books`, {
+          method: 'POST',
+          body: formData
+        });
+        
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.detail || 'Erreur lors de l\'enregistrement');
+        }
+        
+        const book = await response.json();
+        
+        showToast('success', 'Succès!', `Le livre "${book.title}" a été ajouté avec succès`);
+        
+        // Réinitialiser le formulaire après 1 seconde
+        setTimeout(() => {
+          form.reset();
+          bookImageInput.value = '';
+          uploadContent.style.display = 'flex';
+          imagePreview.classList.remove('show');
+          imageInfo.textContent = '';
+          document.getElementById('progressFill').style.width = '0%';
+          
+          // Recharger les statistiques
+          loadStatistics();
+        }, 1000);
+        
+      } catch (error) {
+        console.error('Erreur:', error);
+        showToast('error', 'Erreur', error.message);
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.classList.remove('loading');
+      }
+    });
+
+    // ==================== BOUTON RÉINITIALISER ====================
+    
+    document.getElementById('resetBtn').addEventListener('click', function() {
+      showModal(
+        'Réinitialiser le formulaire',
+        'Êtes-vous sûr de vouloir réinitialiser tous les champs ? Cette action est irréversible.',
+        () => {
+          form.reset();
+          bookImageInput.value = '';
+          uploadContent.style.display = 'flex';
+          imagePreview.classList.remove('show');
+          imageInfo.textContent = '';
+          document.getElementById('progressFill').style.width = '0%';
+          
+          // Réinitialiser les compteurs
+          charCountFields.forEach(fieldId => {
+            document.getElementById(`${fieldId}Count`).textContent = '0';
+          });
+          
+          showToast('info', 'Formulaire réinitialisé', 'Tous les champs ont été effacés');
+        }
+      );
+    });
+
+    // ==================== BOUTON APERÇU ====================
+    
+    document.getElementById('previewBtn').addEventListener('click', function() {
+      if (!validateForm()) {
+        showToast('warning', 'Formulaire incomplet', 'Veuillez remplir tous les champs requis pour voir l\'aperçu');
+        return;
+      }
+      
+      const title = document.getElementById('title').value;
+      const author = document.getElementById('author').value;
+      const category = document.getElementById('category').options[document.getElementById('category').selectedIndex].text;
+      
+      showModal(
+        'Aperçu du livre',
+        `Titre: ${title}\nAuteur: ${author}\nCatégorie: ${category}`,
+        () => {}
+      );
+    });
+
+    // ==================== CHARGEMENT DES STATISTIQUES ====================
+    
+    async function loadStatistics() {
+      try {
+        const response = await fetch(`${API_BASE_URL}/statistics`);
+        if (!response.ok) throw new Error('Erreur lors du chargement des statistiques');
+        
+        const stats = await response.json();
+        
+        document.getElementById('totalBooks').textContent = stats.total_books;
+        document.getElementById('booksReading').textContent = stats.books_reading;
+        document.getElementById('booksFinished').textContent = stats.books_finished;
+        document.getElementById('avgRating').textContent = stats.average_rating.toFixed(1);
+        
+      } catch (error) {
+        console.error('Erreur:', error);
+      }
+    }
+
+    // ==================== NAVIGATION ====================
+    
+    const menuToggle = document.getElementById('menuToggle');
+    const navLinks = document.getElementById('navLinks');
+
+    menuToggle.addEventListener('click', () => {
+      navLinks.classList.toggle('active');
+      const icon = menuToggle.querySelector('i');
+      icon.classList.toggle('fa-bars');
+      icon.classList.toggle('fa-times');
+    });
+
+    navLinks.querySelectorAll('a').forEach(link => {
+      link.addEventListener('click', () => {
+        navLinks.classList.remove('active');
+        const icon = menuToggle.querySelector('i');
+        icon.classList.remove('fa-times');
+        icon.classList.add('fa-bars');
+      });
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!navLinks.contains(e.target) && !menuToggle.contains(e.target)) {
+        navLinks.classList.remove('active');
+        const icon = menuToggle.querySelector('i');
+        icon.classList.remove('fa-times');
+        icon.classList.add('fa-bars');
+      }
+    });
+
+    // Smooth scroll
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target && this.getAttribute('href') !== '#library') {
+          e.preventDefault();
+          target.scrollIntoView({ behavior: 'smooth' });
+        }
+      });
+    });
+
+    function viewLibrary() {
+      showToast('info', 'Bibliothèque', 'Fonctionnalité de visualisation de la bibliothèque à venir...');
+    }
+
+    // ==================== INITIALISATION ====================
+    
+    window.addEventListener('DOMContentLoaded', () => {
+      loadStatistics();
+      updateProgress();
+      showToast('info', 'Bienvenue!', 'Système de gestion de bibliothèque chargé avec succès');
+    });
+
+    // Fermer le modal en cliquant en dehors
+    document.getElementById('confirmModal').addEventListener('click', (e) => {
+      if (e.target.classList.contains('modal-overlay')) {
+        closeModal();
+      }
+    });
+  </script>
+</body>
+</html>

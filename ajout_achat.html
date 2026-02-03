@@ -1,0 +1,1445 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Enregistrer une Vente</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    :root {
+      --primary-clr: #16a34a;
+      --secondary-clr: #dcfce7;
+      --medium-clr: #86efac;
+      --dark-clr: #0a0a0a;
+      --light-clr: #ffffff;
+      --success-clr: #10b981;
+      --warning-clr: #f59e0b;
+      --info-clr: #3b82f6;
+      --danger-clr: #ef4444;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Fira Sans', sans-serif;
+      background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+      color: var(--dark-clr);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Navigation Header */
+    .navbar {
+      background: var(--light-clr);
+      box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      animation: slideDown 0.5s ease;
+    }
+
+    @keyframes slideDown {
+      from {
+        transform: translateY(-100%);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    .navbar-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 1rem 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: relative;
+    }
+
+    .logo {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--primary-clr);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: transform 0.3s;
+      z-index: 1001;
+    }
+
+    .logo:hover {
+      transform: scale(1.05);
+    }
+
+    .menu-toggle {
+      display: none;
+      background: var(--primary-clr);
+      border: none;
+      color: white;
+      font-size: 1.5rem;
+      width: 45px;
+      height: 45px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s;
+      z-index: 1001;
+    }
+
+    .menu-toggle:hover {
+      background: var(--medium-clr);
+      transform: scale(1.05);
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 2rem;
+      list-style: none;
+      align-items: center;
+    }
+
+    .nav-links a {
+      color: var(--dark-clr);
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.3s;
+      position: relative;
+    }
+
+    .nav-links a::after {
+      content: '';
+      position: absolute;
+      bottom: -5px;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: var(--primary-clr);
+      transition: width 0.3s;
+    }
+
+    .nav-links a:hover::after {
+      width: 100%;
+    }
+
+    /* Main Container */
+    .container {
+      max-width: 1000px;
+      margin: 3rem auto;
+      padding: 0 15px 2rem;
+    }
+
+    .page-header {
+      text-align: center;
+      margin-bottom: 3rem;
+      animation: fadeInUp 0.8s ease;
+    }
+
+    @keyframes fadeInUp {
+      from {
+        transform: translateY(30px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    .page-header h1 {
+      font-size: clamp(2rem, 5vw, 3rem);
+      color: var(--primary-clr);
+      margin-bottom: 0.5rem;
+    }
+
+    .page-header p {
+      color: #666;
+      font-size: 1.1rem;
+    }
+
+    /* API Status */
+    .api-status {
+      background: white;
+      padding: 1rem;
+      border-radius: 10px;
+      margin-bottom: 2rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .api-status.connected {
+      border-left: 4px solid var(--success-clr);
+    }
+
+    .api-status.disconnected {
+      border-left: 4px solid var(--danger-clr);
+    }
+
+    .api-status i {
+      font-size: 1.2rem;
+    }
+
+    .api-status.connected i {
+      color: var(--success-clr);
+    }
+
+    .api-status.disconnected i {
+      color: var(--danger-clr);
+    }
+
+    /* Summary Cards */
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .summary-card {
+      background: white;
+      padding: 1.5rem;
+      border-radius: 15px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      text-align: center;
+      animation: scaleIn 0.5s ease;
+    }
+
+    @keyframes scaleIn {
+      from {
+        transform: scale(0.9);
+        opacity: 0;
+      }
+      to {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
+    .summary-card i {
+      font-size: 2rem;
+      color: var(--primary-clr);
+      margin-bottom: 0.5rem;
+    }
+
+    .summary-card h3 {
+      font-size: 0.9rem;
+      color: #666;
+      margin-bottom: 0.5rem;
+    }
+
+    .summary-card .value {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--primary-clr);
+    }
+
+    /* Form Card */
+    .form-card {
+      background: white;
+      border-radius: 20px;
+      padding: 2.5rem;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+      animation: scaleIn 0.6s ease;
+    }
+
+    .form-section {
+      margin-bottom: 2rem;
+    }
+
+    .section-title {
+      font-size: 1.3rem;
+      color: var(--primary-clr);
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid var(--secondary-clr);
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+
+    .form-group.full-width {
+      grid-column: 1 / -1;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+      color: var(--dark-clr);
+      font-size: 0.95rem;
+    }
+
+    .form-group label .required {
+      color: #ef4444;
+      margin-left: 0.2rem;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      padding: 12px 15px;
+      border: 2px solid #e0e0e0;
+      border-radius: 10px;
+      font-family: inherit;
+      font-size: 1rem;
+      transition: all 0.3s;
+      background: white;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: var(--primary-clr);
+      box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.1);
+    }
+
+    .input-group {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+    }
+
+    .input-group input {
+      flex: 1;
+    }
+
+    .input-suffix {
+      padding: 12px 15px;
+      background: var(--secondary-clr);
+      border: 2px solid var(--medium-clr);
+      border-radius: 10px;
+      font-weight: 600;
+      color: var(--primary-clr);
+      min-width: 80px;
+      text-align: center;
+    }
+
+    /* Calculated Fields */
+    .calculated-field {
+      background: var(--secondary-clr);
+      border: 2px solid var(--medium-clr);
+      font-weight: 600;
+      color: var(--primary-clr);
+      cursor: not-allowed;
+    }
+
+    /* Sale Details Box */
+    .sale-details {
+      background: linear-gradient(135deg, var(--secondary-clr), #f0fdf4);
+      border: 2px solid var(--medium-clr);
+      border-radius: 15px;
+      padding: 1.5rem;
+      margin-top: 1rem;
+    }
+
+    .detail-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.8rem 0;
+      border-bottom: 1px solid var(--medium-clr);
+    }
+
+    .detail-row:last-child {
+      border-bottom: none;
+      padding-top: 1rem;
+      margin-top: 0.5rem;
+      border-top: 2px solid var(--primary-clr);
+    }
+
+    .detail-label {
+      font-weight: 600;
+      color: var(--dark-clr);
+    }
+
+    .detail-value {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--primary-clr);
+    }
+
+    .detail-row:last-child .detail-value {
+      font-size: 1.5rem;
+    }
+
+    /* Payment Method */
+    .payment-methods {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 1rem;
+    }
+
+    .payment-option {
+      position: relative;
+    }
+
+    .payment-option input[type="radio"] {
+      display: none;
+    }
+
+    .payment-label {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 1.5rem 1rem;
+      border: 2px solid #e0e0e0;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.3s;
+      background: white;
+    }
+
+    .payment-label i {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+      color: #666;
+    }
+
+    .payment-option input[type="radio"]:checked + .payment-label {
+      border-color: var(--primary-clr);
+      background: var(--secondary-clr);
+    }
+
+    .payment-option input[type="radio"]:checked + .payment-label i {
+      color: var(--primary-clr);
+    }
+
+    .payment-label:hover {
+      border-color: var(--primary-clr);
+    }
+
+    /* Advance Amount Field */
+    #advanceAmountGroup {
+      display: none;
+      margin-top: 1rem;
+    }
+
+    #advanceAmountGroup.show {
+      display: block;
+    }
+
+    /* Form Actions */
+    .form-actions {
+      display: flex;
+      gap: 1rem;
+      margin-top: 2rem;
+      justify-content: flex-end;
+    }
+
+    .btn {
+      padding: 14px 30px;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary-clr), var(--medium-clr));
+      color: white;
+      box-shadow: 0 4px 15px rgba(22, 163, 74, 0.3);
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(22, 163, 74, 0.4);
+    }
+
+    .btn-secondary {
+      background: #e0e0e0;
+      color: var(--dark-clr);
+    }
+
+    .btn-secondary:hover {
+      background: #d0d0d0;
+    }
+
+    .btn-pdf {
+      background: linear-gradient(135deg, #ef4444, #f87171);
+      color: white;
+      box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+    }
+
+    .btn-pdf:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+    }
+
+    /* Loading Spinner */
+    .spinner {
+      border: 3px solid #f3f3f3;
+      border-top: 3px solid var(--primary-clr);
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* Success Modal */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 3000;
+      align-items: center;
+      justify-content: center;
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .modal.show {
+      display: flex;
+    }
+
+    .modal-content {
+      background: white;
+      border-radius: 20px;
+      padding: 2rem;
+      max-width: 500px;
+      width: 90%;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      animation: slideUp 0.4s ease;
+      text-align: center;
+    }
+
+    @keyframes slideUp {
+      from {
+        transform: translateY(50px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    .success-icon {
+      width: 80px;
+      height: 80px;
+      background: var(--success-clr);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 1.5rem;
+      font-size: 3rem;
+      color: white;
+      animation: scaleIn 0.5s ease 0.3s both;
+    }
+
+    .modal-content h2 {
+      color: var(--primary-clr);
+      margin-bottom: 1rem;
+    }
+
+    .modal-content p {
+      color: #666;
+      margin-bottom: 1.5rem;
+      line-height: 1.6;
+    }
+
+    .receipt-number {
+      background: var(--secondary-clr);
+      padding: 1rem;
+      border-radius: 10px;
+      margin: 1rem 0;
+      font-family: monospace;
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--primary-clr);
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+    }
+
+    /* Error Alert */
+    .alert {
+      padding: 1rem;
+      border-radius: 10px;
+      margin-bottom: 1rem;
+      display: none;
+    }
+
+    .alert.show {
+      display: block;
+      animation: slideDown 0.3s ease;
+    }
+
+    .alert-error {
+      background: #fee;
+      border-left: 4px solid var(--danger-clr);
+      color: var(--danger-clr);
+    }
+
+    /* Responsive */
+    @keyframes slideDown {
+      from {
+        transform: translateY(-20px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .menu-toggle {
+        display: block;
+      }
+
+      .nav-links {
+        position: fixed;
+        top: 0;
+        right: -100%;
+        width: 70%;
+        max-width: 300px;
+        height: 100vh;
+        background: white;
+        flex-direction: column;
+        justify-content: flex-start;
+        padding: 80px 2rem 2rem;
+        box-shadow: -5px 0 20px rgba(0, 0, 0, 0.2);
+        transition: right 0.4s ease;
+        z-index: 1000;
+      }
+
+      .nav-links.active {
+        right: 0;
+      }
+
+      .nav-links li {
+        width: 100%;
+        text-align: center;
+        padding: 1rem 0;
+        border-bottom: 1px solid #eee;
+      }
+
+      .form-card {
+        padding: 1.5rem;
+      }
+
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .form-actions,
+      .modal-actions {
+        flex-direction: column;
+      }
+
+      .btn {
+        width: 100%;
+        justify-content: center;
+      }
+
+      .payment-methods {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="navbar-content">
+      <a href="#" class="logo">
+        <i class="fas fa-cash-register"></i>
+        Enregistrer Vente
+      </a>
+      <button class="menu-toggle" id="menuToggle">
+        <i class="fas fa-bars"></i>
+      </button>
+      <ul class="nav-links" id="navLinks">
+        <li><a href="#home">Accueil</a></li>
+        <li><a href="#sales">Ventes</a></li>
+        <li><a href="#inventory">Inventaire</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Success Modal -->
+  <div class="modal" id="successModal">
+    <div class="modal-content">
+      <div class="success-icon">
+        <i class="fas fa-check"></i>
+      </div>
+      <h2>Vente Enregistrée !</h2>
+      <p>La vente a été enregistrée avec succès dans la base de données.</p>
+      <div class="receipt-number" id="receiptNumber">
+        REÇU-001
+      </div>
+      <p><strong>Montant total :</strong> <span id="modalTotal">0 FCFA</span></p>
+      <div class="modal-actions">
+        <button class="btn btn-pdf" id="downloadPdfBtn">
+          <i class="fas fa-file-pdf"></i>
+          Télécharger Reçu PDF
+        </button>
+        <button class="btn btn-primary" id="newSaleBtn">
+          <i class="fas fa-plus"></i>
+          Nouvelle Vente
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="container">
+    <div class="page-header">
+      <h1><i class="fas fa-shopping-cart"></i> Nouvelle Vente</h1>
+      <p>Enregistrez les détails de la vente dans la base de données</p>
+    </div>
+
+    <!-- API Status -->
+    <div class="api-status disconnected" id="apiStatus">
+      <i class="fas fa-circle"></i>
+      <span id="apiStatusText">Connexion à l'API...</span>
+    </div>
+
+    <!-- Error Alert -->
+    <div class="alert alert-error" id="errorAlert"></div>
+
+    <!-- Summary Cards -->
+    <div class="summary-grid">
+      <div class="summary-card">
+        <i class="fas fa-receipt"></i>
+        <h3>Ventes Aujourd'hui</h3>
+        <div class="value" id="salesToday">0</div>
+      </div>
+      <div class="summary-card">
+        <i class="fas fa-money-bill-wave"></i>
+        <h3>Chiffre du Jour</h3>
+        <div class="value" id="revenueToday">0 FCFA</div>
+      </div>
+      <div class="summary-card">
+        <i class="fas fa-chart-line"></i>
+        <h3>Bénéfice Estimé</h3>
+        <div class="value" id="profitToday">0 FCFA</div>
+      </div>
+    </div>
+
+    <div class="form-card">
+      <form id="saleForm">
+        <!-- Client Information -->
+        <div class="form-section">
+          <h2 class="section-title">
+            <i class="fas fa-user"></i>
+            Informations Client
+          </h2>
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="customerName">Nom du Client</label>
+              <input type="text" id="customerName" name="customerName" placeholder="Optionnel">
+            </div>
+            <div class="form-group">
+              <label for="customerPhone">Téléphone</label>
+              <input type="tel" id="customerPhone" name="customerPhone" placeholder="Ex: +228 XX XX XX XX">
+            </div>
+          </div>
+        </div>
+
+        <!-- Product Details -->
+        <div class="form-section">
+          <h2 class="section-title">
+            <i class="fas fa-wheat-awn"></i>
+            Détails du Produit
+          </h2>
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="productType">Type de Céréale <span class="required">*</span></label>
+              <select id="productType" name="productType" required>
+                <option value="">Sélectionner</option>
+                <option value="mais">Maïs</option>
+                <option value="mil">Mil</option>
+                <option value="sorgho">Sorgho</option>
+                <option value="riz">Riz</option>
+                <option value="haricot">Haricot</option>
+                <option value="niebe">Niébé</option>
+                <option value="arachide">Arachide</option>
+                <option value="soja">Soja</option>
+                <option value="sesame">Sésame</option>
+                <option value="voandzou">Voandzou</option>
+                <option value="fonio">Fonio</option>
+                <option value="gombo">Gombo</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="unitType">Unité de Vente <span class="required">*</span></label>
+              <select id="unitType" name="unitType" required>
+                <option value="">Sélectionner</option>
+                <option value="bol">Bol</option>
+                <option value="sac">Sac</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quantity & Price -->
+        <div class="form-section">
+          <h2 class="section-title">
+            <i class="fas fa-calculator"></i>
+            Quantité et Prix
+          </h2>
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="quantity">Quantité <span class="required">*</span></label>
+              <div class="input-group">
+                <input type="number" id="quantity" name="quantity" min="1" step="1" required placeholder="0">
+                <span class="input-suffix" id="unitLabel">unités</span>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="unitPrice">Prix Unitaire <span class="required">*</span></label>
+              <div class="input-group">
+                <input type="number" id="unitPrice" name="unitPrice" min="0" step="1" required placeholder="0">
+                <span class="input-suffix">FCFA</span>
+              </div>
+            </div>
+            <div class="form-group" id="sacSizeGroup" style="display: none;">
+              <label for="sacSize">Taille du Sac <span class="required">*</span></label>
+              <select id="sacSize" name="sacSize">
+                <option value="20">20 bols</option>
+                <option value="40">40 bols</option>
+                <option value="60">60 bols</option>
+                <option value="80">80 bols</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="discount">Remise (%)</label>
+              <div class="input-group">
+                <input type="number" id="discount" name="discount" min="0" max="100" step="0.5" placeholder="0">
+                <span class="input-suffix">%</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sale Details -->
+          <div class="sale-details">
+            <div class="detail-row">
+              <span class="detail-label">Sous-total</span>
+              <span class="detail-value" id="subtotal">0 FCFA</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Remise</span>
+              <span class="detail-value" id="discountAmount">0 FCFA</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">TOTAL À PAYER</span>
+              <span class="detail-value" id="totalAmount">0 FCFA</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Payment Method -->
+        <div class="form-section">
+          <h2 class="section-title">
+            <i class="fas fa-credit-card"></i>
+            Mode de Paiement
+          </h2>
+          <div class="payment-methods">
+            <div class="payment-option">
+              <input type="radio" id="paymentCash" name="paymentMethod" value="cash" checked>
+              <label for="paymentCash" class="payment-label">
+                <i class="fas fa-money-bill"></i>
+                <span>Espèces</span>
+              </label>
+            </div>
+            <div class="payment-option">
+              <input type="radio" id="paymentMobile" name="paymentMethod" value="mobile">
+              <label for="paymentMobile" class="payment-label">
+                <i class="fas fa-mobile-alt"></i>
+                <span>Mobile Money</span>
+              </label>
+            </div>
+            <div class="payment-option">
+              <input type="radio" id="paymentBank" name="paymentMethod" value="bank">
+              <label for="paymentBank" class="payment-label">
+                <i class="fas fa-university"></i>
+                <span>Banque</span>
+              </label>
+            </div>
+            <div class="payment-option">
+              <input type="radio" id="paymentCredit" name="paymentMethod" value="credit">
+              <label for="paymentCredit" class="payment-label">
+                <i class="fas fa-clock"></i>
+                <span>À Crédit</span>
+              </label>
+            </div>
+            <div class="payment-option">
+              <input type="radio" id="paymentAdvance" name="paymentMethod" value="advance">
+              <label for="paymentAdvance" class="payment-label">
+                <i class="fas fa-hand-holding-usd"></i>
+                <span>Avance</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Advance Amount Field -->
+          <div class="form-group full-width" id="advanceAmountGroup">
+            <label for="advanceAmount">Montant Avancé <span class="required">*</span></label>
+            <div class="input-group">
+              <input type="number" id="advanceAmount" name="advanceAmount" min="0" step="1" placeholder="Montant de l'avance">
+              <span class="input-suffix">FCFA</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Date & Time -->
+        <div class="form-section">
+          <h2 class="section-title">
+            <i class="fas fa-calendar-alt"></i>
+            Date et Heure
+          </h2>
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="saleDate">Date de Vente <span class="required">*</span></label>
+              <input type="date" id="saleDate" name="saleDate" required>
+            </div>
+            <div class="form-group">
+              <label for="saleTime">Heure de Vente <span class="required">*</span></label>
+              <input type="time" id="saleTime" name="saleTime" required>
+            </div>
+          </div>
+        </div>
+
+        <!-- Notes -->
+        <div class="form-section">
+          <h2 class="section-title">
+            <i class="fas fa-sticky-note"></i>
+            Notes
+          </h2>
+          <div class="form-group full-width">
+            <label for="notes">Remarques / Observations</label>
+            <textarea id="notes" name="notes" rows="3" placeholder="Commentaires additionnels..."></textarea>
+          </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" id="resetBtn">
+            <i class="fas fa-redo"></i>
+            Réinitialiser
+          </button>
+          <button type="submit" class="btn btn-primary" id="submitBtn">
+            <i class="fas fa-check-circle"></i>
+            Enregistrer la Vente
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // ============================================================================
+    // CONFIGURATION API
+    // ============================================================================
+    const API_BASE_URL = 'http://localhost:8050';  // Modifier si nécessaire
+    
+    // ============================================================================
+    // MOBILE MENU
+    // ============================================================================
+    const menuToggle = document.getElementById('menuToggle');
+    const navLinks = document.getElementById('navLinks');
+
+    menuToggle.addEventListener('click', () => {
+      navLinks.classList.toggle('active');
+      const icon = menuToggle.querySelector('i');
+      if (navLinks.classList.contains('active')) {
+        icon.classList.remove('fa-bars');
+        icon.classList.add('fa-times');
+      } else {
+        icon.classList.remove('fa-times');
+        icon.classList.add('fa-bars');
+      }
+    });
+
+    navLinks.querySelectorAll('a').forEach(link => {
+      link.addEventListener('click', () => {
+        navLinks.classList.remove('active');
+        const icon = menuToggle.querySelector('i');
+        icon.classList.remove('fa-times');
+        icon.classList.add('fa-bars');
+      });
+    });
+
+    // ============================================================================
+    // FORM ELEMENTS
+    // ============================================================================
+    const saleForm = document.getElementById('saleForm');
+    const unitType = document.getElementById('unitType');
+    const sacSizeGroup = document.getElementById('sacSizeGroup');
+    const unitLabel = document.getElementById('unitLabel');
+    const quantity = document.getElementById('quantity');
+    const unitPrice = document.getElementById('unitPrice');
+    const discount = document.getElementById('discount');
+    const subtotal = document.getElementById('subtotal');
+    const discountAmount = document.getElementById('discountAmount');
+    const totalAmount = document.getElementById('totalAmount');
+    const saleDate = document.getElementById('saleDate');
+    const saleTime = document.getElementById('saleTime');
+    const successModal = document.getElementById('successModal');
+    const receiptNumber = document.getElementById('receiptNumber');
+    const modalTotal = document.getElementById('modalTotal');
+    const submitBtn = document.getElementById('submitBtn');
+    const errorAlert = document.getElementById('errorAlert');
+    const apiStatus = document.getElementById('apiStatus');
+    const apiStatusText = document.getElementById('apiStatusText');
+
+    // Payment method elements
+    const paymentMethods = document.querySelectorAll('input[name="paymentMethod"]');
+    const advanceAmountGroup = document.getElementById('advanceAmountGroup');
+    const advanceAmount = document.getElementById('advanceAmount');
+
+    // Current sale data
+    let currentSale = null;
+
+    // ============================================================================
+    // API STATUS CHECK
+    // ============================================================================
+    async function checkApiStatus() {
+      try {
+        const response = await fetch(`${API_BASE_URL}/health`);
+        if (response.ok) {
+          apiStatus.classList.remove('disconnected');
+          apiStatus.classList.add('connected');
+          apiStatusText.textContent = 'Connecté à la base de données';
+          loadDailyStats();
+        } else {
+          throw new Error('API non disponible');
+        }
+      } catch (error) {
+        apiStatus.classList.remove('connected');
+        apiStatus.classList.add('disconnected');
+        apiStatusText.textContent = 'Erreur de connexion à l\'API';
+        console.error('Erreur API:', error);
+      }
+    }
+
+    // ============================================================================
+    // LOAD DAILY STATS
+    // ============================================================================
+
+    async function loadDailyStats() {
+      try {
+        // Utiliser la date actuelle au format ISO
+        const today = new Date();
+        const dateParam = today.toISOString();
+        
+        const response = await fetch(`${API_BASE_URL}/api/ventes/stats/daily?date=${dateParam}`);
+        
+        if (response.ok) {
+          const stats = await response.json();
+          
+          // Mettre à jour les valeurs
+          document.getElementById('salesToday').textContent = stats.sales_count || 0;
+          document.getElementById('revenueToday').textContent = 
+            (stats.total_revenue || 0).toLocaleString('fr-FR') + ' FCFA';
+          document.getElementById('profitToday').textContent = 
+            (stats.estimated_profit || 0).toLocaleString('fr-FR') + ' FCFA';
+        } else {
+          console.error('Erreur chargement stats:', response.status);
+          // Afficher 0 en cas d'erreur
+          document.getElementById('salesToday').textContent = '0';
+          document.getElementById('revenueToday').textContent = '0 FCFA';
+          document.getElementById('profitToday').textContent = '0 FCFA';
+        }
+      } catch (error) {
+        console.error('Erreur chargement stats:', error);
+        // Afficher 0 en cas d'erreur
+        document.getElementById('salesToday').textContent = '0';
+        document.getElementById('revenueToday').textContent = '0 FCFA';
+        document.getElementById('profitToday').textContent = '0 FCFA';
+      }
+    }
+
+    // ============================================================================
+    // PAYMENT METHOD HANDLER
+    // ============================================================================
+    paymentMethods.forEach(method => {
+      method.addEventListener('change', function() {
+        if (this.value === 'advance') {
+          advanceAmountGroup.classList.add('show');
+          advanceAmount.required = true;
+        } else {
+          advanceAmountGroup.classList.remove('show');
+          advanceAmount.required = false;
+          advanceAmount.value = '';
+        }
+      });
+    });
+
+    // ============================================================================
+    // UPDATE UNIT LABEL
+    // ============================================================================
+    unitType.addEventListener('change', function() {
+      if (this.value === 'sac') {
+        sacSizeGroup.style.display = 'block';
+        document.getElementById('sacSize').required = true;
+        unitLabel.textContent = 'sacs';
+      } else if (this.value === 'bol') {
+        sacSizeGroup.style.display = 'none';
+        document.getElementById('sacSize').required = false;
+        unitLabel.textContent = 'bols';
+      } else {
+        sacSizeGroup.style.display = 'none';
+        document.getElementById('sacSize').required = false;
+        unitLabel.textContent = 'unités';
+      }
+      calculateTotal();
+    });
+
+    // ============================================================================
+    // CALCULATE TOTAL
+    // ============================================================================
+    function calculateTotal() {
+      const qty = parseFloat(quantity.value) || 0;
+      const price = parseFloat(unitPrice.value) || 0;
+      const disc = parseFloat(discount.value) || 0;
+
+      const sub = qty * price;
+      const discAmt = (sub * disc) / 100;
+      const total = sub - discAmt;
+
+      subtotal.textContent = sub.toLocaleString() + ' FCFA';
+      discountAmount.textContent = discAmt.toLocaleString() + ' FCFA';
+      totalAmount.textContent = total.toLocaleString() + ' FCFA';
+    }
+
+    quantity.addEventListener('input', calculateTotal);
+    unitPrice.addEventListener('input', calculateTotal);
+    discount.addEventListener('input', calculateTotal);
+
+    // ============================================================================
+    // SET CURRENT DATE AND TIME
+    // ============================================================================
+    function setCurrentDateTime() {
+      const today = new Date();
+      saleDate.value = today.toISOString().split('T')[0];
+      saleTime.value = today.toTimeString().slice(0, 5);
+    }
+
+    setCurrentDateTime();
+
+    // ============================================================================
+    // SHOW ERROR
+    // ============================================================================
+    function showError(message) {
+      errorAlert.textContent = message;
+      errorAlert.classList.add('show');
+      setTimeout(() => {
+        errorAlert.classList.remove('show');
+      }, 5000);
+    }
+
+    // ============================================================================
+    // FORM SUBMISSION
+    // ============================================================================
+    saleForm.addEventListener('submit', async function(e) {
+      e.preventDefault();
+
+      // Disable submit button
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<div class="spinner"></div> Enregistrement...';
+
+      try {
+        // Get form data
+        const formData = {
+          customer_name: document.getElementById('customerName').value || null,
+          customer_phone: document.getElementById('customerPhone').value || null,
+          product_type: document.getElementById('productType').value,
+          unit_type: document.getElementById('unitType').value,
+          quantity: parseInt(document.getElementById('quantity').value),
+          sac_size: document.getElementById('unitType').value === 'sac' ? 
+                    parseInt(document.getElementById('sacSize').value) : null,
+          unit_price: parseFloat(document.getElementById('unitPrice').value),
+          discount: parseFloat(document.getElementById('discount').value) || 0,
+          payment_method: document.querySelector('input[name="paymentMethod"]:checked').value,
+          advance_amount: document.querySelector('input[name="paymentMethod"]:checked').value === 'advance' ? 
+                         parseFloat(document.getElementById('advanceAmount').value) : null,
+          sale_date: new Date(document.getElementById('saleDate').value + 'T' + document.getElementById('saleTime').value).toISOString(),
+          sale_time: document.getElementById('saleTime').value,
+          notes: document.getElementById('notes').value || null
+        };
+
+        // Send to API
+        const response = await fetch(`${API_BASE_URL}/api/ventes`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(formData)
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.detail || 'Erreur lors de l\'enregistrement');
+        }
+
+        const result = await response.json();
+        currentSale = result;
+
+        // Show success modal
+        receiptNumber.textContent = result.receipt_number;
+        modalTotal.textContent = result.total_amount.toLocaleString() + ' FCFA';
+        successModal.classList.add('show');
+
+        // Reload stats
+        loadDailyStats();
+
+      } catch (error) {
+        console.error('Erreur:', error);
+        showError(error.message || 'Erreur lors de l\'enregistrement de la vente');
+      } finally {
+        // Re-enable submit button
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="fas fa-check-circle"></i> Enregistrer la Vente';
+      }
+    });
+
+    // ============================================================================
+    // GENERATE PDF
+    // ============================================================================
+    document.getElementById('downloadPdfBtn').addEventListener('click', function() {
+      if (!currentSale) return;
+
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+
+      // Header
+      doc.setFontSize(22);
+      doc.setTextColor(22, 163, 74);
+      doc.text('REÇU DE VENTE', 105, 20, { align: 'center' });
+
+      doc.setFontSize(10);
+      doc.setTextColor(100);
+      doc.text('Commerce de Céréales - Togo', 105, 28, { align: 'center' });
+      
+      // Receipt number
+      doc.setFontSize(12);
+      doc.setTextColor(0);
+      doc.text('N° ' + currentSale.receipt_number, 105, 40, { align: 'center' });
+
+      // Date and time
+      doc.setFontSize(10);
+      const saleDateTime = new Date(currentSale.sale_date);
+      doc.text('Date: ' + saleDateTime.toLocaleDateString('fr-FR'), 20, 50);
+      doc.text('Heure: ' + currentSale.sale_time, 20, 56);
+
+      // Separator line
+      doc.setDrawColor(22, 163, 74);
+      doc.setLineWidth(0.5);
+      doc.line(20, 65, 190, 65);
+
+      // Client info
+      doc.setFontSize(11);
+      doc.setFont(undefined, 'bold');
+      doc.text('INFORMATIONS CLIENT', 20, 75);
+      doc.setFont(undefined, 'normal');
+      doc.setFontSize(10);
+      doc.text('Nom: ' + (currentSale.customer_name || 'Client'), 20, 82);
+      doc.text('Tél: ' + (currentSale.customer_phone || 'N/A'), 20, 88);
+
+      // Product details
+      doc.setFontSize(11);
+      doc.setFont(undefined, 'bold');
+      doc.text('DÉTAILS DU PRODUIT', 20, 100);
+      doc.setFont(undefined, 'normal');
+      doc.setFontSize(10);
+      
+      const productName = currentSale.product_type.charAt(0).toUpperCase() + currentSale.product_type.slice(1);
+      doc.text('Produit: ' + productName, 20, 107);
+      doc.text('Quantité: ' + currentSale.quantity + ' ' + currentSale.unit_type + (currentSale.quantity > 1 ? 's' : ''), 20, 113);
+      doc.text('Prix unitaire: ' + currentSale.unit_price.toLocaleString() + ' FCFA', 20, 119);
+
+      if (currentSale.sac_size) {
+        doc.text('Taille sac: ' + currentSale.sac_size + ' bols', 20, 125);
+      }
+
+      // Payment info
+      let yPos = currentSale.sac_size ? 135 : 130;
+      const paymentMethods = {
+        'cash': 'Espèces',
+        'mobile': 'Mobile Money',
+        'bank': 'Banque',
+        'credit': 'À Crédit',
+        'advance': 'Avance'
+      };
+      doc.text('Mode de paiement: ' + paymentMethods[currentSale.payment_method], 20, yPos);
+      
+      if (currentSale.advance_amount) {
+        doc.text('Montant avancé: ' + currentSale.advance_amount.toLocaleString() + ' FCFA', 20, yPos + 6);
+        yPos += 6;
+      }
+
+      // Payment summary
+      doc.setDrawColor(22, 163, 74);
+      doc.line(20, yPos + 10, 190, yPos + 10);
+
+      yPos += 20;
+      doc.setFontSize(10);
+
+      // CORRECTION: Extraire les nombres et formater correctement
+      const subtotalValue = parseFloat(currentSale.subtotal.toString().replace(/[^\d.-]/g, '')) || 0;
+      const discountAmountValue = parseFloat(currentSale.discount_amount.toString().replace(/[^\d.-]/g, '')) || 0;
+      const totalAmountValue = parseFloat(currentSale.total_amount.toString().replace(/[^\d.-]/g, '')) || 0;
+
+      doc.text('Sous-total:', 20, yPos);
+      doc.text(subtotalValue.toLocaleString('fr-FR') + ' FCFA', 190, yPos, { align: 'right' });
+
+      doc.text('Remise (' + (currentSale.discount || 0) + '%):', 20, yPos + 7);
+      doc.text('-' + discountAmountValue.toLocaleString('fr-FR') + ' FCFA', 190, yPos + 7, { align: 'right' });
+
+      // Total
+      doc.setDrawColor(22, 163, 74);
+      doc.setLineWidth(1);
+      doc.line(20, yPos + 13, 190, yPos + 13);
+
+      doc.setFontSize(14);
+      doc.setFont(undefined, 'bold');
+      doc.setTextColor(22, 163, 74);
+      doc.text('TOTAL:', 20, yPos + 23);
+      doc.text(totalAmountValue.toLocaleString('fr-FR') + ' FCFA', 190, yPos + 23, { align: 'right' });
+
+      
+      // Si paiement avec avance
+      if (currentSale.payment_method === 'advance' && currentSale.advance_amount) {
+        const advanceValue = parseFloat(currentSale.advance_amount.toString().replace(/[^\d.-]/g, '')) || 0;
+        const remainingValue = totalAmountValue - advanceValue;
+        
+        doc.setFontSize(10);
+        doc.setTextColor(0);
+        doc.setFont(undefined, 'normal');
+        doc.text('Avance payée:', 20, yPos + 33);
+        doc.text(advanceValue.toLocaleString('fr-FR') + ' FCFA', 190, yPos + 33, { align: 'right' });
+        doc.text('Reste à payer:', 20, yPos + 40);
+        doc.setFont(undefined, 'bold');
+        doc.setTextColor(239, 68, 68);
+        doc.text(remainingValue.toLocaleString('fr-FR') + ' FCFA', 190, yPos + 40, { align: 'right' });
+      }
+
+
+      // Notes
+      if (currentSale.notes) {
+        doc.setFontSize(9);
+        doc.setTextColor(0);
+        doc.setFont(undefined, 'normal');
+        const notesLines = doc.splitTextToSize('Notes: ' + currentSale.notes, 170);
+        doc.text(notesLines, 20, yPos + 35);
+      }
+
+      // Footer
+      doc.setFontSize(8);
+      doc.setTextColor(100);
+      doc.text('Merci pour votre confiance!', 105, 270, { align: 'center' });
+      doc.text('Contact: +228 XX XX XX XX | Email: contact@cereales-togo.com', 105, 276, { align: 'center' });
+
+      // Save PDF
+      doc.save('Recu_' + currentSale.receipt_number + '.pdf');
+    });
+
+    // ============================================================================
+    // NEW SALE BUTTON
+    // ============================================================================
+    document.getElementById('newSaleBtn').addEventListener('click', function() {
+      successModal.classList.remove('show');
+      saleForm.reset();
+      calculateTotal();
+      setCurrentDateTime();
+      sacSizeGroup.style.display = 'none';
+      advanceAmountGroup.classList.remove('show');
+      unitLabel.textContent = 'unités';
+      currentSale = null;
+    });
+
+    // ============================================================================
+    // RESET BUTTON
+    // ============================================================================
+    document.getElementById('resetBtn').addEventListener('click', function() {
+      if (confirm('Êtes-vous sûr de vouloir réinitialiser le formulaire ?')) {
+        saleForm.reset();
+        calculateTotal();
+        setCurrentDateTime();
+        sacSizeGroup.style.display = 'none';
+        advanceAmountGroup.classList.remove('show');
+        unitLabel.textContent = 'unités';
+      }
+    });
+
+    // ============================================================================
+    // CLOSE MODAL ON OUTSIDE CLICK
+    // ============================================================================
+    successModal.addEventListener('click', function(e) {
+      if (e.target === successModal) {
+        successModal.classList.remove('show');
+      }
+    });
+
+    // ============================================================================
+    // SMOOTH SCROLL
+    // ============================================================================
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+          target.scrollIntoView({ behavior: 'smooth' });
+        }
+      });
+    });
+
+    // ============================================================================
+    // CHECK API STATUS ON LOAD
+    // ============================================================================
+    checkApiStatus();
+  </script>
+</body>
+</html>

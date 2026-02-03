@@ -1,0 +1,1537 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ajouter Résumé & Citations - Bibliothèque</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --primary-clr: #9640e3;
+      --secondary-clr: #f8e8fd;
+      --medium-clr: #d399fb;
+      --dark-clr: #0a0a0a;
+      --light-clr: #ffffff;
+      --success-clr: #10b981;
+      --error-clr: #ef4444;
+      --warning-clr: #f59e0b;
+      --info-clr: #3b82f6;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Fira Sans', sans-serif;
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      color: var(--dark-clr);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Navigation Header */
+    .navbar {
+      background: var(--light-clr);
+      box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      animation: slideDown 0.5s ease;
+    }
+
+    @keyframes slideDown {
+      from { transform: translateY(-100%); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    .navbar-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 1rem 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: relative;
+    }
+
+    .logo {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--primary-clr);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: transform 0.3s;
+      z-index: 1001;
+    }
+
+    .logo:hover { transform: scale(1.05); }
+
+    .menu-toggle {
+      display: none;
+      background: var(--primary-clr);
+      border: none;
+      color: white;
+      font-size: 1.5rem;
+      width: 45px;
+      height: 45px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s;
+      z-index: 1001;
+    }
+
+    .menu-toggle:hover {
+      background: var(--medium-clr);
+      transform: scale(1.05);
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 2rem;
+      list-style: none;
+      align-items: center;
+    }
+
+    .nav-links a {
+      color: var(--dark-clr);
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.3s;
+      position: relative;
+    }
+
+    .nav-links a::after {
+      content: '';
+      position: absolute;
+      bottom: -5px;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: var(--primary-clr);
+      transition: width 0.3s;
+    }
+
+    .nav-links a:hover::after { width: 100%; }
+
+    /* Main Container */
+    .container {
+      max-width: 1200px;
+      margin: 3rem auto;
+      padding: 0 15px 2rem;
+    }
+
+    .page-header {
+      text-align: center;
+      margin-bottom: 3rem;
+      animation: fadeInUp 0.8s ease;
+    }
+
+    @keyframes fadeInUp {
+      from { transform: translateY(30px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    .page-header h1 {
+      font-size: clamp(2rem, 5vw, 3rem);
+      color: var(--primary-clr);
+      margin-bottom: 0.5rem;
+    }
+
+    .page-header p {
+      color: #666;
+      font-size: 1.1rem;
+    }
+
+    /* Book Selector */
+    .book-selector {
+      background: white;
+      border-radius: 20px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+      animation: scaleIn 0.6s ease;
+    }
+
+    @keyframes scaleIn {
+      from { transform: scale(0.95); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    .book-search {
+      position: relative;
+      margin-bottom: 1rem;
+    }
+
+    .book-search input {
+      width: 100%;
+      padding: 15px 50px 15px 20px;
+      border: 2px solid #e0e0e0;
+      border-radius: 12px;
+      font-size: 1.1rem;
+      transition: all 0.3s;
+    }
+
+    .book-search input:focus {
+      outline: none;
+      border-color: var(--primary-clr);
+      box-shadow: 0 0 0 3px rgba(150, 64, 227, 0.1);
+    }
+
+    .book-search i {
+      position: absolute;
+      right: 20px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #999;
+      font-size: 1.2rem;
+    }
+
+    .book-list {
+      max-height: 300px;
+      overflow-y: auto;
+      border: 2px solid #e0e0e0;
+      border-radius: 12px;
+      display: none;
+    }
+
+    .book-list.show {
+      display: block;
+    }
+
+    .book-item {
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid #f0f0f0;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .book-item:hover {
+      background: var(--secondary-clr);
+    }
+
+    .book-item.selected {
+      background: var(--primary-clr);
+      color: white;
+    }
+
+    .book-item-info h4 {
+      margin-bottom: 0.3rem;
+      font-size: 1.1rem;
+    }
+
+    .book-item-info p {
+      font-size: 0.9rem;
+      color: #666;
+    }
+
+    .book-item.selected .book-item-info p {
+      color: rgba(255, 255, 255, 0.8);
+    }
+
+    .selected-book-display {
+      background: linear-gradient(135deg, var(--primary-clr), var(--medium-clr));
+      color: white;
+      padding: 1.5rem;
+      border-radius: 12px;
+      margin-top: 1rem;
+      display: none;
+    }
+
+    .selected-book-display.show {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      animation: fadeInUp 0.5s ease;
+    }
+
+    .selected-book-display i {
+      font-size: 2.5rem;
+    }
+
+    .selected-book-display h3 {
+      margin-bottom: 0.3rem;
+    }
+
+    /* Form Card */
+    .form-card {
+      background: white;
+      border-radius: 20px;
+      padding: 2.5rem;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+      animation: scaleIn 0.6s ease 0.2s both;
+    }
+
+    .form-section {
+      margin-bottom: 2rem;
+    }
+
+    .section-title {
+      font-size: 1.3rem;
+      color: var(--primary-clr);
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid var(--secondary-clr);
+    }
+
+    .form-group {
+      margin-bottom: 1.5rem;
+      position: relative;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+      color: var(--dark-clr);
+      font-size: 0.95rem;
+    }
+
+    .form-group label .required {
+      color: var(--error-clr);
+      margin-left: 0.2rem;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      padding: 12px 15px;
+      border: 2px solid #e0e0e0;
+      border-radius: 10px;
+      font-family: inherit;
+      font-size: 1rem;
+      transition: all 0.3s;
+      background: white;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: var(--primary-clr);
+      box-shadow: 0 0 0 3px rgba(150, 64, 227, 0.1);
+    }
+
+    .form-group input.error,
+    .form-group select.error,
+    .form-group textarea.error {
+      border-color: var(--error-clr);
+    }
+
+    .form-group textarea {
+      resize: vertical;
+      min-height: 150px;
+      font-family: 'Fira Sans', sans-serif;
+      line-height: 1.6;
+    }
+
+    .error-message {
+      color: var(--error-clr);
+      font-size: 0.85rem;
+      margin-top: 0.3rem;
+      display: none;
+      animation: shake 0.3s;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-5px); }
+      75% { transform: translateX(5px); }
+    }
+
+    .error-message.show {
+      display: block;
+    }
+
+    .char-counter {
+      font-size: 0.85rem;
+      color: #666;
+      text-align: right;
+      margin-top: 0.3rem;
+    }
+
+    .char-counter.warning {
+      color: var(--warning-clr);
+    }
+
+    .char-counter.error {
+      color: var(--error-clr);
+    }
+
+    /* Citations List */
+    .citations-container {
+      border: 2px solid #e0e0e0;
+      border-radius: 12px;
+      padding: 1.5rem;
+      background: #f9f9f9;
+      min-height: 100px;
+    }
+
+    .citation-item {
+      background: white;
+      border-left: 4px solid var(--primary-clr);
+      padding: 1rem 1.5rem;
+      margin-bottom: 1rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      position: relative;
+      animation: slideInLeft 0.3s ease;
+    }
+
+    @keyframes slideInLeft {
+      from { transform: translateX(-20px); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    .citation-item blockquote {
+      margin: 0 0 0.5rem 0;
+      font-style: italic;
+      color: #333;
+      line-height: 1.6;
+    }
+
+    .citation-item .citation-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.85rem;
+      color: #666;
+    }
+
+    .citation-item .citation-page {
+      background: var(--secondary-clr);
+      padding: 0.2rem 0.6rem;
+      border-radius: 6px;
+      color: var(--primary-clr);
+      font-weight: 600;
+    }
+
+    .citation-item .citation-actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .citation-item button {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #999;
+      font-size: 1rem;
+      padding: 0.3rem;
+      transition: all 0.3s;
+    }
+
+    .citation-item button:hover {
+      color: var(--error-clr);
+      transform: scale(1.2);
+    }
+
+    .empty-citations {
+      text-align: center;
+      padding: 2rem;
+      color: #999;
+    }
+
+    .empty-citations i {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      color: #ddd;
+    }
+
+    /* Add Citation Form */
+    .add-citation-form {
+      background: white;
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-top: 1rem;
+      border: 2px dashed var(--medium-clr);
+    }
+
+    .citation-input-group {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .citation-textarea {
+      grid-column: 1 / -1;
+    }
+
+    .add-citation-btn {
+      background: linear-gradient(135deg, var(--primary-clr), var(--medium-clr));
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      justify-content: center;
+    }
+
+    .add-citation-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(150, 64, 227, 0.3);
+    }
+
+    /* Form Actions */
+    .form-actions {
+      display: flex;
+      gap: 1rem;
+      margin-top: 2rem;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      padding: 14px 30px;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary-clr), var(--medium-clr));
+      color: white;
+      box-shadow: 0 4px 15px rgba(150, 64, 227, 0.3);
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(150, 64, 227, 0.4);
+    }
+
+    .btn-secondary {
+      background: #e0e0e0;
+      color: var(--dark-clr);
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      background: #d0d0d0;
+    }
+
+    .btn .spinner {
+      display: none;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    .btn.loading .spinner {
+      display: block;
+    }
+
+    .btn.loading .btn-text {
+      display: none;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Toast Notifications */
+    .toast-container {
+      position: fixed;
+      top: 100px;
+      right: 20px;
+      z-index: 2000;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      max-width: 400px;
+    }
+
+    .toast {
+      background: white;
+      padding: 1rem 1.5rem;
+      border-radius: 10px;
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      animation: slideInRight 0.5s ease;
+      border-left: 4px solid;
+    }
+
+    @keyframes slideInRight {
+      from { transform: translateX(400px); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    .toast.success { border-left-color: var(--success-clr); }
+    .toast.error { border-left-color: var(--error-clr); }
+    .toast.warning { border-left-color: var(--warning-clr); }
+    .toast.info { border-left-color: var(--info-clr); }
+
+    .toast i { font-size: 1.5rem; }
+    .toast.success i { color: var(--success-clr); }
+    .toast.error i { color: var(--error-clr); }
+    .toast.warning i { color: var(--warning-clr); }
+    .toast.info i { color: var(--info-clr); }
+
+    .toast-content { flex: 1; }
+    .toast-title { font-weight: 600; margin-bottom: 0.2rem; }
+    .toast-message { font-size: 0.9rem; color: #666; }
+
+    .toast-close {
+      background: none;
+      border: none;
+      font-size: 1.2rem;
+      color: #999;
+      cursor: pointer;
+      transition: color 0.3s;
+    }
+
+    .toast-close:hover { color: var(--dark-clr); }
+
+    /* Progress Bar */
+    .progress-bar {
+      height: 4px;
+      background: #e0e0e0;
+      border-radius: 10px;
+      overflow: hidden;
+      margin-top: 0.5rem;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--primary-clr), var(--medium-clr));
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.7);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 3000;
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .modal-overlay.show { display: flex; }
+
+    .modal {
+      background: white;
+      border-radius: 20px;
+      padding: 2rem;
+      max-width: 600px;
+      width: 90%;
+      max-height: 80vh;
+      overflow-y: auto;
+      animation: scaleIn 0.3s ease;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .modal-title {
+      font-size: 1.5rem;
+      color: var(--primary-clr);
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      color: #999;
+      cursor: pointer;
+      transition: color 0.3s;
+    }
+
+    .modal-close:hover { color: var(--dark-clr); }
+
+    .modal-body { margin-bottom: 1.5rem; }
+
+    .modal-actions {
+      display: flex;
+      gap: 1rem;
+      justify-content: flex-end;
+    }
+
+    /* Loading Overlay */
+    .loading-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(255, 255, 255, 0.9);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 4000;
+    }
+
+    .loading-overlay.show { display: flex; }
+
+    .loading-spinner {
+      width: 60px;
+      height: 60px;
+      border: 4px solid var(--secondary-clr);
+      border-top-color: var(--primary-clr);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .menu-toggle { display: block; }
+
+      .nav-links {
+        position: fixed;
+        top: 0;
+        right: -100%;
+        width: 70%;
+        max-width: 300px;
+        height: 100vh;
+        background: white;
+        flex-direction: column;
+        justify-content: flex-start;
+        padding: 80px 2rem 2rem;
+        box-shadow: -5px 0 20px rgba(0, 0, 0, 0.2);
+        transition: right 0.4s ease;
+        z-index: 1000;
+      }
+
+      .nav-links.active { right: 0; }
+
+      .nav-links li {
+        width: 100%;
+        text-align: center;
+        padding: 1rem 0;
+        border-bottom: 1px solid #eee;
+      }
+
+      .form-card { padding: 1.5rem; }
+
+      .citation-input-group {
+        grid-template-columns: 1fr;
+      }
+
+      .form-actions {
+        flex-direction: column;
+      }
+
+      .btn {
+        width: 100%;
+        justify-content: center;
+      }
+
+      .toast-container {
+        right: 10px;
+        left: 10px;
+        max-width: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="navbar-content">
+      <a href="/" class="logo">
+        <i class="fas fa-book"></i>
+        Ma Bibliothèque
+      </a>
+      <button class="menu-toggle" id="menuToggle">
+        <i class="fas fa-bars"></i>
+      </button>
+      <ul class="nav-links" id="navLinks">
+        <li><a href="/">Accueil</a></li>
+        <li><a href="/add_summary_citation.html">Résumés & Citations</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Loading Overlay -->
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <!-- Edit Citation Modal -->
+  <div class="modal-overlay" id="editCitationModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 class="modal-title">Modifier la Citation</h2>
+        <button class="modal-close" onclick="closeEditModal()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="editCitationText">Citation</label>
+          <textarea id="editCitationText" rows="4" placeholder="Texte de la citation..."></textarea>
+          <div class="char-counter"><span id="editCitationCount">0</span>/2000</div>
+        </div>
+        <div class="form-group">
+          <label for="editCitationPage">Page (optionnel)</label>
+          <input type="number" id="editCitationPage" min="1" placeholder="Ex: 42">
+        </div>
+        <div class="form-group">
+          <label for="editCitationContext">Contexte (optionnel)</label>
+          <textarea id="editCitationContext" rows="3" placeholder="Contexte de la citation..."></textarea>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="closeEditModal()">
+          <i class="fas fa-times"></i>
+          Annuler
+        </button>
+        <button class="btn btn-primary" onclick="saveEditedCitation()">
+          <i class="fas fa-save"></i>
+          Enregistrer
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="container">
+    <div class="page-header">
+      <h1><i class="fas fa-file-alt"></i> Résumé & Citations de Livre</h1>
+      <p>Ajoutez un résumé complet et des citations inspirantes de vos livres</p>
+    </div>
+
+    <!-- Book Selector -->
+    <div class="book-selector">
+      <h2 style="color: var(--primary-clr); margin-bottom: 1rem;">
+        <i class="fas fa-search"></i> Sélectionnez un livre
+      </h2>
+      <div class="book-search">
+        <input 
+          type="text" 
+          id="bookSearch" 
+          placeholder="Rechercher un livre par titre ou auteur..."
+          autocomplete="off"
+        >
+        <i class="fas fa-search"></i>
+      </div>
+      <div class="book-list" id="bookList"></div>
+      
+      <div class="selected-book-display" id="selectedBookDisplay">
+        <i class="fas fa-book-open"></i>
+        <div>
+          <h3 id="selectedBookTitle">Aucun livre sélectionné</h3>
+          <p id="selectedBookAuthor">Recherchez et sélectionnez un livre ci-dessus</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Summary & Citations Form -->
+    <div class="form-card">
+      <form id="summaryForm">
+        <input type="hidden" id="selectedBookId" value="">
+
+        <!-- Summary Section -->
+        <div class="form-section">
+          <h2 class="section-title">
+            <i class="fas fa-align-left"></i>
+            Résumé Complet du Livre
+          </h2>
+          
+          <div class="form-group">
+            <label for="summaryType">Type de résumé</label>
+            <select id="summaryType" name="summaryType">
+              <option value="general">Résumé général</option>
+              <option value="chapter">Par chapitre</option>
+              <option value="detailed">Détaillé</option>
+              <option value="analysis">Analyse critique</option>
+              <option value="personal">Notes personnelles</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="summaryContent">Contenu du résumé <span class="required">*</span></label>
+            <textarea 
+              id="summaryContent" 
+              name="summaryContent" 
+              required 
+              placeholder="Écrivez votre résumé complet du livre ici...
+
+Vous pouvez inclure:
+- L'intrigue principale
+- Les personnages clés
+- Les thèmes importants
+- Les leçons apprises
+- Votre analyse personnelle"
+              maxlength="50000"
+              style="min-height: 300px;"
+            ></textarea>
+            <div class="char-counter"><span id="summaryCount">0</span>/50000</div>
+            <div class="error-message" id="summaryContentError"></div>
+          </div>
+
+          <div class="form-group">
+            <label for="keyThemes">Thèmes clés (séparés par des virgules)</label>
+            <input 
+              type="text" 
+              id="keyThemes" 
+              name="keyThemes" 
+              placeholder="Ex: amour, sacrifice, rédemption, courage"
+              maxlength="500"
+            >
+            <div class="char-counter"><span id="themesCount">0</span>/500</div>
+          </div>
+
+          <div class="form-group">
+            <label for="mainTakeaway">Principale leçon retenue</label>
+            <textarea 
+              id="mainTakeaway" 
+              name="mainTakeaway" 
+              placeholder="Quelle est la principale leçon ou idée que vous retenez de ce livre ?"
+              maxlength="1000"
+              rows="3"
+            ></textarea>
+            <div class="char-counter"><span id="takeawayCount">0</span>/1000</div>
+          </div>
+        </div>
+
+        <!-- Citations Section -->
+        <div class="form-section">
+          <h2 class="section-title">
+            <i class="fas fa-quote-right"></i>
+            Citations du Livre
+          </h2>
+
+          <div class="add-citation-form">
+            <div class="form-group citation-textarea">
+              <label for="newCitationText">Nouvelle citation <span class="required">*</span></label>
+              <textarea 
+                id="newCitationText" 
+                placeholder="« Entrez la citation exacte du livre ici... »"
+                maxlength="2000"
+                rows="4"
+              ></textarea>
+              <div class="char-counter"><span id="newCitationCount">0</span>/2000</div>
+              <div class="error-message" id="newCitationError"></div>
+            </div>
+
+            <div class="citation-input-group">
+              <div class="form-group" style="margin-bottom: 0;">
+                <label for="citationPage">Page (optionnel)</label>
+                <input 
+                  type="number" 
+                  id="citationPage" 
+                  min="1" 
+                  placeholder="Ex: 42"
+                >
+              </div>
+
+              <button type="button" class="add-citation-btn" onclick="addCitation()">
+                <i class="fas fa-plus"></i>
+                <span>Ajouter</span>
+              </button>
+            </div>
+
+            <div class="form-group" style="margin-top: 1rem;">
+              <label for="citationContext">Contexte (optionnel)</label>
+              <textarea 
+                id="citationContext" 
+                placeholder="Ajoutez du contexte pour cette citation..."
+                maxlength="1000"
+                rows="2"
+              ></textarea>
+              <div class="char-counter"><span id="contextCount">0</span>/1000</div>
+            </div>
+          </div>
+
+          <div class="citations-container" id="citationsContainer">
+            <div class="empty-citations">
+              <i class="fas fa-quote-left"></i>
+              <p>Aucune citation ajoutée</p>
+              <small>Utilisez le formulaire ci-dessus pour ajouter des citations</small>
+            </div>
+          </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" id="resetBtn">
+            <i class="fas fa-redo"></i>
+            <span class="btn-text">Réinitialiser</span>
+          </button>
+          <button type="submit" class="btn btn-primary" id="submitBtn">
+            <div class="spinner"></div>
+            <i class="fas fa-save"></i>
+            <span class="btn-text">Enregistrer</span>
+          </button>
+        </div>
+
+        <div class="progress-bar">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // Configuration de l'API
+    const API_BASE_URL = 'http://localhost:8040/api';
+
+    // Variables globales
+    let selectedBook = null;
+    let citations = [];
+    let editingCitationIndex = -1;
+
+    // ==================== UTILITAIRES ====================
+    
+    function showToast(type, title, message, duration = 3000) {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      
+      const icons = {
+        success: 'fa-check-circle',
+        error: 'fa-exclamation-circle',
+        warning: 'fa-exclamation-triangle',
+        info: 'fa-info-circle'
+      };
+      
+      toast.innerHTML = `
+        <i class="fas ${icons[type]}"></i>
+        <div class="toast-content">
+          <div class="toast-title">${title}</div>
+          <div class="toast-message">${message}</div>
+        </div>
+        <button class="toast-close" onclick="this.parentElement.remove()">
+          <i class="fas fa-times"></i>
+        </button>
+      `;
+      
+      container.appendChild(toast);
+      
+      setTimeout(() => {
+        toast.style.animation = 'slideInRight 0.5s ease reverse';
+        setTimeout(() => toast.remove(), 500);
+      }, duration);
+    }
+
+    function showLoading(show = true) {
+      document.getElementById('loadingOverlay').classList.toggle('show', show);
+    }
+
+    function updateProgress() {
+      const hasBook = selectedBook !== null;
+      const hasSummary = document.getElementById('summaryContent').value.trim().length > 0;
+      const hasCitations = citations.length > 0;
+      
+      let progress = 0;
+      if (hasBook) progress += 33;
+      if (hasSummary) progress += 34;
+      if (hasCitations) progress += 33;
+      
+      document.getElementById('progressFill').style.width = `${progress}%`;
+    }
+
+    // ==================== RECHERCHE DE LIVRES ====================
+    
+    let searchTimeout;
+    const bookSearchInput = document.getElementById('bookSearch');
+    const bookList = document.getElementById('bookList');
+
+    bookSearchInput.addEventListener('input', function() {
+      clearTimeout(searchTimeout);
+      const query = this.value.trim();
+      
+      if (query.length < 2) {
+        bookList.classList.remove('show');
+        return;
+      }
+      
+      searchTimeout = setTimeout(() => searchBooks(query), 300);
+    });
+
+    async function searchBooks(query) {
+      try {
+        const response = await fetch(`${API_BASE_URL}/books?search=${encodeURIComponent(query)}&limit=10`);
+        
+        if (!response.ok) {
+          throw new Error('Erreur lors de la recherche');
+        }
+        
+        const books = await response.json();
+        displayBookList(books);
+      } catch (error) {
+        console.error('Erreur:', error);
+        showToast('error', 'Erreur', 'Impossible de rechercher les livres');
+      }
+    }
+
+    function displayBookList(books) {
+      if (books.length === 0) {
+        bookList.innerHTML = '<div class="book-item" style="cursor: default;"><p>Aucun livre trouvé</p></div>';
+        bookList.classList.add('show');
+        return;
+      }
+      
+      bookList.innerHTML = books.map(book => `
+        <div class="book-item" onclick="selectBook(${book.id}, '${escapeHtml(book.title)}', '${escapeHtml(book.author)}')">
+          <div class="book-item-info">
+            <h4>${escapeHtml(book.title)}</h4>
+            <p>${escapeHtml(book.author)} ${book.publication_year ? '• ' + book.publication_year : ''}</p>
+          </div>
+          <i class="fas fa-chevron-right"></i>
+        </div>
+      `).join('');
+      
+      bookList.classList.add('show');
+    }
+
+    function selectBook(id, title, author) {
+      selectedBook = { id, title, author };
+      
+      document.getElementById('selectedBookId').value = id;
+      document.getElementById('selectedBookTitle').textContent = title;
+      document.getElementById('selectedBookAuthor').textContent = author;
+      document.getElementById('selectedBookDisplay').classList.add('show');
+      
+      bookList.classList.remove('show');
+      bookSearchInput.value = `${title} - ${author}`;
+      
+      showToast('success', 'Livre sélectionné', `${title} par ${author}`);
+      updateProgress();
+      
+      // Charger les résumés et citations existants
+      loadExistingSummaryAndCitations(id);
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    // ==================== CHARGEMENT DES DONNÉES EXISTANTES ====================
+    
+    async function loadExistingSummaryAndCitations(bookId) {
+      showLoading(true);
+      
+      try {
+        // Charger le résumé
+        const summaryResponse = await fetch(`${API_BASE_URL}/summaries/book/${bookId}`);
+        if (summaryResponse.ok) {
+          const summaryData = await summaryResponse.json();
+          if (summaryData.length > 0) {
+            const summary = summaryData[0];
+            document.getElementById('summaryType').value = summary.summary_type || 'general';
+            document.getElementById('summaryContent').value = summary.content || '';
+            document.getElementById('keyThemes').value = summary.key_themes || '';
+            document.getElementById('mainTakeaway').value = summary.main_takeaway || '';
+            
+            updateCharCounters();
+            showToast('info', 'Résumé chargé', 'Un résumé existant a été chargé');
+          }
+        }
+        
+        // Charger les citations
+        const citationsResponse = await fetch(`${API_BASE_URL}/citations/book/${bookId}`);
+        if (citationsResponse.ok) {
+          const citationsData = await citationsResponse.json();
+          citations = citationsData;
+          renderCitations();
+          
+          if (citations.length > 0) {
+            showToast('info', 'Citations chargées', `${citations.length} citation(s) chargée(s)`);
+          }
+        }
+      } catch (error) {
+        console.error('Erreur lors du chargement:', error);
+      } finally {
+        showLoading(false);
+      }
+    }
+
+    // ==================== GESTION DES CITATIONS ====================
+    
+    function addCitation() {
+      const text = document.getElementById('newCitationText').value.trim();
+      const page = document.getElementById('citationPage').value;
+      const context = document.getElementById('citationContext').value.trim();
+      
+      if (!text) {
+        showToast('error', 'Erreur', 'Veuillez entrer le texte de la citation');
+        document.getElementById('newCitationError').textContent = 'Le texte de la citation est requis';
+        document.getElementById('newCitationError').classList.add('show');
+        return;
+      }
+      
+      const citation = {
+        text: text,
+        page_number: page ? parseInt(page) : null,
+        context: context || null,
+        temp_id: Date.now() // ID temporaire pour l'édition locale
+      };
+      
+      citations.push(citation);
+      renderCitations();
+      
+      // Réinitialiser le formulaire de citation
+      document.getElementById('newCitationText').value = '';
+      document.getElementById('citationPage').value = '';
+      document.getElementById('citationContext').value = '';
+      document.getElementById('newCitationCount').textContent = '0';
+      document.getElementById('contextCount').textContent = '0';
+      document.getElementById('newCitationError').classList.remove('show');
+      
+      showToast('success', 'Citation ajoutée', 'La citation a été ajoutée à la liste');
+      updateProgress();
+    }
+
+    function renderCitations() {
+      const container = document.getElementById('citationsContainer');
+      
+      if (citations.length === 0) {
+        container.innerHTML = `
+          <div class="empty-citations">
+            <i class="fas fa-quote-left"></i>
+            <p>Aucune citation ajoutée</p>
+            <small>Utilisez le formulaire ci-dessus pour ajouter des citations</small>
+          </div>
+        `;
+        return;
+      }
+      
+      container.innerHTML = citations.map((citation, index) => `
+        <div class="citation-item">
+          <blockquote>« ${escapeHtml(citation.text)} »</blockquote>
+          <div class="citation-meta">
+            <div>
+              ${citation.page_number ? `<span class="citation-page">Page ${citation.page_number}</span>` : ''}
+              ${citation.context ? `<small style="margin-left: 0.5rem;">${escapeHtml(citation.context)}</small>` : ''}
+            </div>
+            <div class="citation-actions">
+              <button onclick="editCitation(${index})" title="Modifier">
+                <i class="fas fa-edit"></i>
+              </button>
+              <button onclick="deleteCitation(${index})" title="Supprimer">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function editCitation(index) {
+      editingCitationIndex = index;
+      const citation = citations[index];
+      
+      document.getElementById('editCitationText').value = citation.text;
+      document.getElementById('editCitationPage').value = citation.page_number || '';
+      document.getElementById('editCitationContext').value = citation.context || '';
+      document.getElementById('editCitationCount').textContent = citation.text.length;
+      
+      document.getElementById('editCitationModal').classList.add('show');
+    }
+
+    function saveEditedCitation() {
+      if (editingCitationIndex === -1) return;
+      
+      const text = document.getElementById('editCitationText').value.trim();
+      
+      if (!text) {
+        showToast('error', 'Erreur', 'Le texte de la citation ne peut pas être vide');
+        return;
+      }
+      
+      citations[editingCitationIndex] = {
+        ...citations[editingCitationIndex],
+        text: text,
+        page_number: document.getElementById('editCitationPage').value ? parseInt(document.getElementById('editCitationPage').value) : null,
+        context: document.getElementById('editCitationContext').value.trim() || null
+      };
+      
+      renderCitations();
+      closeEditModal();
+      showToast('success', 'Citation modifiée', 'La citation a été mise à jour');
+    }
+
+    function closeEditModal() {
+      document.getElementById('editCitationModal').classList.remove('show');
+      editingCitationIndex = -1;
+    }
+
+    function deleteCitation(index) {
+      if (confirm('Êtes-vous sûr de vouloir supprimer cette citation ?')) {
+        citations.splice(index, 1);
+        renderCitations();
+        showToast('info', 'Citation supprimée', 'La citation a été retirée de la liste');
+        updateProgress();
+      }
+    }
+
+    // ==================== COMPTEURS DE CARACTÈRES ====================
+    
+    const charCountFields = [
+      { id: 'summaryContent', counter: 'summaryCount' },
+      { id: 'keyThemes', counter: 'themesCount' },
+      { id: 'mainTakeaway', counter: 'takeawayCount' },
+      { id: 'newCitationText', counter: 'newCitationCount' },
+      { id: 'citationContext', counter: 'contextCount' },
+      { id: 'editCitationText', counter: 'editCitationCount' }
+    ];
+    
+    function updateCharCounters() {
+      charCountFields.forEach(({ id, counter }) => {
+        const field = document.getElementById(id);
+        const counterEl = document.getElementById(counter);
+        
+        if (field && counterEl) {
+          counterEl.textContent = field.value.length;
+          
+          const maxLength = field.maxLength;
+          const counterParent = counterEl.parentElement;
+          const length = field.value.length;
+          
+          if (length > maxLength * 0.9) {
+            counterParent.classList.add('error');
+            counterParent.classList.remove('warning');
+          } else if (length > maxLength * 0.7) {
+            counterParent.classList.add('warning');
+            counterParent.classList.remove('error');
+          } else {
+            counterParent.classList.remove('warning', 'error');
+          }
+        }
+      });
+    }
+
+    charCountFields.forEach(({ id }) => {
+      const field = document.getElementById(id);
+      if (field) {
+        field.addEventListener('input', updateCharCounters);
+      }
+    });
+
+    // ==================== VALIDATION ====================
+    
+    function validateForm() {
+      let isValid = true;
+      
+      if (!selectedBook) {
+        showToast('error', 'Livre requis', 'Veuillez sélectionner un livre');
+        isValid = false;
+      }
+      
+      const summaryContent = document.getElementById('summaryContent').value.trim();
+      const errorEl = document.getElementById('summaryContentError');
+      
+      if (!summaryContent) {
+        errorEl.textContent = 'Le résumé est requis';
+        errorEl.classList.add('show');
+        document.getElementById('summaryContent').classList.add('error');
+        isValid = false;
+      } else {
+        errorEl.classList.remove('show');
+        document.getElementById('summaryContent').classList.remove('error');
+      }
+      
+      return isValid;
+    }
+
+    // ==================== SOUMISSION DU FORMULAIRE ====================
+    
+    document.getElementById('summaryForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      if (!validateForm()) {
+        showToast('error', 'Validation échouée', 'Veuillez corriger les erreurs');
+        return;
+      }
+      
+      const submitBtn = document.getElementById('submitBtn');
+      submitBtn.disabled = true;
+      submitBtn.classList.add('loading');
+      
+      try {
+        // Préparer les données du résumé
+        const summaryData = {
+          book_id: selectedBook.id,
+          summary_type: document.getElementById('summaryType').value,
+          content: document.getElementById('summaryContent').value.trim(),
+          key_themes: document.getElementById('keyThemes').value.trim() || null,
+          main_takeaway: document.getElementById('mainTakeaway').value.trim() || null
+        };
+        
+        // Envoyer le résumé
+        const summaryResponse = await fetch(`${API_BASE_URL}/summaries`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(summaryData)
+        });
+        
+        if (!summaryResponse.ok) {
+          const error = await summaryResponse.json();
+          throw new Error(error.detail || 'Erreur lors de l\'enregistrement du résumé');
+        }
+        
+        const savedSummary = await summaryResponse.json();
+        console.log('✅ Résumé enregistré:', savedSummary);
+        
+        // Envoyer les citations
+        let citationsSaved = 0;
+        for (const citation of citations) {
+          // Ignorer les citations déjà enregistrées (qui ont un vrai ID)
+          if (citation.id) continue;
+          
+          const citationData = {
+            book_id: selectedBook.id,
+            citation_text: citation.text,
+            page_number: citation.page_number,
+            context: citation.context
+          };
+          
+          const citationResponse = await fetch(`${API_BASE_URL}/citations`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(citationData)
+          });
+          
+          if (citationResponse.ok) {
+            citationsSaved++;
+          }
+        }
+        
+        showToast('success', 'Enregistrement réussi!', 
+          `Résumé et ${citationsSaved} citation(s) enregistré(s) pour "${selectedBook.title}"`);
+        
+        // Réinitialiser le formulaire après 2 secondes
+        setTimeout(() => {
+          resetForm();
+        }, 2000);
+        
+      } catch (error) {
+        console.error('❌ Erreur:', error);
+        showToast('error', 'Erreur', error.message);
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.classList.remove('loading');
+      }
+    });
+
+    // ==================== RÉINITIALISATION ====================
+    
+    document.getElementById('resetBtn').addEventListener('click', function() {
+      if (confirm('Êtes-vous sûr de vouloir réinitialiser le formulaire ? Toutes les données non enregistrées seront perdues.')) {
+        resetForm();
+        showToast('info', 'Formulaire réinitialisé', 'Toutes les données ont été effacées');
+      }
+    });
+
+    function resetForm() {
+      document.getElementById('summaryForm').reset();
+      selectedBook = null;
+      citations = [];
+      
+      document.getElementById('selectedBookId').value = '';
+      document.getElementById('selectedBookDisplay').classList.remove('show');
+      document.getElementById('bookSearch').value = '';
+      
+      renderCitations();
+      updateCharCounters();
+      updateProgress();
+    }
+
+    // ==================== NAVIGATION ====================
+    
+    const menuToggle = document.getElementById('menuToggle');
+    const navLinks = document.getElementById('navLinks');
+
+    menuToggle.addEventListener('click', () => {
+      navLinks.classList.toggle('active');
+      const icon = menuToggle.querySelector('i');
+      icon.classList.toggle('fa-bars');
+      icon.classList.toggle('fa-times');
+    });
+
+    // ==================== INITIALISATION ====================
+    
+    window.addEventListener('DOMContentLoaded', async () => {
+      console.log('🚀 Initialisation de l\'application...');
+      console.log('📍 URL de l\'API:', API_BASE_URL);
+      
+      updateCharCounters();
+      updateProgress();
+      
+      // Vérifier la connexion à l'API
+      try {
+        const response = await fetch(`${API_BASE_URL}/health`, {
+          method: 'GET',
+          signal: AbortSignal.timeout(3000)
+        });
+        
+        if (response.ok) {
+          showToast('success', 'Connexion établie!', 'L\'API est opérationnelle');
+        }
+      } catch (error) {
+        console.error('❌ Impossible de se connecter à l\'API:', error.message);
+        showToast('error', 'API non disponible', 
+          'Le serveur n\'est pas démarré. Lancez "python main.py"');
+      }
+    });
+
+    // Fermer les modals en cliquant en dehors
+    document.getElementById('editCitationModal').addEventListener('click', (e) => {
+      if (e.target.classList.contains('modal-overlay')) {
+        closeEditModal();
+      }
+    });
+  </script>
+</body>
+</html>

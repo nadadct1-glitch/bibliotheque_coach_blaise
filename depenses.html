@@ -1,0 +1,1283 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Enregistrer une Dépense</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    :root {
+      --primary-clr: #16a34a;
+      --secondary-clr: #dcfce7;
+      --medium-clr: #86efac;
+      --dark-clr: #0a0a0a;
+      --light-clr: #ffffff;
+      --success-clr: #10b981;
+      --warning-clr: #f59e0b;
+      --info-clr: #3b82f6;
+      --danger-clr: #ef4444;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Fira Sans', sans-serif;
+      background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+      color: var(--dark-clr);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .navbar {
+      background: var(--light-clr);
+      box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      animation: slideDown 0.5s ease;
+    }
+
+    @keyframes slideDown {
+      from {
+        transform: translateY(-100%);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    .navbar-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 1rem 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: relative;
+    }
+
+    .logo {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--primary-clr);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: transform 0.3s;
+      z-index: 1001;
+    }
+
+    .logo:hover {
+      transform: scale(1.05);
+    }
+
+    .menu-toggle {
+      display: none;
+      background: var(--primary-clr);
+      border: none;
+      color: white;
+      font-size: 1.5rem;
+      width: 45px;
+      height: 45px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s;
+      z-index: 1001;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 2rem;
+      list-style: none;
+      align-items: center;
+    }
+
+    .nav-links a {
+      color: var(--dark-clr);
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.3s;
+      position: relative;
+    }
+
+    .nav-links a::after {
+      content: '';
+      position: absolute;
+      bottom: -5px;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: var(--primary-clr);
+      transition: width 0.3s;
+    }
+
+    .nav-links a:hover::after {
+      width: 100%;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 3rem auto;
+      padding: 0 15px 2rem;
+    }
+
+    .page-header {
+      text-align: center;
+      margin-bottom: 3rem;
+      animation: fadeInUp 0.8s ease;
+    }
+
+    @keyframes fadeInUp {
+      from {
+        transform: translateY(30px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    .page-header h1 {
+      font-size: clamp(2rem, 5vw, 3rem);
+      color: var(--primary-clr);
+      margin-bottom: 0.5rem;
+    }
+
+    .page-header p {
+      color: #666;
+      font-size: 1.1rem;
+    }
+
+    .api-status {
+      background: white;
+      padding: 1rem;
+      border-radius: 10px;
+      margin-bottom: 2rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .api-status.connected {
+      border-left: 4px solid var(--success-clr);
+    }
+
+    .api-status.disconnected {
+      border-left: 4px solid var(--danger-clr);
+    }
+
+    .api-status i {
+      font-size: 1.2rem;
+    }
+
+    .api-status.connected i {
+      color: var(--success-clr);
+    }
+
+    .api-status.disconnected i {
+      color: var(--danger-clr);
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .summary-card {
+      background: white;
+      padding: 1.5rem;
+      border-radius: 15px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      text-align: center;
+      animation: scaleIn 0.5s ease;
+    }
+
+    @keyframes scaleIn {
+      from {
+        transform: scale(0.9);
+        opacity: 0;
+      }
+      to {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
+    .summary-card i {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .summary-card.today i {
+      color: var(--danger-clr);
+    }
+
+    .summary-card.week i {
+      color: var(--warning-clr);
+    }
+
+    .summary-card.month i {
+      color: var(--info-clr);
+    }
+
+    .summary-card.year i {
+      color: var(--primary-clr);
+    }
+
+    .summary-card h3 {
+      font-size: 0.9rem;
+      color: #666;
+      margin-bottom: 0.5rem;
+    }
+
+    .summary-card .value {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--primary-clr);
+    }
+
+    .form-card {
+      background: white;
+      border-radius: 20px;
+      padding: 2.5rem;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+      animation: scaleIn 0.6s ease;
+    }
+
+    .form-section {
+      margin-bottom: 2rem;
+    }
+
+    .section-title {
+      font-size: 1.3rem;
+      color: var(--primary-clr);
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid var(--secondary-clr);
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+
+    .form-group.full-width {
+      grid-column: 1 / -1;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+      color: var(--dark-clr);
+      font-size: 0.95rem;
+    }
+
+    .form-group label .required {
+      color: #ef4444;
+      margin-left: 0.2rem;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      padding: 12px 15px;
+      border: 2px solid #e0e0e0;
+      border-radius: 10px;
+      font-family: inherit;
+      font-size: 1rem;
+      transition: all 0.3s;
+      background: white;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: var(--primary-clr);
+      box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.1);
+    }
+
+    .input-group {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+    }
+
+    .input-group input {
+      flex: 1;
+    }
+
+    .input-suffix {
+      padding: 12px 15px;
+      background: var(--secondary-clr);
+      border: 2px solid var(--medium-clr);
+      border-radius: 10px;
+      font-weight: 600;
+      color: var(--primary-clr);
+      min-width: 80px;
+      text-align: center;
+    }
+
+    .calculated-field {
+      background: var(--secondary-clr);
+      border: 2px solid var(--medium-clr);
+      font-weight: 600;
+      color: var(--primary-clr);
+      cursor: not-allowed;
+    }
+
+    .expense-summary {
+      background: linear-gradient(135deg, #fee2e2, #fecaca);
+      border: 2px solid var(--danger-clr);
+      border-radius: 15px;
+      padding: 1.5rem;
+      margin-top: 1rem;
+    }
+
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.8rem 0;
+      border-bottom: 1px solid #fca5a5;
+    }
+
+    .summary-row:last-child {
+      border-bottom: none;
+      padding-top: 1rem;
+      margin-top: 0.5rem;
+      border-top: 2px solid var(--danger-clr);
+    }
+
+    .summary-label {
+      font-weight: 600;
+      color: var(--dark-clr);
+    }
+
+    .summary-value {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--danger-clr);
+    }
+
+    .summary-row:last-child .summary-value {
+      font-size: 1.5rem;
+    }
+
+    .form-actions {
+      display: flex;
+      gap: 1rem;
+      margin-top: 2rem;
+      justify-content: flex-end;
+    }
+
+    .btn {
+      padding: 14px 30px;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary-clr), var(--medium-clr));
+      color: white;
+      box-shadow: 0 4px 15px rgba(22, 163, 74, 0.3);
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(22, 163, 74, 0.4);
+    }
+
+    .btn-secondary {
+      background: #e0e0e0;
+      color: var(--dark-clr);
+    }
+
+    .btn-secondary:hover {
+      background: #d0d0d0;
+    }
+
+    .btn-pdf {
+      background: linear-gradient(135deg, #ef4444, #f87171);
+      color: white;
+      box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+    }
+
+    .btn-pdf:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+    }
+
+    .spinner {
+      border: 3px solid #f3f3f3;
+      border-top: 3px solid var(--primary-clr);
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 3000;
+      align-items: center;
+      justify-content: center;
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .modal.show {
+      display: flex;
+    }
+
+    .modal-content {
+      background: white;
+      border-radius: 20px;
+      padding: 2rem;
+      max-width: 500px;
+      width: 90%;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      animation: slideUp 0.4s ease;
+      text-align: center;
+    }
+
+    @keyframes slideUp {
+      from {
+        transform: translateY(50px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    .success-icon {
+      width: 80px;
+      height: 80px;
+      background: var(--success-clr);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 1.5rem;
+      font-size: 3rem;
+      color: white;
+      animation: scaleIn 0.5s ease 0.3s both;
+    }
+
+    .modal-content h2 {
+      color: var(--primary-clr);
+      margin-bottom: 1rem;
+    }
+
+    .modal-content p {
+      color: #666;
+      margin-bottom: 1.5rem;
+      line-height: 1.6;
+    }
+
+    .expense-number {
+      background: var(--secondary-clr);
+      padding: 1rem;
+      border-radius: 10px;
+      margin: 1rem 0;
+      font-family: monospace;
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--primary-clr);
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+    }
+
+    .alert {
+      padding: 1rem;
+      border-radius: 10px;
+      margin-bottom: 1rem;
+      display: none;
+    }
+
+    .alert.show {
+      display: block;
+      animation: slideDown 0.3s ease;
+    }
+
+    .alert-error {
+      background: #fee;
+      border-left: 4px solid var(--danger-clr);
+      color: var(--danger-clr);
+    }
+
+    @media (max-width: 768px) {
+      .menu-toggle {
+        display: block;
+      }
+
+      .nav-links {
+        position: fixed;
+        top: 0;
+        right: -100%;
+        width: 70%;
+        max-width: 300px;
+        height: 100vh;
+        background: white;
+        flex-direction: column;
+        justify-content: flex-start;
+        padding: 80px 2rem 2rem;
+        box-shadow: -5px 0 20px rgba(0, 0, 0, 0.2);
+        transition: right 0.4s ease;
+        z-index: 1000;
+      }
+
+      .nav-links.active {
+        right: 0;
+      }
+
+      .nav-links li {
+        width: 100%;
+        text-align: center;
+        padding: 1rem 0;
+        border-bottom: 1px solid #eee;
+      }
+
+      .form-card {
+        padding: 1.5rem;
+      }
+
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .form-actions,
+      .modal-actions {
+        flex-direction: column;
+      }
+
+      .btn {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="navbar-content">
+      <a href="#" class="logo">
+        <i class="fas fa-money-bill-transfer"></i>
+        Enregistrer Dépense
+      </a>
+      <button class="menu-toggle" id="menuToggle">
+        <i class="fas fa-bars"></i>
+      </button>
+      <ul class="nav-links" id="navLinks">
+        <li><a href="#home">Accueil</a></li>
+        <li><a href="#expenses">Dépenses</a></li>
+        <li><a href="#reports">Rapports</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Success Modal -->
+  <div class="modal" id="successModal">
+    <div class="modal-content">
+      <div class="success-icon">
+        <i class="fas fa-check"></i>
+      </div>
+      <h2>Dépense Enregistrée !</h2>
+      <p>La dépense a été enregistrée avec succès dans la base de données.</p>
+      <div class="expense-number" id="expenseNumber">
+        DEP-001
+      </div>
+      <p><strong>Montant :</strong> <span id="modalAmount">0 FCFA</span></p>
+      <div class="modal-actions">
+        <button class="btn btn-pdf" id="downloadPdfBtn">
+          <i class="fas fa-file-pdf"></i>
+          Télécharger Reçu PDF
+        </button>
+        <button class="btn btn-primary" id="newExpenseBtn">
+          <i class="fas fa-plus"></i>
+          Nouvelle Dépense
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="container">
+    <div class="page-header">
+      <h1><i class="fas fa-wallet"></i> Nouvelle Dépense</h1>
+      <p>Enregistrez toutes les dépenses dans la base de données</p>
+    </div>
+
+    <!-- API Status -->
+    <div class="api-status disconnected" id="apiStatus">
+      <i class="fas fa-circle"></i>
+      <span id="apiStatusText">Connexion à l'API...</span>
+    </div>
+
+    <!-- Error Alert -->
+    <div class="alert alert-error" id="errorAlert"></div>
+
+    <!-- Summary Cards -->
+    <div class="summary-grid">
+      <div class="summary-card today">
+        <i class="fas fa-calendar-day"></i>
+        <h3>Dépenses Aujourd'hui</h3>
+        <div class="value" id="expensesToday">0 FCFA</div>
+      </div>
+      <div class="summary-card week">
+        <i class="fas fa-calendar-week"></i>
+        <h3>Dépenses 7 Jours</h3>
+        <div class="value" id="expensesWeek">0 FCFA</div>
+      </div>
+      <div class="summary-card month">
+        <i class="fas fa-calendar-alt"></i>
+        <h3>Dépenses ce Mois</h3>
+        <div class="value" id="expensesMonth">0 FCFA</div>
+      </div>
+      <div class="summary-card year">
+        <i class="fas fa-calendar"></i>
+        <h3>Dépenses cette Année</h3>
+        <div class="value" id="expensesYear">0 FCFA</div>
+      </div>
+    </div>
+
+    <div class="form-card">
+      <form id="expenseForm">
+        <!-- Expense Details -->
+        <div class="form-section">
+          <h2 class="section-title">
+            <i class="fas fa-file-invoice-dollar"></i>
+            Détails de la Dépense
+          </h2>
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="expenseAmount">Montant de la Dépense <span class="required">*</span></label>
+              <div class="input-group">
+                <input type="number" id="expenseAmount" name="expenseAmount" min="0" step="1" required placeholder="0">
+                <span class="input-suffix">FCFA</span>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="expenseCategory">Catégorie <span class="required">*</span></label>
+              <select id="expenseCategory" name="expenseCategory" required>
+                <option value="">Sélectionner</option>
+                <option value="salaires">Salaires</option>
+                <option value="loyer">Loyer</option>
+                <option value="electricite">Électricité</option>
+                <option value="eau">Eau</option>
+                <option value="telephone">Téléphone/Internet</option>
+                <option value="transport">Transport</option>
+                <option value="maintenance">Maintenance</option>
+                <option value="fournitures">Fournitures</option>
+                <option value="impots">Impôts/Taxes</option>
+                <option value="assurance">Assurance</option>
+                <option value="publicite">Publicité/Marketing</option>
+                <option value="autre">Autre</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group full-width">
+            <label for="expenseReason">Motif de la Dépense <span class="required">*</span></label>
+            <textarea id="expenseReason" name="expenseReason" rows="3" required placeholder="Décrivez le motif de la dépense (minimum 10 caractères)..."></textarea>
+          </div>
+        </div>
+
+        <!-- Beneficiary & Authorization -->
+        <div class="form-section">
+          <h2 class="section-title">
+            <i class="fas fa-users"></i>
+            Bénéficiaire & Autorisation
+          </h2>
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="beneficiary">Bénéficiaire <span class="required">*</span></label>
+              <input type="text" id="beneficiary" name="beneficiary" required placeholder="Nom du bénéficiaire">
+            </div>
+            <div class="form-group">
+              <label for="cashier">Caissier <span class="required">*</span></label>
+              <input type="text" id="cashier" name="cashier" required placeholder="Nom du caissier">
+            </div>
+            <div class="form-group">
+              <label for="authorizedBy">Autorisé par <span class="required">*</span></label>
+              <input type="text" id="authorizedBy" name="authorizedBy" required placeholder="Nom de l'autorisation">
+            </div>
+          </div>
+        </div>
+
+        <!-- Cash Status -->
+        <div class="form-section">
+          <h2 class="section-title">
+            <i class="fas fa-cash-register"></i>
+            État de la Caisse
+          </h2>
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="cashBefore">Caisse Avant Dépense <span class="required">*</span></label>
+              <div class="input-group">
+                <input type="number" id="cashBefore" name="cashBefore" min="0" step="1" required placeholder="0">
+                <span class="input-suffix">FCFA</span>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Caisse Après Dépense</label>
+              <input type="text" id="cashAfter" class="calculated-field" readonly placeholder="Auto-calculé">
+            </div>
+          </div>
+
+          <!-- Summary -->
+          <div class="expense-summary">
+            <div class="summary-row">
+              <span class="summary-label">Montant de la Dépense</span>
+              <span class="summary-value" id="summaryAmount">0 FCFA</span>
+            </div>
+            <div class="summary-row">
+              <span class="summary-label">Caisse Avant</span>
+              <span class="summary-value" id="summaryCashBefore">0 FCFA</span>
+            </div>
+            <div class="summary-row">
+              <span class="summary-label">CAISSE APRÈS</span>
+              <span class="summary-value" id="summaryCashAfter">0 FCFA</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Date & Time -->
+        <div class="form-section">
+          <h2 class="section-title">
+            <i class="fas fa-calendar-alt"></i>
+            Date et Heure
+          </h2>
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="expenseDate">Date de la Dépense <span class="required">*</span></label>
+              <input type="date" id="expenseDate" name="expenseDate" required>
+            </div>
+            <div class="form-group">
+              <label for="expenseTime">Heure de la Dépense <span class="required">*</span></label>
+              <input type="time" id="expenseTime" name="expenseTime" required>
+            </div>
+          </div>
+        </div>
+
+        <!-- Notes -->
+        <div class="form-section">
+          <h2 class="section-title">
+            <i class="fas fa-sticky-note"></i>
+            Notes Additionnelles
+          </h2>
+          <div class="form-group full-width">
+            <label for="notes">Remarques / Observations</label>
+            <textarea id="notes" name="notes" rows="3" placeholder="Commentaires additionnels..."></textarea>
+          </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" id="resetBtn">
+            <i class="fas fa-redo"></i>
+            Réinitialiser
+          </button>
+          <button type="submit" class="btn btn-primary" id="submitBtn">
+            <i class="fas fa-check-circle"></i>
+            Enregistrer la Dépense
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // ============================================================================
+    // CONFIGURATION API
+    // ============================================================================
+    const API_BASE_URL = 'http://localhost:8050';  // Modifier si nécessaire
+    
+    // ============================================================================
+    // MOBILE MENU
+    // ============================================================================
+    const menuToggle = document.getElementById('menuToggle');
+    const navLinks = document.getElementById('navLinks');
+
+    menuToggle.addEventListener('click', () => {
+      navLinks.classList.toggle('active');
+      const icon = menuToggle.querySelector('i');
+      if (navLinks.classList.contains('active')) {
+        icon.classList.remove('fa-bars');
+        icon.classList.add('fa-times');
+      } else {
+        icon.classList.remove('fa-times');
+        icon.classList.add('fa-bars');
+      }
+    });
+
+    // ============================================================================
+    // FORM ELEMENTS
+    // ============================================================================
+    const expenseForm = document.getElementById('expenseForm');
+    const expenseAmount = document.getElementById('expenseAmount');
+    const cashBefore = document.getElementById('cashBefore');
+    const cashAfter = document.getElementById('cashAfter');
+    const summaryAmount = document.getElementById('summaryAmount');
+    const summaryCashBefore = document.getElementById('summaryCashBefore');
+    const summaryCashAfter = document.getElementById('summaryCashAfter');
+    const expenseDate = document.getElementById('expenseDate');
+    const expenseTime = document.getElementById('expenseTime');
+    const successModal = document.getElementById('successModal');
+    const expenseNumber = document.getElementById('expenseNumber');
+    const modalAmount = document.getElementById('modalAmount');
+    const submitBtn = document.getElementById('submitBtn');
+    const errorAlert = document.getElementById('errorAlert');
+    const apiStatus = document.getElementById('apiStatus');
+    const apiStatusText = document.getElementById('apiStatusText');
+
+    let currentExpense = null;
+
+    // ============================================================================
+    // API STATUS CHECK
+    // ============================================================================
+    async function checkApiStatus() {
+      try {
+        const response = await fetch(`${API_BASE_URL}/health`);
+        if (response.ok) {
+          apiStatus.classList.remove('disconnected');
+          apiStatus.classList.add('connected');
+          apiStatusText.textContent = 'Connecté à la base de données';
+          loadPeriodStats();
+        } else {
+          throw new Error('API non disponible');
+        }
+      } catch (error) {
+        apiStatus.classList.remove('connected');
+        apiStatus.classList.add('disconnected');
+        apiStatusText.textContent = 'Erreur de connexion à l\'API';
+        console.error('Erreur API:', error);
+      }
+    }
+
+
+    // ============================================================================
+    // CALCULER CAISSE ACTUELLE (Ventes - Dépenses)
+    // ============================================================================
+    async function calculateCurrentCash() {
+      try {
+        // Récupérer toutes les ventes
+        const salesResponse = await fetch(`${API_BASE_URL}/api/ventes`);
+        const sales = await salesResponse.json();
+        const totalSales = sales.reduce((sum, sale) => sum + (sale.total_amount || 0), 0);
+
+        // Récupérer toutes les dépenses
+        const expensesResponse = await fetch(`${API_BASE_URL}/api/depenses`);
+        const expenses = await expensesResponse.json();
+        const totalExpenses = expenses.reduce((sum, exp) => sum + (exp.expense_amount || 0), 0);
+
+        // Calculer la caisse actuelle
+        const currentCash = totalSales - totalExpenses;
+        
+        // Remplir le champ automatiquement
+        document.getElementById('cashBefore').value = Math.max(0, currentCash);
+        calculateCashAfter();
+        
+      } catch (error) {
+        console.error('Erreur calcul caisse:', error);
+      }
+    }
+
+    // ============================================================================
+    // LOAD PERIOD STATS
+    // ============================================================================
+    async function loadPeriodStats() {
+      try {
+        // Aujourd'hui
+        const today = await fetch(`${API_BASE_URL}/api/depenses/stats/period?days=1`);
+        if (today.ok) {
+          const data = await today.json();
+          document.getElementById('expensesToday').textContent = data.total_expenses.toLocaleString() + ' FCFA';
+        }
+
+        // 7 jours
+        const week = await fetch(`${API_BASE_URL}/api/depenses/stats/period?days=7`);
+        if (week.ok) {
+          const data = await week.json();
+          document.getElementById('expensesWeek').textContent = data.total_expenses.toLocaleString() + ' FCFA';
+        }
+
+        // 30 jours (mois)
+        const month = await fetch(`${API_BASE_URL}/api/depenses/stats/period?days=30`);
+        if (month.ok) {
+          const data = await month.json();
+          document.getElementById('expensesMonth').textContent = data.total_expenses.toLocaleString() + ' FCFA';
+        }
+
+        // 365 jours (année)
+        const year = await fetch(`${API_BASE_URL}/api/depenses/stats/period?days=365`);
+        if (year.ok) {
+          const data = await year.json();
+          document.getElementById('expensesYear').textContent = data.total_expenses.toLocaleString() + ' FCFA';
+        }
+      } catch (error) {
+        console.error('Erreur chargement stats:', error);
+      }
+    }
+
+    // ============================================================================
+    // CALCULATE CASH AFTER
+    // ============================================================================
+    function calculateCashAfter() {
+      const amount = parseFloat(expenseAmount.value) || 0;
+      const before = parseFloat(cashBefore.value) || 0;
+      const after = before - amount;
+
+      if (after < 0) {
+        cashAfter.value = '0 FCFA (Insuffisant!)';
+        cashAfter.style.color = 'var(--danger-clr)';
+      } else {
+        cashAfter.value = after.toLocaleString() + ' FCFA';
+        cashAfter.style.color = 'var(--primary-clr)';
+      }
+      
+      summaryAmount.textContent = amount.toLocaleString() + ' FCFA';
+      summaryCashBefore.textContent = before.toLocaleString() + ' FCFA';
+      summaryCashAfter.textContent = (after >= 0 ? after : 0).toLocaleString() + ' FCFA';
+    }
+
+    expenseAmount.addEventListener('input', calculateCashAfter);
+    cashBefore.addEventListener('input', calculateCashAfter);
+
+    // ============================================================================
+    // SET CURRENT DATE AND TIME
+    // ============================================================================
+    function setCurrentDateTime() {
+      const today = new Date();
+      expenseDate.value = today.toISOString().split('T')[0];
+      expenseTime.value = today.toTimeString().slice(0, 5);
+    }
+
+    setCurrentDateTime();
+
+    // ============================================================================
+    // SHOW ERROR
+    // ============================================================================
+    function showError(message) {
+      errorAlert.textContent = message;
+      errorAlert.classList.add('show');
+      setTimeout(() => {
+        errorAlert.classList.remove('show');
+      }, 5000);
+    }
+
+    // ============================================================================
+    // FORM SUBMISSION
+    // ============================================================================
+    expenseForm.addEventListener('submit', async function(e) {
+      e.preventDefault();
+
+      // Validation de la caisse
+      const amount = parseFloat(expenseAmount.value);
+      const before = parseFloat(cashBefore.value);
+      
+      if (before < amount) {
+        showError('Erreur: La caisse est insuffisante pour cette dépense!');
+        return;
+      }
+
+      // Validation de la raison (minimum 10 caractères)
+      const reason = document.getElementById('expenseReason').value.trim();
+      if (reason.length < 10) {
+        showError('Le motif de la dépense doit contenir au moins 10 caractères');
+        return;
+      }
+
+      // Disable submit button
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<div class="spinner"></div> Enregistrement...';
+
+      try {
+        // Get form data
+        const formData = {
+          expense_amount: amount,
+          expense_category: document.getElementById('expenseCategory').value,
+          expense_reason: reason,
+          beneficiary: document.getElementById('beneficiary').value,
+          cashier: document.getElementById('cashier').value,
+          authorized_by: document.getElementById('authorizedBy').value,
+          cash_before: before,
+          expense_date: new Date(expenseDate.value + 'T' + expenseTime.value).toISOString(),
+          expense_time: expenseTime.value,
+          notes: document.getElementById('notes').value || null
+        };
+
+        // Send to API
+        const response = await fetch(`${API_BASE_URL}/api/depenses`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(formData)
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.detail || 'Erreur lors de l\'enregistrement');
+        }
+
+        const result = await response.json();
+        currentExpense = result;
+
+        // Show success modal
+        expenseNumber.textContent = result.expense_number;
+        modalAmount.textContent = result.expense_amount.toLocaleString() + ' FCFA';
+        successModal.classList.add('show');
+
+        // Reload stats
+        loadPeriodStats();
+
+      } catch (error) {
+        console.error('Erreur:', error);
+        showError(error.message || 'Erreur lors de l\'enregistrement de la dépense');
+      } finally {
+        // Re-enable submit button
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="fas fa-check-circle"></i> Enregistrer la Dépense';
+      }
+    });
+
+    // ============================================================================
+    // GENERATE PDF
+    // ============================================================================
+
+    // Generate PDF Receipt
+    const downloadPdfBtn = document.getElementById('downloadPdfBtn');
+
+    downloadPdfBtn.addEventListener('click', function() {
+      if (!currentExpense) return;
+
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+
+      // Header
+      doc.setFontSize(22);
+      doc.setTextColor(22, 163, 74);
+      doc.text('REÇU DE DÉPENSE', 105, 20, { align: 'center' });
+
+      doc.setFontSize(10);
+      doc.setTextColor(100);
+      doc.text('Gestion des Dépenses', 105, 28, { align: 'center' });
+      
+      // Expense number
+      doc.setFontSize(12);
+      doc.setTextColor(0);
+      doc.text('N° ' + currentExpense.expense_number, 105, 40, { align: 'center' });
+
+      // Date and time
+      doc.setFontSize(10);
+      const expenseDateTime = new Date(currentExpense.expense_date);
+      doc.text('Date: ' + expenseDateTime.toLocaleDateString('fr-FR'), 20, 50);
+      doc.text('Heure: ' + currentExpense.expense_time, 20, 56);
+
+      // Separator line
+      doc.setDrawColor(22, 163, 74);
+      doc.setLineWidth(0.5);
+      doc.line(20, 65, 190, 65);
+
+      // Expense details
+      doc.setFontSize(11);
+      doc.setFont(undefined, 'bold');
+      doc.text('DÉTAILS DE LA DÉPENSE', 20, 75);
+      doc.setFont(undefined, 'normal');
+      doc.setFontSize(10);
+      
+      const categoryNames = {
+        'salaires': 'Salaires',
+        'loyer': 'Loyer',
+        'electricite': 'Électricité',
+        'eau': 'Eau',
+        'telephone': 'Téléphone/Internet',
+        'transport': 'Transport',
+        'maintenance': 'Maintenance',
+        'fournitures': 'Fournitures',
+        'impots': 'Impôts/Taxes',
+        'assurance': 'Assurance',
+        'publicite': 'Publicité/Marketing',
+        'autre': 'Autre'
+      };
+
+      doc.text('Catégorie: ' + categoryNames[currentExpense.expense_category], 20, 82);
+      
+      // CORRECTION: Formater correctement le montant
+      doc.text('Montant: ' + parseFloat(currentExpense.expense_amount).toLocaleString('fr-FR') + ' FCFA', 20, 88);
+
+      // Reason (CORRECTION: mieux gérer les sauts de ligne)
+      doc.setFontSize(9);
+      const reasonText = 'Motif: ' + currentExpense.expense_reason;
+      const reasonLines = doc.splitTextToSize(reasonText, 170);
+      doc.text(reasonLines, 20, 95);
+      
+      // Calculer la position Y dynamique selon le nombre de lignes
+      let currentY = 95 + (reasonLines.length * 4);
+
+      // Beneficiary & Authorization
+      doc.setFontSize(11);
+      doc.setFont(undefined, 'bold');
+      doc.text('BÉNÉFICIAIRE & AUTORISATION', 20, currentY + 10);
+      doc.setFont(undefined, 'normal');
+      doc.setFontSize(10);
+      doc.text('Bénéficiaire: ' + currentExpense.beneficiary, 20, currentY + 17);
+      doc.text('Caissier: ' + currentExpense.cashier, 20, currentY + 23);
+      doc.text('Autorisé par: ' + currentExpense.authorized_by, 20, currentY + 29);
+
+      // Cash status
+      doc.setDrawColor(22, 163, 74);
+      doc.line(20, currentY + 38, 190, currentY + 38);
+
+      doc.setFontSize(11);
+      doc.setFont(undefined, 'bold');
+      doc.text('ÉTAT DE LA CAISSE', 20, currentY + 48);
+      doc.setFont(undefined, 'normal');
+      doc.setFontSize(10);
+
+      // CORRECTION: Extraire et formater correctement
+      const cashBeforeValue = parseFloat(currentExpense.cash_before.toString().replace(/[^\d.-]/g, '')) || 0;
+      const expenseAmountValue = parseFloat(currentExpense.expense_amount.toString().replace(/[^\d.-]/g, '')) || 0;
+      const cashAfterValue = parseFloat(currentExpense.cash_after.toString().replace(/[^\d.-]/g, '')) || 0;
+
+      doc.text('Caisse avant: ' + cashBeforeValue.toLocaleString('fr-FR') + ' FCFA', 20, currentY + 55);
+      doc.text('Montant dépensé: -' + expenseAmountValue.toLocaleString('fr-FR') + ' FCFA', 20, currentY + 61);
+
+      // Total
+      doc.setDrawColor(22, 163, 74);
+      doc.setLineWidth(1);
+      doc.line(20, currentY + 68, 190, currentY + 68);
+
+      doc.setFontSize(14);
+      doc.setFont(undefined, 'bold');
+      doc.setTextColor(239, 68, 68);
+      doc.text('Caisse après:', 20, currentY + 78);
+      doc.text(cashAfterValue.toLocaleString('fr-FR') + ' FCFA', 190, currentY + 78, { align: 'right' });
+
+      // Notes
+      if (currentExpense.notes) {
+        doc.setFontSize(9);
+        doc.setTextColor(0);
+        doc.setFont(undefined, 'normal');
+        const notesText = 'Notes: ' + currentExpense.notes;
+        const notesLines = doc.splitTextToSize(notesText, 170);
+        doc.text(notesLines, 20, currentY + 93);
+      }
+
+      // Signatures section
+      const sigY = currentY + 115;
+      doc.setFontSize(10);
+      doc.setTextColor(0);
+      doc.text('Signature Caissier:', 20, sigY);
+      doc.text('Signature Autorisation:', 110, sigY);
+      doc.line(20, sigY + 15, 80, sigY + 15);
+      doc.line(110, sigY + 15, 170, sigY + 15);
+
+      // Footer
+      doc.setFontSize(8);
+      doc.setTextColor(100);
+      doc.text('Document généré automatiquement', 105, 270, { align: 'center' });
+      doc.text('Contact: +228 XX XX XX XX | Email: contact@gestion-depenses.com', 105, 276, { align: 'center' });
+
+      // Save PDF
+      doc.save('Depense_' + currentExpense.expense_number + '.pdf');
+    });
+
+    
+    // ============================================================================
+    // NEW EXPENSE BUTTON
+    // ============================================================================
+    document.getElementById('newExpenseBtn').addEventListener('click', function() {
+      successModal.classList.remove('show');
+      expenseForm.reset();
+      calculateCashAfter();
+      setCurrentDateTime();
+      currentExpense = null;
+    });
+
+    // ============================================================================
+    // RESET BUTTON
+    // ============================================================================
+    document.getElementById('resetBtn').addEventListener('click', function() {
+      if (confirm('Êtes-vous sûr de vouloir réinitialiser le formulaire ?')) {
+        expenseForm.reset();
+        calculateCashAfter();
+        setCurrentDateTime();
+      }
+    });
+
+    // ============================================================================
+    // CLOSE MODAL ON OUTSIDE CLICK
+    // ============================================================================
+    successModal.addEventListener('click', function(e) {
+      if (e.target === successModal) {
+        successModal.classList.remove('show');
+      }
+    });
+
+    // ============================================================================
+    // CHECK API STATUS ON LOAD
+    // ============================================================================
+    checkApiStatus();
+    calculateCurrentCash(); // Calculer la caisse au chargement
+  </script>
+</body>
+</html>

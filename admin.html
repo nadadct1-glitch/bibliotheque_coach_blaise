@@ -1,0 +1,1281 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard Bibliothèque - Temps Réel</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --primary-clr: #9640e3;
+      --secondary-clr: #f8e8fd;
+      --medium-clr: #d399fb;
+      --dark-clr: #0a0a0a;
+      --light-clr: #ffffff;
+      --success-clr: #10b981;
+      --warning-clr: #f59e0b;
+      --info-clr: #3b82f6;
+      --danger-clr: #ef4444;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Fira Sans', sans-serif;
+      background: #f5f5f5;
+      color: var(--dark-clr);
+      min-height: 100vh;
+    }
+
+    .navbar {
+      background: var(--light-clr);
+      box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+
+    .navbar-content {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 1rem 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--primary-clr);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 2rem;
+      list-style: none;
+    }
+
+    .nav-links a {
+      color: var(--dark-clr);
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.3s;
+    }
+
+    .nav-links a:hover {
+      color: var(--primary-clr);
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 2rem 15px;
+    }
+
+    .page-title {
+      margin-bottom: 2rem;
+    }
+
+    .page-title h1 {
+      font-size: clamp(2rem, 5vw, 3rem);
+      color: var(--primary-clr);
+      margin-bottom: 0.5rem;
+    }
+
+    .page-title p {
+      color: #666;
+      font-size: 1.1rem;
+    }
+
+    /* Badge temps réel */
+    .realtime-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: var(--success-clr);
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 25px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      margin-left: 1rem;
+    }
+
+    .realtime-dot {
+      width: 8px;
+      height: 8px;
+      background: white;
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .stat-card {
+      background: white;
+      border-radius: 15px;
+      padding: 1.5rem;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Carte temps réel */
+    .stat-card.realtime {
+      border: 2px solid var(--success-clr);
+      background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%);
+      grid-column: span 2;
+    }
+
+    .stat-card.realtime::after {
+      content: 'TEMPS RÉEL';
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: var(--success-clr);
+      color: white;
+      padding: 0.3rem 0.6rem;
+      border-radius: 12px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    }
+
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      opacity: 0.1;
+      transform: translate(30%, -30%);
+    }
+
+    .stat-card.books::before { background: var(--primary-clr); }
+    .stat-card.citations::before { background: var(--info-clr); }
+    .stat-card.sorties::before { background: var(--success-clr); }
+    .stat-card.money::before { background: var(--warning-clr); }
+    .stat-card.time::before { background: var(--danger-clr); }
+
+    .stat-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    .stat-icon {
+      width: 50px;
+      height: 50px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      color: white;
+    }
+
+    .stat-card.books .stat-icon {
+      background: linear-gradient(135deg, var(--primary-clr), var(--medium-clr));
+    }
+
+    .stat-card.citations .stat-icon {
+      background: linear-gradient(135deg, var(--info-clr), #60a5fa);
+    }
+
+    .stat-card.sorties .stat-icon {
+      background: linear-gradient(135deg, var(--success-clr), #34d399);
+    }
+
+    .stat-card.money .stat-icon {
+      background: linear-gradient(135deg, var(--warning-clr), #fbbf24);
+    }
+
+    .stat-card.time .stat-icon {
+      background: linear-gradient(135deg, var(--danger-clr), #f87171);
+    }
+
+    .stat-trend {
+      font-size: 0.9rem;
+      padding: 0.3rem 0.6rem;
+      border-radius: 20px;
+      font-weight: 600;
+    }
+
+    .stat-trend.up {
+      background: #d1fae5;
+      color: var(--success-clr);
+    }
+
+    .stat-trend.down {
+      background: #fee2e2;
+      color: var(--danger-clr);
+    }
+
+    .stat-body h3 {
+      font-size: 0.9rem;
+      color: #666;
+      margin-bottom: 0.5rem;
+      text-transform: uppercase;
+    }
+
+    .stat-value {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--dark-clr);
+      margin-bottom: 0.5rem;
+    }
+
+    .stat-subtitle {
+      font-size: 0.85rem;
+      color: #999;
+    }
+
+    /* Mini stats dans la carte temps réel */
+    .mini-stats {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.5rem;
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid #e5e7eb;
+    }
+
+    .mini-stat {
+      text-align: center;
+    }
+
+    .mini-stat-label {
+      font-size: 0.75rem;
+      color: #666;
+      margin-bottom: 0.25rem;
+    }
+
+    .mini-stat-value {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--primary-clr);
+    }
+
+    .charts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+      gap: 2rem;
+      margin-bottom: 2rem;
+    }
+
+    .chart-card {
+      background: white;
+      border-radius: 15px;
+      padding: 1.5rem;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .chart-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .chart-header h3 {
+      font-size: 1.2rem;
+      color: var(--dark-clr);
+    }
+
+    .chart-filter {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .filter-btn {
+      padding: 0.5rem 1rem;
+      border: 1px solid var(--medium-clr);
+      background: white;
+      color: var(--primary-clr);
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .filter-btn:hover,
+    .filter-btn.active {
+      background: var(--primary-clr);
+      color: white;
+    }
+
+    .chart-container {
+      position: relative;
+      height: 300px;
+    }
+
+    /* Tableau d'analyse détaillée */
+    .table-card {
+      background: white;
+      border-radius: 15px;
+      padding: 1.5rem;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      margin-bottom: 2rem;
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 800px;
+    }
+
+    thead {
+      background: var(--secondary-clr);
+    }
+
+    th {
+      padding: 1rem;
+      text-align: left;
+      font-weight: 600;
+      color: var(--primary-clr);
+      border-bottom: 2px solid var(--medium-clr);
+    }
+
+    td {
+      padding: 1rem;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    tbody tr:hover {
+      background: #f9fafb;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 0.3rem 0.8rem;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    .badge.success {
+      background: #d1fae5;
+      color: var(--success-clr);
+    }
+
+    .badge.warning {
+      background: #fed7aa;
+      color: var(--warning-clr);
+    }
+
+    .badge.danger {
+      background: #fee2e2;
+      color: var(--danger-clr);
+    }
+
+    /* Barre de progression */
+    .stock-progress {
+      width: 100%;
+      height: 8px;
+      background: #e5e7eb;
+      border-radius: 10px;
+      overflow: hidden;
+      margin-top: 0.5rem;
+    }
+
+    .stock-progress-bar {
+      height: 100%;
+      transition: width 0.3s ease;
+      border-radius: 10px;
+    }
+
+    .stock-progress-bar.high {
+      background: var(--success-clr);
+    }
+
+    .stock-progress-bar.medium {
+      background: var(--warning-clr);
+    }
+
+    .stock-progress-bar.low {
+      background: var(--danger-clr);
+    }
+
+    .activities-card {
+      background: white;
+      border-radius: 15px;
+      padding: 1.5rem;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      margin-bottom: 2rem;
+    }
+
+    .activities-card h3 {
+      font-size: 1.2rem;
+      color: var(--dark-clr);
+      margin-bottom: 1.5rem;
+    }
+
+    .activity-item {
+      display: flex;
+      gap: 1rem;
+      padding: 1rem;
+      border-bottom: 1px solid #f0f0f0;
+      transition: background 0.3s;
+    }
+
+    .activity-item:hover {
+      background: #f9f9f9;
+    }
+
+    .activity-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      color: white;
+      flex-shrink: 0;
+    }
+
+    .activity-content {
+      flex: 1;
+    }
+
+    .activity-title {
+      font-weight: 600;
+      color: var(--dark-clr);
+      margin-bottom: 0.2rem;
+    }
+
+    .activity-desc {
+      font-size: 0.9rem;
+      color: #666;
+    }
+
+    .activity-time {
+      font-size: 0.8rem;
+      color: #999;
+      margin-top: 0.3rem;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 2rem;
+      color: var(--primary-clr);
+    }
+
+    .spinner {
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid var(--primary-clr);
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 1rem;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    @media (max-width: 768px) {
+      .charts-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .chart-container {
+        height: 250px;
+      }
+
+      .realtime-badge {
+        display: block;
+        margin-left: 0;
+        margin-top: 0.5rem;
+        width: fit-content;
+      }
+
+      .stat-card.realtime {
+        grid-column: span 1;
+      }
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <div class="navbar-content">
+      <a href="/" class="logo">
+        <i class="fas fa-chart-line"></i>
+        Dashboard
+      </a>
+      <ul class="nav-links">
+        <li><a href="/">Accueil</a></li>
+        <li><a href="ajout_livres.html">Entrés</a></li>
+        <li><a href="sortie_livres.html">Sorties</a></li>
+        <li><a href="resume_citation.html">Résumé</a></li>
+        <li><a href="dashboard_boutique.html">Boutique</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <div class="container">
+    <div class="page-title">
+      <h1>
+        <i class="fas fa-tachometer-alt"></i> Tableau de Bord
+        <span class="realtime-badge">
+          <span class="realtime-dot"></span>
+          Mise à jour automatique
+        </span>
+      </h1>
+      <p>Vue d'ensemble en temps réel de votre bibliothèque | Mis à jour il y a <span id="lastUpdate">0</span>s</p>
+    </div>
+
+    <div class="loading" id="loadingStats">
+      <div class="spinner"></div>
+      <p>Chargement des statistiques...</p>
+    </div>
+
+    <div class="stats-grid" id="statsGrid" style="display: none;">
+      <!-- NOUVELLE CARTE STOCK EN TEMPS RÉEL -->
+      <div class="stat-card sorties realtime">
+        <div class="stat-header">
+          <div class="stat-icon">
+            <i class="fas fa-warehouse"></i>
+          </div>
+          <span class="stat-trend up">
+            <i class="fas fa-sync-alt"></i> Live
+          </span>
+        </div>
+        <div class="stat-body">
+          <h3>📚 Stock de Livres Disponibles (Temps Réel)</h3>
+          <div class="stat-value" id="stockRestantTotal">0 exemplaires</div>
+          <p class="stat-subtitle">Stock disponible actuellement</p>
+          
+          <div class="mini-stats">
+            <div class="mini-stat">
+              <div class="mini-stat-label">Total Titres</div>
+              <div class="mini-stat-value" id="totalLivres">0</div>
+            </div>
+            <div class="mini-stat">
+              <div class="mini-stat-label">Sorties</div>
+              <div class="mini-stat-value" id="totalSorties">0</div>
+            </div>
+            <div class="mini-stat">
+              <div class="mini-stat-label">Épuisés</div>
+              <div class="mini-stat-value" id="enRupture">0</div>
+            </div>
+            <div class="mini-stat">
+              <div class="mini-stat-label">Stock Faible</div>
+              <div class="mini-stat-value" id="stockFaible">0</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Les autres stats seront ajoutées dynamiquement -->
+    </div>
+
+    <div class="charts-grid" id="chartsGrid" style="display: none;">
+      <!-- Charts will be inserted here -->
+    </div>
+
+    <!-- NOUVEAU TABLEAU D'ANALYSE DÉTAILLÉE PAR LIVRE -->
+    <div class="table-card" id="detailedAnalysisCard" style="display: none;">
+      <h3 style="margin-bottom: 1.5rem; color: var(--primary-clr);">
+        <i class="fas fa-chart-bar"></i> Analyse Détaillée par Livre (Stock Initial, Sorties, Disponible)
+      </h3>
+      <table id="bookAnalysisTable">
+        <thead>
+          <tr>
+            <th>Livre</th>
+            <th>Auteur</th>
+            <th>Catégorie</th>
+            <th>Stock Initial</th>
+            <th>Sorties Totales</th>
+            <th>Stock Disponible</th>
+            <th>Taux de Sortie</th>
+            <th>Progression</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td colspan="8" style="text-align: center; padding: 2rem;">
+              Chargement des données...
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="activities-card" id="activitiesCard" style="display: none;">
+      <h3><i class="fas fa-history"></i> Activités Récentes</h3>
+      <div id="activitiesList"></div>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE_URL = 'http://localhost:8040/api';
+    let charts = {};
+    let lastUpdateTime = 0;
+
+    // ============================================================================
+    // MISE À JOUR DU TIMER
+    // ============================================================================
+    function updateTimer() {
+      lastUpdateTime++;
+      document.getElementById('lastUpdate').textContent = lastUpdateTime;
+    }
+
+    // ============================================================================
+    // FORMATAGE DES NOMBRES
+    // ============================================================================
+    function formatNumber(num) {
+      return num.toLocaleString('fr-FR');
+    }
+
+    // ============================================================================
+    // CHARGEMENT DU STOCK EN TEMPS RÉEL
+    // ============================================================================
+    async function loadRealtimeStock() {
+      try {
+        // Récupérer tous les livres
+        const booksResponse = await fetch(`${API_BASE_URL}/books`);
+        const books = await booksResponse.json();
+
+        // Récupérer toutes les sorties
+        const sortiesResponse = await fetch(`${API_BASE_URL}/sorties`);
+        const sorties = await sortiesResponse.json();
+
+        // Calculer les totaux
+        let stockRestantTotal = 0;
+        let totalLivres = books.length;
+        let enRupture = 0;
+        let stockFaible = 0;
+
+        books.forEach(book => {
+          const copies = book.copies_count || 0;
+          stockRestantTotal += copies;
+
+          if (copies === 0) enRupture++;
+          if (copies > 0 && copies <= 3) stockFaible++;
+        });
+
+        const totalSorties = sorties.length;
+
+        // Mettre à jour l'affichage
+        document.getElementById('stockRestantTotal').textContent = `${formatNumber(stockRestantTotal)} exemplaires`;
+        document.getElementById('totalLivres').textContent = formatNumber(totalLivres);
+        document.getElementById('totalSorties').textContent = formatNumber(totalSorties);
+        document.getElementById('enRupture').textContent = formatNumber(enRupture);
+        document.getElementById('stockFaible').textContent = formatNumber(stockFaible);
+
+        // Réinitialiser le timer
+        lastUpdateTime = 0;
+        document.getElementById('lastUpdate').textContent = '0';
+
+      } catch (error) {
+        console.error('❌ Erreur chargement stock temps réel:', error);
+      }
+    }
+
+    // ============================================================================
+    // CHARGEMENT DU TABLEAU D'ANALYSE DÉTAILLÉE
+    // ============================================================================
+    async function loadBookAnalysis() {
+      try {
+        // Récupérer tous les livres
+        const booksResponse = await fetch(`${API_BASE_URL}/books`);
+        const books = await booksResponse.json();
+
+        // Récupérer toutes les sorties
+        const sortiesResponse = await fetch(`${API_BASE_URL}/sorties`);
+        const sorties = await sortiesResponse.json();
+
+        // Grouper les sorties par livre
+        const sortiesByBook = {};
+        sorties.forEach(sortie => {
+          if (!sortiesByBook[sortie.book_id]) {
+            sortiesByBook[sortie.book_id] = 0;
+          }
+          sortiesByBook[sortie.book_id] += sortie.quantity || 1;
+        });
+
+        // Construire le tableau
+        const tbody = document.querySelector('#bookAnalysisTable tbody');
+        tbody.innerHTML = '';
+
+        if (books.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 2rem;">Aucune donnée disponible</td></tr>';
+          return;
+        }
+
+        books.forEach(book => {
+          const stockDisponible = book.copies_count || 0;
+          const sortiesTotal = sortiesByBook[book.id] || 0;
+          const stockInitial = stockDisponible + sortiesTotal;
+          
+          const tauxSortie = stockInitial > 0 
+            ? Math.round((sortiesTotal / stockInitial) * 100) 
+            : 0;
+
+          // Déterminer la classe de la progression
+          let progressClass = 'high';
+          if (tauxSortie < 30) progressClass = 'low';
+          else if (tauxSortie < 70) progressClass = 'medium';
+
+          // Déterminer le statut du stock
+          let stockStatus = '';
+          let stockBadge = '';
+          if (stockDisponible === 0) {
+            stockStatus = 'Épuisé';
+            stockBadge = 'danger';
+          } else if (stockDisponible <= 3) {
+            stockStatus = 'Faible';
+            stockBadge = 'warning';
+          } else {
+            stockStatus = 'Disponible';
+            stockBadge = 'success';
+          }
+
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td><strong>${book.title}</strong></td>
+            <td>${book.author}</td>
+            <td>${book.category || 'N/A'}</td>
+            <td>${formatNumber(stockInitial)}</td>
+            <td>${formatNumber(sortiesTotal)}</td>
+            <td>
+              <span class="badge ${stockBadge}">${formatNumber(stockDisponible)}</span>
+              <small style="display: block; margin-top: 0.3rem; color: #888;">${stockStatus}</small>
+            </td>
+            <td><strong>${tauxSortie}%</strong></td>
+            <td>
+              <div class="stock-progress">
+                <div class="stock-progress-bar ${progressClass}" style="width: ${tauxSortie}%"></div>
+              </div>
+            </td>
+          `;
+          tbody.appendChild(row);
+        });
+
+      } catch (error) {
+        console.error('❌ Erreur chargement analyse livres:', error);
+      }
+    }
+
+    // ============================================================================
+    // CHARGEMENT DE TOUTES LES DONNÉES
+    // ============================================================================
+    async function loadDashboard() {
+      try {
+        await Promise.all([
+          loadStats(),
+          loadCharts(),
+          loadActivities()
+        ]);
+        
+        // Charger le stock temps réel
+        await loadRealtimeStock();
+        
+        // Charger l'analyse détaillée
+        await loadBookAnalysis();
+        
+        document.getElementById('loadingStats').style.display = 'none';
+        document.getElementById('statsGrid').style.display = 'grid';
+        document.getElementById('chartsGrid').style.display = 'grid';
+        document.getElementById('detailedAnalysisCard').style.display = 'block';
+        document.getElementById('activitiesCard').style.display = 'block';
+      } catch (error) {
+        console.error('Erreur chargement dashboard:', error);
+        document.getElementById('loadingStats').innerHTML = `
+          <p style="color: var(--danger-clr);">Erreur de chargement des données</p>
+          <button onclick="loadDashboard()" style="margin-top: 1rem; padding: 0.5rem 1rem; background: var(--primary-clr); color: white; border: none; border-radius: 8px; cursor: pointer;">
+            Réessayer
+          </button>
+        `;
+      }
+    }
+
+    // Charger les statistiques
+    async function loadStats() {
+      const response = await fetch(`${API_BASE_URL}/dashboard/stats`);
+      const data = await response.json();
+      
+      const comparison = await fetch(`${API_BASE_URL}/dashboard/monthly-comparison`);
+      const comp = await comparison.json();
+
+      const statsGrid = document.getElementById('statsGrid');
+      
+      // Ajouter les autres stats après la carte temps réel
+      const additionalStats = `
+        <div class="stat-card books">
+          <div class="stat-header">
+            <div class="stat-icon">
+              <i class="fas fa-book"></i>
+            </div>
+            <span class="stat-trend ${comp.books.percentage >= 0 ? 'up' : 'down'}">
+              <i class="fas fa-arrow-${comp.books.percentage >= 0 ? 'up' : 'down'}"></i> ${Math.abs(comp.books.percentage)}%
+            </span>
+          </div>
+          <div class="stat-body">
+            <h3>Total des Livres</h3>
+            <div class="stat-value">${data.books.total}</div>
+            <p class="stat-subtitle">+${data.books.this_month} ce mois-ci | ${data.books.total_copies} copies</p>
+          </div>
+        </div>
+
+        <div class="stat-card citations">
+          <div class="stat-header">
+            <div class="stat-icon">
+              <i class="fas fa-quote-right"></i>
+            </div>
+          </div>
+          <div class="stat-body">
+            <h3>Citations & Résumés</h3>
+            <div class="stat-value">${data.citations.total + data.resumes.total}</div>
+            <p class="stat-subtitle">${data.citations.total} citations | ${data.resumes.total} résumés</p>
+          </div>
+        </div>
+
+        <div class="stat-card sorties">
+          <div class="stat-header">
+            <div class="stat-icon">
+              <i class="fas fa-exchange-alt"></i>
+            </div>
+            <span class="stat-trend ${comp.sorties.percentage >= 0 ? 'up' : 'down'}">
+              <i class="fas fa-arrow-${comp.sorties.percentage >= 0 ? 'up' : 'down'}"></i> ${Math.abs(comp.sorties.percentage)}%
+            </span>
+          </div>
+          <div class="stat-body">
+            <h3>Sorties Totales</h3>
+            <div class="stat-value">${data.sorties.total}</div>
+            <p class="stat-subtitle">${data.sorties.ventes} ventes | ${data.sorties.prets} prêts | ${data.sorties.dons} dons</p>
+          </div>
+        </div>
+
+        <div class="stat-card money">
+          <div class="stat-header">
+            <div class="stat-icon">
+              <i class="fas fa-coins"></i>
+            </div>
+            <span class="stat-trend ${comp.revenue.percentage >= 0 ? 'up' : 'down'}">
+              <i class="fas fa-arrow-${comp.revenue.percentage >= 0 ? 'up' : 'down'}"></i> ${Math.abs(comp.revenue.percentage)}%
+            </span>
+          </div>
+          <div class="stat-body">
+            <h3>Revenus Totaux</h3>
+            <div class="stat-value">${formatNumber(data.finance.revenue_total.toFixed(0))} FCFA</div>
+            <p class="stat-subtitle">${formatNumber(data.finance.revenue_this_month.toFixed(0))} FCFA ce mois</p>
+          </div>
+        </div>
+
+        <div class="stat-card time">
+          <div class="stat-header">
+            <div class="stat-icon">
+              <i class="fas fa-clock"></i>
+            </div>
+          </div>
+          <div class="stat-body">
+            <h3>Temps de Lecture Estimé</h3>
+            <div class="stat-value">${data.reading.estimated_hours}h</div>
+            <p class="stat-subtitle">~${data.reading.estimated_days} jours | ${formatNumber(data.books.total_pages)} pages</p>
+          </div>
+        </div>
+
+        <div class="stat-card books">
+          <div class="stat-header">
+            <div class="stat-icon">
+              <i class="fas fa-star"></i>
+            </div>
+          </div>
+          <div class="stat-body">
+            <h3>Note Moyenne</h3>
+            <div class="stat-value">${data.books.avg_rating}/5</div>
+            <p class="stat-subtitle">Valeur totale: ${formatNumber(data.finance.total_invested.toFixed(0))} FCFA</p>
+          </div>
+        </div>
+      `;
+      
+      statsGrid.insertAdjacentHTML('beforeend', additionalStats);
+    }
+
+    // Charger les graphiques
+    async function loadCharts() {
+      const chartsGrid = document.getElementById('chartsGrid');
+      chartsGrid.innerHTML = `
+        <div class="chart-card">
+          <div class="chart-header">
+            <h3><i class="fas fa-chart-bar"></i> Évolution des Livres</h3>
+            <div class="chart-filter">
+              <button class="filter-btn active" onclick="loadBooksChart('year', this)">Année</button>
+              <button class="filter-btn" onclick="loadBooksChart('month', this)">Mois</button>
+            </div>
+          </div>
+          <div class="chart-container">
+            <canvas id="booksChart"></canvas>
+          </div>
+        </div>
+
+        <div class="chart-card">
+          <div class="chart-header">
+            <h3><i class="fas fa-chart-pie"></i> Répartition par Catégorie</h3>
+          </div>
+          <div class="chart-container">
+            <canvas id="categoryChart"></canvas>
+          </div>
+        </div>
+
+        <div class="chart-card">
+          <div class="chart-header">
+            <h3><i class="fas fa-chart-line"></i> Évolution des Sorties</h3>
+            <div class="chart-filter">
+              <button class="filter-btn active" onclick="loadSortiesChart('year', this)">Année</button>
+              <button class="filter-btn" onclick="loadSortiesChart('month', this)">Mois</button>
+            </div>
+          </div>
+          <div class="chart-container">
+            <canvas id="sortiesChart"></canvas>
+          </div>
+        </div>
+
+        <div class="chart-card">
+          <div class="chart-header">
+            <h3><i class="fas fa-money-bill-wave"></i> Revenus Mensuels</h3>
+            <div class="chart-filter">
+              <button class="filter-btn active" onclick="loadRevenueChart('6months', this)">6 mois</button>
+              <button class="filter-btn" onclick="loadRevenueChart('year', this)">1 an</button>
+            </div>
+          </div>
+          <div class="chart-container">
+            <canvas id="revenueChart"></canvas>
+          </div>
+        </div>
+
+        <div class="chart-card">
+          <div class="chart-header">
+            <h3><i class="fas fa-clock"></i> Temps de Lecture Hebdomadaire</h3>
+          </div>
+          <div class="chart-container">
+            <canvas id="timeChart"></canvas>
+          </div>
+        </div>
+      `;
+
+      await Promise.all([
+        loadBooksChart('year'),
+        loadCategoryChart(),
+        loadSortiesChart('year'),
+        loadRevenueChart('6months'),
+        loadTimeChart()
+      ]);
+    }
+
+    async function loadBooksChart(period, clickedButton) {
+      const response = await fetch(`${API_BASE_URL}/dashboard/books-evolution?period=${period}`);
+      const data = await response.json();
+
+      if (charts.books) charts.books.destroy();
+
+      const ctx = document.getElementById('booksChart').getContext('2d');
+      charts.books = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: data.labels,
+          datasets: [{
+            label: 'Livres ajoutés',
+            data: data.data,
+            backgroundColor: 'rgba(150, 64, 227, 0.6)',
+            borderColor: 'rgba(150, 64, 227, 1)',
+            borderWidth: 2,
+            borderRadius: 8
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false }
+          },
+          scales: {
+            y: { beginAtZero: true }
+          }
+        }
+      });
+
+      if (clickedButton) {
+        const card = document.getElementById('booksChart').closest('.chart-card');
+        card.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+        clickedButton.classList.add('active');
+      }
+    }
+
+    async function loadCategoryChart() {
+      const response = await fetch(`${API_BASE_URL}/dashboard/stats`);
+      const data = await response.json();
+
+      const ctx = document.getElementById('categoryChart').getContext('2d');
+      charts.category = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: data.categories.map(c => c.name),
+          datasets: [{
+            data: data.categories.map(c => c.count),
+            backgroundColor: [
+              'rgba(150, 64, 227, 0.8)',
+              'rgba(59, 130, 246, 0.8)',
+              'rgba(16, 185, 129, 0.8)',
+              'rgba(245, 158, 11, 0.8)',
+              'rgba(239, 68, 68, 0.8)',
+              'rgba(147, 51, 234, 0.8)',
+              'rgba(34, 211, 238, 0.8)',
+              'rgba(251, 191, 36, 0.8)'
+            ],
+            borderWidth: 2,
+            borderColor: '#fff'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'right' }
+          }
+        }
+      });
+    }
+
+    async function loadSortiesChart(period, clickedButton) {
+      const response = await fetch(`${API_BASE_URL}/dashboard/sorties-evolution?period=${period}`);
+      const data = await response.json();
+
+      if (charts.sorties) charts.sorties.destroy();
+
+      const ctx = document.getElementById('sortiesChart').getContext('2d');
+      charts.sorties = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: data.labels,
+          datasets: [
+            {
+              label: 'Ventes',
+              data: data.ventes,
+              borderColor: 'rgba(16, 185, 129, 1)',
+              backgroundColor: 'rgba(16, 185, 129, 0.1)',
+              tension: 0.4,
+              fill: true
+            },
+            {
+              label: 'Prêts',
+              data: data.prets,
+              borderColor: 'rgba(59, 130, 246, 1)',
+              backgroundColor: 'rgba(59, 130, 246, 0.1)',
+              tension: 0.4,
+              fill: true
+            },
+            {
+              label: 'Dons',
+              data: data.dons,
+              borderColor: 'rgba(245, 158, 11, 1)',
+              backgroundColor: 'rgba(245, 158, 11, 0.1)',
+              tension: 0.4,
+              fill: true
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'top' }
+          },
+          scales: {
+            y: { beginAtZero: true }
+          }
+        }
+      });
+
+      if (clickedButton) {
+        const card = document.getElementById('sortiesChart').closest('.chart-card');
+        card.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+        clickedButton.classList.add('active');
+      }
+    }
+
+    async function loadRevenueChart(period, clickedButton) {
+      const response = await fetch(`${API_BASE_URL}/dashboard/revenue-evolution?period=${period}`);
+      const data = await response.json();
+
+      if (charts.revenue) charts.revenue.destroy();
+
+      const ctx = document.getElementById('revenueChart').getContext('2d');
+      charts.revenue = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: data.labels,
+          datasets: [{
+            label: 'Revenus (FCFA)',
+            data: data.data,
+            backgroundColor: 'rgba(245, 158, 11, 0.2)',
+            borderColor: 'rgba(245, 158, 11, 1)',
+            borderWidth: 3,
+            fill: true,
+            tension: 0.4,
+            pointRadius: 6,
+            pointHoverRadius: 8
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: {
+                callback: function(value) {
+                  return formatNumber(value.toFixed(0)) + ' FCFA';
+                }
+              }
+            }
+          }
+        }
+      });
+
+      if (clickedButton) {
+        const card = document.getElementById('revenueChart').closest('.chart-card');
+        card.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+        clickedButton.classList.add('active');
+      }
+    }
+
+    async function loadTimeChart() {
+      const response = await fetch(`${API_BASE_URL}/dashboard/reading-time`);
+      const data = await response.json();
+
+      const ctx = document.getElementById('timeChart').getContext('2d');
+      charts.time = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: data.labels,
+          datasets: [{
+            label: 'Heures de lecture',
+            data: data.data,
+            backgroundColor: 'rgba(239, 68, 68, 0.6)',
+            borderColor: 'rgba(239, 68, 68, 1)',
+            borderWidth: 2,
+            borderRadius: 8
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: {
+                callback: function(value) {
+                  return value + 'h';
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    async function loadActivities() {
+      const response = await fetch(`${API_BASE_URL}/dashboard/recent-activities?limit=10`);
+      const activities = await response.json();
+
+      const activitiesList = document.getElementById('activitiesList');
+      activitiesList.innerHTML = activities.map(activity => `
+        <div class="activity-item">
+          <div class="activity-icon" style="background: ${activity.color}">
+            <i class="fas ${activity.icon}"></i>
+          </div>
+          <div class="activity-content">
+            <div class="activity-title">${activity.title}</div>
+            <div class="activity-desc">${activity.description}</div>
+            <div class="activity-time">${formatDate(activity.timestamp)}</div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function formatDate(isoString) {
+      if (!isoString) return 'Date inconnue';
+      const date = new Date(isoString);
+      const now = new Date();
+      const diffMs = now - date;
+      const diffMins = Math.floor(diffMs / 60000);
+      const diffHours = Math.floor(diffMs / 3600000);
+      const diffDays = Math.floor(diffMs / 86400000);
+
+      if (diffMins < 1) return 'À l\'instant';
+      if (diffMins < 60) return `Il y a ${diffMins} min`;
+      if (diffHours < 24) return `Il y a ${diffHours}h`;
+      if (diffDays < 7) return `Il y a ${diffDays}j`;
+      return date.toLocaleDateString('fr-FR');
+    }
+
+    // ============================================================================
+    // CHARGEMENT INITIAL ET MISES À JOUR AUTOMATIQUES
+    // ============================================================================
+    window.addEventListener('DOMContentLoaded', () => {
+      console.log('🚀 Initialisation du dashboard...');
+      
+      // Charger les données initiales
+      loadDashboard();
+      
+      // Mettre à jour le stock en temps réel toutes les 10 secondes
+      setInterval(() => {
+        console.log('🔄 Rafraîchissement stock temps réel...');
+        loadRealtimeStock();
+        loadBookAnalysis();
+      }, 10000);
+      
+      // Mettre à jour le timer chaque seconde
+      setInterval(updateTimer, 1000);
+      
+      // Rafraîchir le dashboard complet toutes les 5 minutes
+      setInterval(() => {
+        console.log('🔄 Rafraîchissement complet du dashboard...');
+        loadDashboard();
+      }, 300000);
+    });
+  </script>
+</body>
+</html>

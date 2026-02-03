@@ -1,0 +1,1532 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sortie de Livre - Vente/Prêt</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --primary-clr: #9640e3;
+      --secondary-clr: #f8e8fd;
+      --medium-clr: #d399fb;
+      --dark-clr: #0a0a0a;
+      --light-clr: #ffffff;
+      --success-clr: #10b981;
+      --error-clr: #ef4444;
+      --warning-clr: #f59e0b;
+      --info-clr: #3b82f6;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Fira Sans', sans-serif;
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      color: var(--dark-clr);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Navigation Header */
+    .navbar {
+      background: var(--light-clr);
+      box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      animation: slideDown 0.5s ease;
+    }
+
+    @keyframes slideDown {
+      from { transform: translateY(-100%); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    .navbar-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 1rem 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--primary-clr);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: transform 0.3s;
+      z-index: 1001;
+    }
+
+    .logo:hover { transform: scale(1.05); }
+
+    .menu-toggle {
+      display: none;
+      background: var(--primary-clr);
+      border: none;
+      color: white;
+      font-size: 1.5rem;
+      width: 45px;
+      height: 45px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s;
+      z-index: 1001;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 2rem;
+      list-style: none;
+      align-items: center;
+    }
+
+    .nav-links a {
+      color: var(--dark-clr);
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.3s;
+      position: relative;
+    }
+
+    .nav-links a::after {
+      content: '';
+      position: absolute;
+      bottom: -5px;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: var(--primary-clr);
+      transition: width 0.3s;
+    }
+
+    .nav-links a:hover::after { width: 100%; }
+
+    /* Container */
+    .container {
+      max-width: 1000px;
+      margin: 3rem auto;
+      padding: 0 15px 2rem;
+    }
+
+    .page-header {
+      text-align: center;
+      margin-bottom: 3rem;
+      animation: fadeInUp 0.8s ease;
+    }
+
+    @keyframes fadeInUp {
+      from { transform: translateY(30px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    .page-header h1 {
+      font-size: clamp(2rem, 5vw, 3rem);
+      color: var(--error-clr);
+      margin-bottom: 0.5rem;
+    }
+
+    .page-header p {
+      color: #666;
+      font-size: 1.1rem;
+    }
+
+    /* Quick Stats */
+    .quick-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+      animation: fadeInUp 0.8s ease 0.2s both;
+    }
+
+    .stat-card {
+      background: white;
+      padding: 1.5rem;
+      border-radius: 15px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      text-align: center;
+      transition: transform 0.3s;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    }
+
+    .stat-card i {
+      font-size: 2.5rem;
+      color: var(--primary-clr);
+      margin-bottom: 0.5rem;
+    }
+
+    .stat-card h3 {
+      font-size: 2rem;
+      color: var(--dark-clr);
+      margin-bottom: 0.3rem;
+    }
+
+    .stat-card p {
+      color: #666;
+      font-size: 0.9rem;
+    }
+
+    /* Form Card */
+    .form-card {
+      background: white;
+      border-radius: 20px;
+      padding: 2.5rem;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+      animation: scaleIn 0.6s ease;
+    }
+
+    @keyframes scaleIn {
+      from { transform: scale(0.95); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    .form-section {
+      margin-bottom: 2rem;
+    }
+
+    .section-title {
+      font-size: 1.3rem;
+      color: var(--primary-clr);
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid var(--secondary-clr);
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .form-group {
+      margin-bottom: 1.5rem;
+      position: relative;
+    }
+
+    .form-group.full-width {
+      grid-column: 1 / -1;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+      color: var(--dark-clr);
+      font-size: 0.95rem;
+    }
+
+    .form-group label .required {
+      color: var(--error-clr);
+      margin-left: 0.2rem;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      padding: 12px 15px;
+      border: 2px solid #e0e0e0;
+      border-radius: 10px;
+      font-family: inherit;
+      font-size: 1rem;
+      transition: all 0.3s;
+      background: white;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: var(--primary-clr);
+      box-shadow: 0 0 0 3px rgba(150, 64, 227, 0.1);
+    }
+
+    .form-group input.error,
+    .form-group select.error {
+      border-color: var(--error-clr);
+    }
+
+    .form-group textarea {
+      resize: vertical;
+      min-height: 100px;
+    }
+
+    .error-message {
+      color: var(--error-clr);
+      font-size: 0.85rem;
+      margin-top: 0.3rem;
+      display: none;
+      animation: shake 0.3s;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-5px); }
+      75% { transform: translateX(5px); }
+    }
+
+    .error-message.show {
+      display: block;
+    }
+
+    /* Book Search */
+    .book-search {
+      position: relative;
+    }
+
+    .search-input {
+      padding-right: 45px !important;
+    }
+
+    .search-btn {
+      position: absolute;
+      right: 5px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: var(--primary-clr);
+      color: white;
+      border: none;
+      width: 35px;
+      height: 35px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .search-btn:hover {
+      background: var(--medium-clr);
+    }
+
+    .search-results {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: white;
+      border: 2px solid var(--medium-clr);
+      border-radius: 10px;
+      margin-top: 0.5rem;
+      max-height: 300px;
+      overflow-y: auto;
+      z-index: 100;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      display: none;
+    }
+
+    .search-results.show {
+      display: block;
+    }
+
+    .search-result-item {
+      padding: 1rem;
+      border-bottom: 1px solid #f0f0f0;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+    }
+
+    .search-result-item:hover {
+      background: var(--secondary-clr);
+    }
+
+    .search-result-item:last-child {
+      border-bottom: none;
+    }
+
+    .result-image {
+      width: 50px;
+      height: 70px;
+      object-fit: cover;
+      border-radius: 5px;
+    }
+
+    .result-info {
+      flex: 1;
+    }
+
+    .result-title {
+      font-weight: 600;
+      color: var(--dark-clr);
+      margin-bottom: 0.3rem;
+    }
+
+    .result-author {
+      font-size: 0.9rem;
+      color: #666;
+      margin-bottom: 0.3rem;
+    }
+
+    .result-stock {
+      font-size: 0.85rem;
+      padding: 3px 8px;
+      border-radius: 12px;
+      display: inline-block;
+    }
+
+    .result-stock.available {
+      background: #d1fae5;
+      color: #065f46;
+    }
+
+    .result-stock.limited {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .result-stock.unavailable {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    /* Selected Book Preview */
+    .book-preview {
+      display: none;
+      background: linear-gradient(135deg, var(--secondary-clr), white);
+      padding: 1.5rem;
+      border-radius: 15px;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 5px 15px rgba(150, 64, 227, 0.1);
+    }
+
+    .book-preview.show {
+      display: flex;
+      gap: 1.5rem;
+      align-items: center;
+    }
+
+    .preview-image {
+      width: 100px;
+      height: 140px;
+      object-fit: cover;
+      border-radius: 10px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .preview-info {
+      flex: 1;
+    }
+
+    .preview-title {
+      font-size: 1.3rem;
+      color: var(--primary-clr);
+      margin-bottom: 0.5rem;
+      font-weight: 700;
+    }
+
+    .preview-details {
+      display: grid;
+      gap: 0.5rem;
+      font-size: 0.9rem;
+    }
+
+    .preview-detail {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .preview-label {
+      font-weight: 600;
+      color: #666;
+      min-width: 120px;
+    }
+
+    .preview-value {
+      color: var(--dark-clr);
+    }
+
+    .stock-warning {
+      background: #fef3c7;
+      border-left: 4px solid var(--warning-clr);
+      padding: 1rem;
+      border-radius: 8px;
+      margin-top: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+    }
+
+    .stock-warning i {
+      color: var(--warning-clr);
+      font-size: 1.5rem;
+    }
+
+    /* Transaction Type */
+    .transaction-types {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+    }
+
+    .type-option {
+      position: relative;
+    }
+
+    .type-option input[type="radio"] {
+      display: none;
+    }
+
+    .type-label {
+      display: block;
+      padding: 1.2rem;
+      border: 2px solid #e0e0e0;
+      border-radius: 12px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s;
+      background: white;
+    }
+
+    .type-label i {
+      font-size: 2rem;
+      display: block;
+      margin-bottom: 0.5rem;
+    }
+
+    .type-option input[type="radio"]:checked + .type-label {
+      border-color: var(--primary-clr);
+      background: var(--secondary-clr);
+      color: var(--primary-clr);
+      transform: scale(1.05);
+      box-shadow: 0 5px 20px rgba(150, 64, 227, 0.2);
+    }
+
+    .type-label:hover {
+      border-color: var(--primary-clr);
+    }
+
+    /* Conditional Fields */
+    .conditional-field {
+      display: none;
+    }
+
+    .conditional-field.show {
+      display: block;
+    }
+
+    /* Payment Method */
+    .payment-methods {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 1rem;
+    }
+
+    .payment-option {
+      position: relative;
+    }
+
+    .payment-option input[type="radio"] {
+      display: none;
+    }
+
+    .payment-label {
+      display: block;
+      padding: 1rem;
+      border: 2px solid #e0e0e0;
+      border-radius: 10px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s;
+      background: white;
+    }
+
+    .payment-label i {
+      font-size: 1.8rem;
+      display: block;
+      margin-bottom: 0.5rem;
+    }
+
+    .payment-option input[type="radio"]:checked + .payment-label {
+      border-color: var(--success-clr);
+      background: #d1fae5;
+      color: var(--success-clr);
+    }
+
+    /* Form Actions */
+    .form-actions {
+      display: flex;
+      gap: 1rem;
+      margin-top: 2rem;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      padding: 14px 30px;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--error-clr), #dc2626);
+      color: white;
+      box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+    }
+
+    .btn-secondary {
+      background: #e0e0e0;
+      color: var(--dark-clr);
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      background: #d0d0d0;
+    }
+
+    .btn .spinner {
+      display: none;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    .btn.loading .spinner {
+      display: block;
+    }
+
+    .btn.loading .btn-text {
+      display: none;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Toast */
+    .toast-container {
+      position: fixed;
+      top: 100px;
+      right: 20px;
+      z-index: 2000;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      max-width: 400px;
+    }
+
+    .toast {
+      background: white;
+      padding: 1rem 1.5rem;
+      border-radius: 10px;
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      animation: slideInRight 0.5s ease;
+      border-left: 4px solid;
+    }
+
+    @keyframes slideInRight {
+      from { transform: translateX(400px); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    .toast.success { border-left-color: var(--success-clr); }
+    .toast.error { border-left-color: var(--error-clr); }
+    .toast.warning { border-left-color: var(--warning-clr); }
+    .toast.info { border-left-color: var(--info-clr); }
+
+    .toast i {
+      font-size: 1.5rem;
+    }
+
+    .toast.success i { color: var(--success-clr); }
+    .toast.error i { color: var(--error-clr); }
+    .toast.warning i { color: var(--warning-clr); }
+    .toast.info i { color: var(--info-clr); }
+
+    .toast-content {
+      flex: 1;
+    }
+
+    .toast-title {
+      font-weight: 600;
+      margin-bottom: 0.2rem;
+    }
+
+    .toast-message {
+      font-size: 0.9rem;
+      color: #666;
+    }
+
+    .toast-close {
+      background: none;
+      border: none;
+      font-size: 1.2rem;
+      color: #999;
+      cursor: pointer;
+      transition: color 0.3s;
+    }
+
+    .toast-close:hover {
+      color: var(--dark-clr);
+    }
+
+    /* Loading */
+    .loading-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(255, 255, 255, 0.9);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 4000;
+    }
+
+    .loading-overlay.show {
+      display: flex;
+    }
+
+    .loading-spinner {
+      width: 60px;
+      height: 60px;
+      border: 4px solid var(--secondary-clr);
+      border-top-color: var(--primary-clr);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    /* Footer */
+    footer {
+      background: var(--dark-clr);
+      color: white;
+      padding: 3rem 15px 1rem;
+      margin-top: 5rem;
+    }
+
+    .footer-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 2rem;
+      margin-bottom: 2rem;
+    }
+
+    .footer-section h3 {
+      color: var(--primary-clr);
+      margin-bottom: 1rem;
+    }
+
+    .footer-section p,
+    .footer-section a {
+      color: #ccc;
+      line-height: 1.8;
+      text-decoration: none;
+      display: block;
+      transition: color 0.3s;
+    }
+
+    .footer-section a:hover {
+      color: var(--primary-clr);
+    }
+
+    .footer-bottom {
+      text-align: center;
+      padding-top: 2rem;
+      border-top: 1px solid #333;
+      color: #888;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .menu-toggle {
+        display: block;
+      }
+
+      .nav-links {
+        position: fixed;
+        top: 0;
+        right: -100%;
+        width: 70%;
+        max-width: 300px;
+        height: 100vh;
+        background: white;
+        flex-direction: column;
+        padding: 80px 2rem 2rem;
+        box-shadow: -5px 0 20px rgba(0, 0, 0, 0.2);
+        transition: right 0.4s ease;
+        z-index: 1000;
+      }
+
+      .nav-links.active {
+        right: 0;
+      }
+
+      .form-card {
+        padding: 1.5rem;
+      }
+
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .form-actions {
+        flex-direction: column;
+      }
+
+      .btn {
+        width: 100%;
+        justify-content: center;
+      }
+
+      .book-preview.show {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="navbar-content">
+      <a href="/" class="logo">
+        <i class="fas fa-sign-out-alt"></i>
+        Sortie de Livre
+      </a>
+      <button class="menu-toggle" id="menuToggle">
+        <i class="fas fa-bars"></i>
+      </button>
+      <ul class="nav-links" id="navLinks">
+        <li><a href="/">Accueil</a></li>
+        <li><a href="/bibliotheque.html">Bibliothèque</a></li>
+        <li><a href="/boutique.html">Boutique</a></li>
+        <li><a href="/sortie_livre.html">Sortie</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Loading Overlay -->
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="container">
+    <div class="page-header">
+      <h1><i class="fas fa-sign-out-alt"></i> Enregistrer une Sortie de Livre</h1>
+      <p>Vente, prêt ou don - Réduisez automatiquement le stock disponible</p>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="quick-stats">
+      <div class="stat-card">
+        <i class="fas fa-shopping-cart"></i>
+        <h3 id="totalSales">0</h3>
+        <p>Ventes totales</p>
+      </div>
+      <div class="stat-card">
+        <i class="fas fa-hand-holding-heart"></i>
+        <h3 id="totalLoans">0</h3>
+        <p>Prêts en cours</p>
+      </div>
+      <div class="stat-card">
+        <i class="fas fa-gift"></i>
+        <h3 id="totalDonations">0</h3>
+        <p>Dons effectués</p>
+      </div>
+      <div class="stat-card">
+        <i class="fas fa-coins"></i>
+        <h3 id="totalRevenue">0</h3>
+        <p>Revenu total (FCFA)</p>
+      </div>
+    </div>
+
+    <div class="form-card">
+      <form id="sortieForm">
+        
+        <!-- Book Selection -->
+        <div class="form-section">
+          <h2 class="section-title">
+            <i class="fas fa-search"></i>
+            Sélection du Livre
+          </h2>
+          <div class="form-group full-width book-search">
+            <label for="bookSearch">Rechercher un livre <span class="required">*</span></label>
+            <input 
+              type="text" 
+              id="bookSearch" 
+              class="search-input"
+              placeholder="Tapez le titre ou l'auteur du livre..." 
+              autocomplete="off"
+            >
+            <button type="button" class="search-btn">
+              <i class="fas fa-search"></i>
+            </button>
+            <div class="search-results" id="searchResults"></div>
+            <div class="error-message" id="bookSearchError"></div>
+          </div>
+
+          <!-- Selected Book Preview -->
+          <div class="book-preview" id="bookPreview">
+            <img src="" alt="" class="preview-image" id="previewImage">
+            <div class="preview-info">
+              <h3 class="preview-title" id="previewTitle"></h3>
+              <div class="preview-details">
+                <div class="preview-detail">
+                  <span class="preview-label">Auteur:</span>
+                  <span class="preview-value" id="previewAuthor"></span>
+                </div>
+                <div class="preview-detail">
+                  <span class="preview-label">Stock actuel:</span>
+                  <span class="preview-value" id="previewStock"></span>
+                </div>
+                <div class="preview-detail">
+                  <span class="preview-label">Prix:</span>
+                  <span class="preview-value" id="previewPrice"></span>
+                </div>
+              </div>
+              <div class="stock-warning" id="stockWarning" style="display: none;">
+                <i class="fas fa-exclamation-triangle"></i>
+                <span>Stock faible ! Seulement <strong id="warningStock"></strong> exemplaire(s) restant(s).</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Transaction Type -->
+        <div class="form-section">
+          <h2 class="section-title">
+            <i class="fas fa-exchange-alt"></i>
+            Type de Transaction
+          </h2>
+          <div class="transaction-types">
+            <div class="type-option">
+              <input type="radio" id="typeVente" name="transactionType" value="vente" checked>
+              <label for="typeVente" class="type-label">
+                <i class="fas fa-shopping-cart"></i>
+                <span>Vente</span>
+              </label>
+            </div>
+            <div class="type-option">
+              <input type="radio" id="typePret" name="transactionType" value="pret">
+              <label for="typePret" class="type-label">
+                <i class="fas fa-hand-holding-heart"></i>
+                <span>Prêt</span>
+              </label>
+            </div>
+            <div class="type-option">
+              <input type="radio" id="typeDon" name="transactionType" value="don">
+              <label for="typeDon" class="type-label">
+                <i class="fas fa-gift"></i>
+                <span>Don</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Client Information -->
+        <div class="form-section">
+          <h2 class="section-title">
+            <i class="fas fa-user"></i>
+            Informations Client/Emprunteur
+          </h2>
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="clientName">Nom complet <span class="required">*</span></label>
+              <input type="text" id="clientName" required placeholder="Ex: Jean Dupont">
+              <div class="error-message" id="clientNameError"></div>
+            </div>
+            <div class="form-group">
+              <label for="clientPhone">Téléphone <span class="required">*</span></label>
+              <input type="tel" id="clientPhone" required placeholder="Ex: +228 90 12 34 56">
+              <div class="error-message" id="clientPhoneError"></div>
+            </div>
+            <div class="form-group">
+              <label for="clientEmail">Email</label>
+              <input type="email" id="clientEmail" placeholder="Ex: jean@example.com">
+              <div class="error-message" id="clientEmailError"></div>
+            </div>
+            <div class="form-group">
+              <label for="clientAddress">Adresse</label>
+              <input type="text" id="clientAddress" placeholder="Ex: Lomé, Adidogomé">
+              <div class="error-message" id="clientAddressError"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Transaction Details -->
+        <div class="form-section">
+          <h2 class="section-title">
+            <i class="fas fa-file-invoice"></i>
+            Détails de la Transaction
+          </h2>
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="quantity">Quantité <span class="required">*</span></label>
+              <input type="number" id="quantity" min="1" value="1" required>
+              <div class="error-message" id="quantityError"></div>
+              <small style="color: #666; font-size: 0.85rem; margin-top: 0.3rem; display: block;">
+                Nombre d'exemplaires à sortir du stock
+              </small>
+            </div>
+            
+            <div class="form-group conditional-field show" id="priceField">
+              <label for="salePrice">Prix de vente (FCFA) <span class="required">*</span></label>
+              <input type="number" id="salePrice" min="0" step="0.01" placeholder="Ex: 5000">
+              <div class="error-message" id="salePriceError"></div>
+            </div>
+
+            <div class="form-group">
+              <label for="transactionDate">Date de transaction <span class="required">*</span></label>
+              <input type="date" id="transactionDate" required>
+              <div class="error-message" id="transactionDateError"></div>
+            </div>
+
+            <div class="form-group conditional-field" id="returnDateField">
+              <label for="returnDate">Date de retour prévue</label>
+              <input type="date" id="returnDate">
+              <div class="error-message" id="returnDateError"></div>
+            </div>
+          </div>
+
+          <!-- Payment Method (only for sales) -->
+          <div class="form-group full-width conditional-field show" id="paymentMethodField">
+            <label>Mode de paiement</label>
+            <div class="payment-methods">
+              <div class="payment-option">
+                <input type="radio" id="paymentCash" name="paymentMethod" value="cash" checked>
+                <label for="paymentCash" class="payment-label">
+                  <i class="fas fa-money-bill-wave"></i>
+                  <span>Espèces</span>
+                </label>
+              </div>
+              <div class="payment-option">
+                <input type="radio" id="paymentCard" name="paymentMethod" value="card">
+                <label for="paymentCard" class="payment-label">
+                  <i class="fas fa-credit-card"></i>
+                  <span>Carte</span>
+                </label>
+              </div>
+              <div class="payment-option">
+                <input type="radio" id="paymentMobile" name="paymentMethod" value="mobile">
+                <label for="paymentMobile" class="payment-label">
+                  <i class="fas fa-mobile-alt"></i>
+                  <span>Mobile Money</span>
+                </label>
+              </div>
+              <div class="payment-option">
+                <input type="radio" id="paymentBank" name="paymentMethod" value="bank">
+                <label for="paymentBank" class="payment-label">
+                  <i class="fas fa-university"></i>
+                  <span>Virement</span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group full-width">
+            <label for="notes">Notes / Observations</label>
+            <textarea id="notes" placeholder="Ajoutez des notes sur cette transaction..."></textarea>
+          </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" id="cancelBtn">
+            <i class="fas fa-times"></i>
+            <span class="btn-text">Annuler</span>
+          </button>
+          <button type="submit" class="btn btn-primary" id="submitBtn">
+            <div class="spinner"></div>
+            <i class="fas fa-check"></i>
+            <span class="btn-text">Enregistrer la Sortie</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-content">
+      <div class="footer-section">
+        <h3>À propos</h3>
+        <p>Système de gestion des sorties de livres - Vente, prêt et don.</p>
+      </div>
+      <div class="footer-section">
+        <h3>Liens rapides</h3>
+        <a href="/">Accueil</a>
+        <a href="/bibliotheque.html">Bibliothèque</a>
+        <a href="/boutique.html">Boutique</a>
+        <a href="/sortie_livre.html">Sortie</a>
+      </div>
+      <div class="footer-section">
+        <h3>Contact</h3>
+        <p>Email: contact@bibliotheque.com</p>
+        <p>Tél: +228 90 12 34 56</p>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2025 Bibliothèque GNODJA. Tous droits réservés.</p>
+    </div>
+  </footer>
+
+  <script>
+    // Configuration API
+    const API_BASE_URL = 'http://localhost:8040/api';
+
+    // Variables globales
+    let allBooks = [];
+    let selectedBook = null;
+    let searchTimeout = null;
+
+    // ==================== UTILITAIRES ====================
+    
+    function showToast(type, title, message, duration = 3000) {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      
+      const icons = {
+        success: 'fa-check-circle',
+        error: 'fa-exclamation-circle',
+        warning: 'fa-exclamation-triangle',
+        info: 'fa-info-circle'
+      };
+      
+      toast.innerHTML = `
+        <i class="fas ${icons[type]}"></i>
+        <div class="toast-content">
+          <div class="toast-title">${title}</div>
+          <div class="toast-message">${message}</div>
+        </div>
+        <button class="toast-close" onclick="this.parentElement.remove()">
+          <i class="fas fa-times"></i>
+        </button>
+      `;
+      
+      container.appendChild(toast);
+      
+      setTimeout(() => {
+        toast.style.animation = 'slideInRight 0.5s ease reverse';
+        setTimeout(() => toast.remove(), 500);
+      }, duration);
+    }
+
+    function showLoading(show = true) {
+      document.getElementById('loadingOverlay').classList.toggle('show', show);
+    }
+
+    // ==================== CHARGEMENT DES DONNÉES ====================
+
+    async function loadBooks() {
+      try {
+        const response = await fetch(`${API_BASE_URL}/books?limit=1000`);
+        if (!response.ok) throw new Error('Erreur de chargement');
+        
+        allBooks = await response.json();
+        
+      } catch (error) {
+        console.error('Erreur:', error);
+        showToast('error', 'Erreur', 'Impossible de charger les livres');
+      }
+    }
+
+    async function loadStatistics() {
+        try {
+            const response = await fetch(`${API_BASE_URL}/sorties/statistics`);
+            if (!response.ok) throw new Error('Erreur stats');
+            
+            const stats = await response.json();
+            
+            document.getElementById('totalSales').textContent = stats.total_ventes;
+            document.getElementById('totalLoans').textContent = stats.prets_en_cours;
+            document.getElementById('totalDonations').textContent = stats.total_dons;
+            document.getElementById('totalRevenue').textContent = stats.revenue_total.toLocaleString('fr-FR');
+            
+        } catch (error) {
+            console.error('Erreur stats:', error);
+            // Garder les valeurs par défaut si erreur
+            document.getElementById('totalSales').textContent = '0';
+            document.getElementById('totalLoans').textContent = '0';
+            document.getElementById('totalDonations').textContent = '0';
+            document.getElementById('totalRevenue').textContent = '0';
+        }
+    }
+    // ==================== RECHERCHE DE LIVRES ====================
+
+    const searchInput = document.getElementById('bookSearch');
+    const searchResults = document.getElementById('searchResults');
+
+    searchInput.addEventListener('input', (e) => {
+      clearTimeout(searchTimeout);
+      const query = e.target.value.trim().toLowerCase();
+      
+      if (query.length < 2) {
+        searchResults.classList.remove('show');
+        return;
+      }
+
+      searchTimeout = setTimeout(() => {
+        const filtered = allBooks.filter(book => 
+          book.title.toLowerCase().includes(query) ||
+          book.author.toLowerCase().includes(query)
+        );
+
+        displaySearchResults(filtered);
+      }, 300);
+    });
+
+    function displaySearchResults(books) {
+      if (books.length === 0) {
+        searchResults.innerHTML = '<div style="padding: 1rem; text-align: center; color: #666;">Aucun livre trouvé</div>';
+        searchResults.classList.add('show');
+        return;
+      }
+
+      searchResults.innerHTML = books.map(book => {
+        const stock = book.copies_count || 0;
+        const stockClass = stock > 5 ? 'available' : stock > 0 ? 'limited' : 'unavailable';
+        const stockText = stock > 5 ? `${stock} disponibles` : stock > 0 ? `${stock} restant(s)` : 'Épuisé';
+        
+        return `
+          <div class="search-result-item" data-book-id="${book.id}">
+            <img src="${book.image_url || 'https://via.placeholder.com/50x70?text=Livre'}" 
+                 alt="${book.title}" 
+                 class="result-image">
+            <div class="result-info">
+              <div class="result-title">${escapeHtml(book.title)}</div>
+              <div class="result-author">${escapeHtml(book.author)}</div>
+              <span class="result-stock ${stockClass}">${stockText}</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      searchResults.classList.add('show');
+
+      // Ajouter les événements de clic
+      searchResults.querySelectorAll('.search-result-item').forEach(item => {
+        item.addEventListener('click', () => {
+          const bookId = parseInt(item.dataset.bookId);
+          selectBook(bookId);
+        });
+      });
+    }
+
+    function selectBook(bookId) {
+      selectedBook = allBooks.find(b => b.id === bookId);
+      
+      if (!selectedBook) return;
+
+      // Vérifier le stock
+      const stock = selectedBook.copies_count || 0;
+      if (stock === 0) {
+        showToast('error', 'Stock épuisé', 'Ce livre n\'est plus disponible en stock');
+        return;
+      }
+
+      // Afficher l'aperçu
+      document.getElementById('previewImage').src = selectedBook.image_url || 'https://via.placeholder.com/100x140?text=Livre';
+      document.getElementById('previewTitle').textContent = selectedBook.title;
+      document.getElementById('previewAuthor').textContent = selectedBook.author;
+      document.getElementById('previewStock').textContent = `${stock} exemplaire(s)`;
+      document.getElementById('previewPrice').textContent = selectedBook.price ? `${selectedBook.price} FCFA` : 'Non défini';
+      
+      // Pré-remplir le prix de vente
+      if (selectedBook.price) {
+        document.getElementById('salePrice').value = selectedBook.price;
+      }
+
+      // Afficher l'avertissement si stock faible
+      if (stock <= 3) {
+        document.getElementById('warningStock').textContent = stock;
+        document.getElementById('stockWarning').style.display = 'flex';
+      } else {
+        document.getElementById('stockWarning').style.display = 'none';
+      }
+
+      document.getElementById('bookPreview').classList.add('show');
+      searchResults.classList.remove('show');
+      searchInput.value = selectedBook.title;
+      
+      showToast('success', 'Livre sélectionné', `"${selectedBook.title}" prêt pour la sortie`);
+    }
+
+    // Fermer les résultats en cliquant ailleurs
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.book-search')) {
+        searchResults.classList.remove('show');
+      }
+    });
+
+    // ==================== GESTION DU TYPE DE TRANSACTION ====================
+
+    document.querySelectorAll('input[name="transactionType"]').forEach(radio => {
+      radio.addEventListener('change', (e) => {
+        const type = e.target.value;
+        
+        // Champs conditionnels
+        const priceField = document.getElementById('priceField');
+        const paymentMethodField = document.getElementById('paymentMethodField');
+        const returnDateField = document.getElementById('returnDateField');
+        
+        if (type === 'vente') {
+          priceField.classList.add('show');
+          paymentMethodField.classList.add('show');
+          returnDateField.classList.remove('show');
+          document.getElementById('salePrice').required = true;
+        } else if (type === 'pret') {
+          priceField.classList.remove('show');
+          paymentMethodField.classList.remove('show');
+          returnDateField.classList.add('show');
+          document.getElementById('salePrice').required = false;
+        } else { // don
+          priceField.classList.remove('show');
+          paymentMethodField.classList.remove('show');
+          returnDateField.classList.remove('show');
+          document.getElementById('salePrice').required = false;
+        }
+      });
+    });
+
+    // ==================== VALIDATION ====================
+
+    function validateForm() {
+      let isValid = true;
+
+      // Vérifier qu'un livre est sélectionné
+      if (!selectedBook) {
+        showToast('error', 'Erreur', 'Veuillez sélectionner un livre');
+        document.getElementById('bookSearchError').textContent = 'Veuillez sélectionner un livre';
+        document.getElementById('bookSearchError').classList.add('show');
+        isValid = false;
+      }
+
+      // Vérifier le nom du client
+      const clientName = document.getElementById('clientName');
+      if (!clientName.value.trim()) {
+        document.getElementById('clientNameError').textContent = 'Le nom est requis';
+        document.getElementById('clientNameError').classList.add('show');
+        clientName.classList.add('error');
+        isValid = false;
+      }
+
+      // Vérifier le téléphone
+      const clientPhone = document.getElementById('clientPhone');
+      if (!clientPhone.value.trim()) {
+        document.getElementById('clientPhoneError').textContent = 'Le téléphone est requis';
+        document.getElementById('clientPhoneError').classList.add('show');
+        clientPhone.classList.add('error');
+        isValid = false;
+      }
+
+      // Vérifier la quantité
+      const quantity = parseInt(document.getElementById('quantity').value);
+      const stock = selectedBook ? (selectedBook.copies_count || 0) : 0;
+      
+      if (quantity < 1) {
+        document.getElementById('quantityError').textContent = 'Quantité invalide';
+        document.getElementById('quantityError').classList.add('show');
+        isValid = false;
+      } else if (quantity > stock) {
+        document.getElementById('quantityError').textContent = `Stock insuffisant (${stock} disponible(s))`;
+        document.getElementById('quantityError').classList.add('show');
+        isValid = false;
+      }
+
+      // Vérifier le prix pour les ventes
+      const transactionType = document.querySelector('input[name="transactionType"]:checked').value;
+      if (transactionType === 'vente') {
+        const salePrice = document.getElementById('salePrice');
+        if (!salePrice.value || parseFloat(salePrice.value) <= 0) {
+          document.getElementById('salePriceError').textContent = 'Prix requis pour une vente';
+          document.getElementById('salePriceError').classList.add('show');
+          salePrice.classList.add('error');
+          isValid = false;
+        }
+      }
+
+      return isValid;
+    }
+
+
+    // ==================== SOUMISSION DU FORMULAIRE (VERSION CORRIGÉE) ====================
+
+    document.getElementById('sortieForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      if (!validateForm()) {
+        return;
+      }
+
+      const submitBtn = document.getElementById('submitBtn');
+      submitBtn.disabled = true;
+      submitBtn.classList.add('loading');
+      showLoading(true);
+
+      try {
+        const transactionType = document.querySelector('input[name="transactionType"]:checked').value;
+        const clientName = document.getElementById('clientName').value.trim();
+        const clientPhone = document.getElementById('clientPhone').value.trim();
+        const clientEmail = document.getElementById('clientEmail').value.trim();
+        const clientAddress = document.getElementById('clientAddress').value.trim();
+        const quantity = parseInt(document.getElementById('quantity').value);
+        const transactionDate = document.getElementById('transactionDate').value;
+        const notes = document.getElementById('notes').value.trim();
+        
+        // Préparer les données de la sortie
+        const sortieData = {
+          book_id: selectedBook.id,
+          transaction_type: transactionType,
+          client_name: clientName,
+          client_phone: clientPhone,
+          client_email: clientEmail || null,
+          client_address: clientAddress || null,
+          quantity: quantity,
+          transaction_date: transactionDate,
+          notes: notes || null
+        };
+
+        // Ajouter les champs conditionnels
+        if (transactionType === 'vente') {
+          sortieData.sale_price = parseFloat(document.getElementById('salePrice').value);
+          sortieData.payment_method = document.querySelector('input[name="paymentMethod"]:checked').value;
+        }
+        
+        if (transactionType === 'pret') {
+          const returnDate = document.getElementById('returnDate').value;
+          if (returnDate) {
+            sortieData.return_date = returnDate;
+          }
+        }
+
+        // Envoyer la requête pour créer la sortie
+        const response = await fetch(`${API_BASE_URL}/sorties`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(sortieData)
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.detail || 'Erreur lors de l\'enregistrement');
+        }
+
+        const result = await response.json();
+        
+        const typeText = transactionType === 'vente' ? 'Vente' : transactionType === 'pret' ? 'Prêt' : 'Don';
+        const newStock = (selectedBook.copies_count || 0) - quantity;
+        
+        showToast('success', 'Succès!', `${typeText} enregistré(e) avec succès. Stock mis à jour: ${newStock} exemplaire(s).`);
+
+        // Réinitialiser le formulaire
+        setTimeout(() => {
+          document.getElementById('sortieForm').reset();
+          document.getElementById('bookPreview').classList.remove('show');
+          selectedBook = null;
+          
+          // Date par défaut = aujourd'hui
+          const today = new Date().toISOString().split('T')[0];
+          document.getElementById('transactionDate').value = today;
+          
+          loadBooks();
+          loadStatistics();
+        }, 1500);
+
+      } catch (error) {
+        console.error('Erreur:', error);
+        showToast('error', 'Erreur', error.message);
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.classList.remove('loading');
+        showLoading(false);
+      }
+    });
+
+    // ==================== BOUTON ANNULER ====================
+
+    document.getElementById('cancelBtn').addEventListener('click', () => {
+      if (confirm('Voulez-vous vraiment annuler ? Les données saisies seront perdues.')) {
+        document.getElementById('sortieForm').reset();
+        document.getElementById('bookPreview').classList.remove('show');
+        selectedBook = null;
+        document.getElementById('bookSearch').value = '';
+      }
+    });
+
+    // ==================== UTILITAIRES ====================
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    // ==================== NAVIGATION ====================
+
+    const menuToggle = document.getElementById('menuToggle');
+    const navLinks = document.getElementById('navLinks');
+
+    menuToggle.addEventListener('click', () => {
+      navLinks.classList.toggle('active');
+      const icon = menuToggle.querySelector('i');
+      icon.classList.toggle('fa-bars');
+      icon.classList.toggle('fa-times');
+    });
+
+    // ==================== INITIALISATION ====================
+
+    window.addEventListener('DOMContentLoaded', () => {
+      console.log('🚀 Formulaire de sortie chargé');
+      
+      // Date par défaut = aujourd'hui
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById('transactionDate').value = today;
+      
+      loadBooks();
+      loadStatistics();
+      
+      showToast('info', 'Prêt', 'Formulaire de sortie de livre initialisé');
+    });
+  </script>
+</body>
+</html>
